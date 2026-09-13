@@ -293,10 +293,10 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
         </then>
         <else>
           <message name="IDS_PRODUCT_NAME" desc="The Brave application name" translateable="false">
-            Brave
+            Falcon
           </message>
           <message name="IDS_SHORT_PRODUCT_NAME" desc="The Brave application short name." translateable="false">
-            Brave
+            Falcon
           </message>
         </else>
       </if>

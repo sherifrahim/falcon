@@ -5,6 +5,8 @@
 
 #include "brave/components/ntp_background_images/browser/ntp_background_images_service.h"
 
+#include "brave/components/brave_ads/buildflags/buildflags.h"
+
 #include <algorithm>
 #include <memory>
 
@@ -236,6 +238,10 @@ std::string NTPBackgroundImagesService::GetCountryCode() const {
 }
 
 void NTPBackgroundImagesService::RegisterSponsoredImagesComponent() {
+#if !BUILDFLAG(ENABLE_BRAVE_ADS)
+  // Falcon: sponsored wallpapers are an ads product; never fetch them.
+  return;
+#else
   const std::string variations_country_code = GetCountryCode();
   std::optional<SponsoredImagesComponentInfo> sponsored_images_component =
       GetSponsoredImagesComponent(variations_country_code);
@@ -296,6 +302,7 @@ void NTPBackgroundImagesService::RegisterSponsoredImagesComponent() {
   last_updated_at_ = base::Time::Now();
 
   ScheduleNextSponsoredImagesComponentUpdate();
+#endif  // !BUILDFLAG(ENABLE_BRAVE_ADS)
 }
 
 void NTPBackgroundImagesService::OnVariationsCountryPrefChanged() {

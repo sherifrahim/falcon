@@ -1,0 +1,27 @@
+# Copyright (c) 2026 Falcon. Personal fork of Brave.
+# Falcon build overrides. Imported from //brave/build/args/brave_defaults.gni
+# so they apply to every output directory without touching args.gn.
+#
+# Everything here is a Brave service/product we compile OUT. Features we keep
+# on purpose (do not add here): playlist, speedreader, tor, containers,
+# commander, request_otr, psst, widevine, text_recognition, custom_background.
+
+# Leo / AI
+enable_ai_chat = false
+enable_local_ai = false
+
+# Crypto & monetisation
+enable_brave_ads = false
+enable_brave_rewards = false
+enable_brave_wallet = false
+
+# Brave services
+enable_brave_news = false
+enable_brave_talk = false
+enable_brave_vpn_v1 = false
+enable_brave_vpn_v2 = false
+enable_email_aliases = false
+
+# Telemetry-ish
+enable_brave_stats_updater = false
+enable_web_discovery = false
