@@ -243,9 +243,12 @@ GetBravePrepopulatedEnginesForCountryID(country_codes::CountryId country_id) {
 // set the default search engine back to what it was when the profile was
 // originally created. This way, a person doesn't get a new unexpected default
 // when they reset the profile; it goes back to the original value.
-TemplateURLPrepopulateData::BravePrepopulatedEngineID GetDefaultSearchEngine(
-    country_codes::CountryId country_id,
-    int version) {
+// Brave's per-country/per-version default tables. Falcon does not consult
+// them (see GetDefaultSearchEngine below) but keeps them intact so upstream
+// rebases stay conflict-free.
+[[maybe_unused]] TemplateURLPrepopulateData::BravePrepopulatedEngineID
+GetBraveRegionalDefaultSearchEngine(country_codes::CountryId country_id,
+                                    int version) {
   // LINT.IfChange
   const TemplateURLPrepopulateData::BravePrepopulatedEngineID default_v6 =
       TemplateURLPrepopulateData::PREPOPULATED_ENGINE_ID_GOOGLE;
@@ -729,6 +732,13 @@ TemplateURLPrepopulateData::BravePrepopulatedEngineID GetDefaultSearchEngine(
     return default_v6;
   }
   return *content;
+}
+
+// Falcon: Google is the default search engine everywhere.
+TemplateURLPrepopulateData::BravePrepopulatedEngineID GetDefaultSearchEngine(
+    country_codes::CountryId country_id,
+    int version) {
+  return TemplateURLPrepopulateData::PREPOPULATED_ENGINE_ID_GOOGLE;
 }
 
 }  // namespace
