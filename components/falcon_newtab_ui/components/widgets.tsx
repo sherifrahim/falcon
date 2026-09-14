@@ -39,6 +39,7 @@ const WMO: Record<number, [string, string]> = {
 
 const Chip = styled.div`
   position: fixed;
+  z-index: 5;  /* above the page grid, which paints later in DOM order */
   top: 16px;
   right: 18px;
   display: flex;
@@ -126,6 +127,7 @@ export function Weather({ settings }: { settings: WeatherSettings }) {
 
 const Focus = styled.div`
   position: fixed;
+  z-index: 5;  /* above the page grid, which paints later in DOM order */
   left: 18px;
   bottom: 16px;
   display: flex;
@@ -257,6 +259,7 @@ export const STATIONS: Array<{ id: string; name: string; url: string; note: stri
 
 const Sounds = styled.div`
   position: fixed;
+  z-index: 5;  /* above the page grid, which paints later in DOM order */
   left: 18px;
   top: 16px;
   display: flex;
