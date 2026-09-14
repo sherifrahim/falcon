@@ -305,6 +305,14 @@ FalconNewTabUI::FalconNewTabUI(content::WebUI* web_ui)
       network::mojom::CSPDirectiveName::ImgSrc,
       "img-src 'self' chrome://resources chrome://theme chrome://favicon2 "
       "data: blob: https:;");
+  // Weather widget (Open-Meteo, keyless) and live video wallpapers.
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ConnectSrc,
+      "connect-src 'self' https://api.open-meteo.com "
+      "https://geocoding-api.open-meteo.com;");
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::MediaSrc,
+      "media-src 'self' https: blob:;");
   content::URLDataSource::Add(
       profile, std::make_unique<FaviconSource>(
                    profile, chrome::FaviconUrlFormat::kFavicon2));

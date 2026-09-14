@@ -25,6 +25,7 @@
 #include "brave/browser/falcon/download/download_history.h"
 #include "brave/browser/falcon/download/download_scheduler.h"
 #include "brave/browser/falcon/download/download_security.h"
+#include "brave/browser/falcon/download/page_grabber.h"
 #include "brave/browser/falcon/media/media_service.h"
 #include "brave/browser/falcon/media/media_sniffer_tab_helper.h"
 #include "brave/browser/falcon/download/download_tracker.h"
@@ -107,6 +108,10 @@ class FalconDownloaderMessageHandler : public content::WebUIMessageHandler {
         base::BindRepeating(&FalconDownloaderMessageHandler::RenameFile,
                             base::Unretained(this)));
     web_ui()->RegisterMessageCallback(
+        "falcon_downloader.grabPage",
+        base::BindRepeating(&FalconDownloaderMessageHandler::GrabPage,
+                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
         "falcon_downloader.getMediaJobs",
         base::BindRepeating(&FalconDownloaderMessageHandler::GetMediaJobs,
                             base::Unretained(this)));
@@ -126,6 +131,22 @@ class FalconDownloaderMessageHandler : public content::WebUIMessageHandler {
         "falcon_downloader.removeMedia",
         base::BindRepeating(&FalconDownloaderMessageHandler::RemoveMedia,
                             base::Unretained(this)));
+  }
+
+  // args: [callbackId, pageUrl] -> {links: [...]} | {error}
+  void GrabPage(const base::ListValue& args) {
+    CHECK_EQ(2U, args.size());
+    AllowJavascript();
+    falcon::GrabPageLinks(
+        profile(), GURL(args[1].GetString()),
+        base::BindOnce(&FalconDownloaderMessageHandler::OnGrabbed,
+                       weak_factory_.GetWeakPtr(), args[0].Clone()));
+  }
+
+  void OnGrabbed(base::Value callback_id, base::DictValue result) {
+    if (IsJavascriptAllowed()) {
+      ResolveJavascriptCallback(callback_id, result);
+    }
   }
 
   // ---- media (yt-dlp) ----

@@ -22,6 +22,8 @@ brave_browser_falcon_download_sources = [
   "//brave/browser/falcon/download/download_security.h",
   "//brave/browser/falcon/download/download_tracker.cc",
   "//brave/browser/falcon/download/download_tracker.h",
+  "//brave/browser/falcon/download/page_grabber.cc",
+  "//brave/browser/falcon/download/page_grabber.h",
   "//brave/browser/falcon/download/pref_names.cc",
   "//brave/browser/falcon/download/pref_names.h",
 ]
@@ -38,6 +40,7 @@ brave_browser_falcon_download_deps = [
   "//net",
   "//services/network/public/cpp",
   "//services/network/public/mojom",
+  "//third_party/re2",
   "//ui/base",
   "//ui/base/clipboard",
   "//ui/base/data_transfer_policy",

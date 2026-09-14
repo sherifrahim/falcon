@@ -646,6 +646,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #if !BUILDFLAG(IS_ANDROID)
   registry->SetDefaultPrefValue(brave_tabs::kVerticalTabsEnabled,
                                 base::Value(true));
+  registry->SetDefaultPrefValue(kWebViewRoundedCorners, base::Value(true));
 #endif
 }
 
