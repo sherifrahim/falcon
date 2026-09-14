@@ -145,14 +145,14 @@ export class Aria2Client {
   }
 
   call<T = any>(method: string, ...params: any[]): Promise<T> {
+    return this.rawCall<T>(method, [`token:${this.secret}`, ...params])
+  }
+
+  // system.* methods take no leading token (inner calls carry their own).
+  rawCall<T = any>(method: string, params: any[]): Promise<T> {
     if (!this.connected) return Promise.reject(new Error('not connected'))
     const id = String(this.nextId++)
-    const payload = {
-      jsonrpc: '2.0',
-      id,
-      method,
-      params: [`token:${this.secret}`, ...params],
-    }
+    const payload = { jsonrpc: '2.0', id, method, params }
     return new Promise<T>((resolve, reject) => {
       this.pending.set(id, { resolve, reject })
       this.ws!.send(JSON.stringify(payload))
@@ -205,12 +205,12 @@ export class Aria2Client {
       'errorCode', 'errorMessage', 'dir', 'files', 'bittorrent', 'infoHash',
     ]
     const token = `token:${this.secret}`
-    const results = await this.call<any[]>('system.multicall', [
+    const results = await this.rawCall<any[]>('system.multicall', [[
       { methodName: 'aria2.tellActive', params: [token, keys] },
       { methodName: 'aria2.tellWaiting', params: [token, 0, 500, keys] },
       { methodName: 'aria2.tellStopped', params: [token, 0, 500, keys] },
       { methodName: 'aria2.getGlobalStat', params: [token] },
-    ])
+    ]])
     const unwrap = (r: any) => (Array.isArray(r) ? r[0] : r)
     const downloads = [
       ...unwrap(results[0]),
