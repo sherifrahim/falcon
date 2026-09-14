@@ -12,8 +12,8 @@ source_set("falcon_downloads") {
   deps = [
     "//base",
     "//brave/components/constants",
-    "//brave/components/vector_icons",
     "//cc/paint",
+    "//chrome/app/vector_icons",
     "//chrome/browser:primitives",
     "//chrome/browser/ui/views/toolbar",
     "//skia",

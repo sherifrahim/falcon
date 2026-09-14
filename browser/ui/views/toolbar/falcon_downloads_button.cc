@@ -15,7 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "brave/browser/falcon/download/aria2_service.h"
 #include "brave/components/constants/webui_url_constants.h"
-#include "brave/components/vector_icons/vector_icons.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "base/byte_size.h"
 #include "cc/paint/paint_flags.h"
 #include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
@@ -40,7 +40,7 @@ FalconDownloadsButton::FalconDownloadsButton(BrowserWindowInterface* browser)
     : ToolbarButton(base::BindRepeating(&FalconDownloadsButton::ButtonPressed,
                                         base::Unretained(this))),
       browser_(browser) {
-  SetVectorIcon(kLeoDownloadIcon);
+  SetVectorIcon(kDownloadToolbarButtonChromeRefreshOldIcon);
   UpdateTooltip();
   observation_.Observe(falcon::Aria2Service::Get()->tracker());
 }
@@ -92,15 +92,16 @@ void FalconDownloadsButton::ButtonPressed() {
 void FalconDownloadsButton::PaintButtonContents(gfx::Canvas* canvas) {
   ToolbarButton::PaintButtonContents(canvas);
 
-  const gfx::Rect bounds = GetContentsBounds();
-  if (bounds.IsEmpty()) {
+  if (snapshot_.active <= 0 && !has_new_completed_) {
     return;
   }
+  constexpr int kRingRadius = 9;
+  const int cx = width() / 2;
+  const int cy = height() / 2;
 
   if (snapshot_.active > 0) {
-    // Progress ring around the icon (indeterminate when sizes are unknown).
-    gfx::RectF ring(bounds);
-    ring.Inset(1.5f);
+    const gfx::RectF ring(cx - kRingRadius, cy - kRingRadius, 2 * kRingRadius,
+                          2 * kRingRadius);
     float sweep = 360.f;
     if (snapshot_.total_bytes > 0) {
       sweep = 360.f * static_cast<float>(snapshot_.completed_bytes) /
@@ -108,11 +109,11 @@ void FalconDownloadsButton::PaintButtonContents(gfx::Canvas* canvas) {
     }
     views::DrawProgressRing(canvas, gfx::RectFToSkRect(ring), kRingTrack,
                             kRingProgress, 2.f, /*start_angle=*/-90.f, sweep);
-  } else if (has_new_completed_) {
+  } else {
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
     flags.setColor(kDoneDot);
-    canvas->DrawCircle(gfx::PointF(bounds.right() - 4.f, bounds.y() + 4.f),
+    canvas->DrawCircle(gfx::PointF(cx + kRingRadius - 1.f, cy - kRingRadius + 1.f),
                        3.f, flags);
   }
 }
