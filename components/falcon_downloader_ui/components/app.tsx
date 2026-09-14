@@ -17,7 +17,7 @@ import {
 } from './common'
 import { DownloadRow, ScanResult } from './download_row'
 import { Grabber } from './grabber'
-import { MediaJob, MediaPicker, MediaRow } from './media_panel'
+import { MediaJob, MediaPicker, MediaRow, SniffedList, SniffedTab } from './media_panel'
 import { SettingsDrawer } from './settings_drawer'
 
 const MEDIA_AVAILABLE = loadTimeData.getBoolean('mediaAvailable')
@@ -192,6 +192,7 @@ export function App() {
   const [optionsOpen, setOptionsOpen] = React.useState(false)
   const [opts, setOpts] = React.useState<AddOptions>(EMPTY_OPTIONS)
   const [mediaJobs, setMediaJobs] = React.useState<MediaJob[]>([])
+  const [sniffed, setSniffed] = React.useState<SniffedTab[]>([])
   const [picker, setPicker] = React.useState<{ url: string; referer: string } | null>(() => pickerFromHash())
   const [grabber, setGrabber] = React.useState<string | null>(null)
   const fileInput = React.useRef<HTMLInputElement>(null)
@@ -229,6 +230,7 @@ export function App() {
   const loadMedia = React.useCallback(() => {
     if (!MEDIA_AVAILABLE) return
     sendWithPromise('falcon_downloader.getMediaJobs').then((jobs: MediaJob[]) => setMediaJobs(jobs ?? [])).catch(() => {})
+    sendWithPromise('falcon_downloader.getSniffedMedia').then((tabs: SniffedTab[]) => setSniffed(tabs ?? [])).catch(() => {})
   }, [])
 
   const loadHistory = React.useCallback(() => {
@@ -437,6 +439,14 @@ export function App() {
             const options = { ...toAria2Options(opts, false), referer }
             Promise.all(urls.map((u) => client.addUri([u], options).catch(() => null))).then(() => { refresh(); poke(); setUrl('') })
           }}
+        />
+      )}
+      {!picker && (
+        <SniffedList
+          tabs={sniffed}
+          onFile={(u, ref) => { client.addUri([u], { ...toAria2Options(opts, false), referer: ref }).then(() => { refresh(); poke() }).catch((e: any) => setError(e?.message ?? 'Could not add')) }}
+          onStream={(u, ref) => { chrome.send('falcon_downloader.startMedia', [u, ref, 'best']); window.setTimeout(loadMedia, 300) }}
+          onQuality={(u, ref) => setPicker({ url: u, referer: ref })}
         />
       )}
       {picker && (

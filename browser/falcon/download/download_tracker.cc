@@ -252,8 +252,26 @@ void DownloadTracker::OnGlobalStat(std::optional<base::Value> result) {
   for (Observer& o : observers_) {
     o.OnDownloadsChanged(snapshot_);
   }
+  base::ListValue params;
+  params.Append(0);
+  params.Append(100);
+  params.Append(StatusKeys());
+  service_->Call("aria2.tellStopped", std::move(params),
+                 base::BindOnce(&DownloadTracker::OnStopped,
+                                weak_factory_.GetWeakPtr()));
   const bool busy = snapshot_.active > 0 || snapshot_.waiting > 0;
   ScheduleNext(busy ? kActivePollMs : kIdlePollMs);
+}
+
+void DownloadTracker::OnStopped(std::optional<base::Value> result) {
+  if (!result || !result->is_list()) {
+    return;
+  }
+  for (const base::Value& item : result->GetList()) {
+    if (item.is_dict()) {
+      HandleStopped(ParseStatus(item.GetDict()));
+    }
+  }
 }
 
 void DownloadTracker::OnFinishedStatus(const std::string& gid,
@@ -262,10 +280,17 @@ void DownloadTracker::OnFinishedStatus(const std::string& gid,
   if (!result || !result->is_dict()) {
     return;  // removed via UI; nothing to report
   }
-  Status s = ParseStatus(result->GetDict());
-  if (s.status == "paused" || s.status == "waiting" ||
-      s.status == "active") {
-    return;  // paused/queued, not finished
+  HandleStopped(ParseStatus(result->GetDict()));
+}
+
+void DownloadTracker::HandleStopped(const Status& s) {
+  const std::string& gid = s.gid;
+  if (gid.empty() || s.status == "paused" || s.status == "waiting" ||
+      s.status == "active" || s.status == "removed") {
+    return;  // not finished (or dropped by the user)
+  }
+  if (!reported_.insert(gid).second) {
+    return;  // already announced
   }
   if (s.status == "error" && s.error_code == kAria2ErrorInvalidRange &&
       !retried_.contains(gid)) {
@@ -283,9 +308,6 @@ void DownloadTracker::OnFinishedStatus(const std::string& gid,
   f.error_code = s.error_code;
   f.error_message = s.error_message;
   f.total_bytes = s.total > 0 ? s.total : s.completed;
-  if (s.status == "removed") {
-    return;
-  }
   for (Observer& o : observers_) {
     o.OnDownloadFinished(f);
   }

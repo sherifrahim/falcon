@@ -548,6 +548,29 @@ void MediaService::OnExited(int id, bool launched, int exit_code) {
   job.job_object.Close();
 #endif
 
+  if (ok && job.total <= 0) {
+    // Progress lines may never have carried a total (tiny/fast downloads);
+    // read the size from disk for the row and the stats.
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+        base::BindOnce(
+            [](base::FilePath path) {
+              std::optional<int64_t> size = base::GetFileSize(path);
+              return size.value_or(0);
+            },
+            job.path),
+        base::BindOnce(
+            [](base::WeakPtr<MediaService> self, int id, int64_t size) {
+              if (!self) return;
+              auto it = self->jobs_.find(id);
+              if (it != self->jobs_.end() && size > 0) {
+                it->second.total = size;
+                it->second.downloaded = size;
+              }
+            },
+            weak_factory_.GetWeakPtr(), id));
+  }
+
   // Feed the same pipeline as engine downloads: toast, history, security.
   DownloadTracker::Finished f;
   f.gid = base::StringPrintf("media-%d", id);

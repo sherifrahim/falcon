@@ -35,6 +35,9 @@
 #include "brave/browser/ui/webui/brave_webui_source.h"
 #include "brave/components/falcon_downloader_ui/resources/grit/falcon_downloader_generated_map.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/grit/brave_components_resources.h"
@@ -112,6 +115,10 @@ class FalconDownloaderMessageHandler : public content::WebUIMessageHandler {
         base::BindRepeating(&FalconDownloaderMessageHandler::GrabPage,
                             base::Unretained(this)));
     web_ui()->RegisterMessageCallback(
+        "falcon_downloader.getSniffedMedia",
+        base::BindRepeating(&FalconDownloaderMessageHandler::GetSniffedMedia,
+                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
         "falcon_downloader.getMediaJobs",
         base::BindRepeating(&FalconDownloaderMessageHandler::GetMediaJobs,
                             base::Unretained(this)));
@@ -147,6 +154,35 @@ class FalconDownloaderMessageHandler : public content::WebUIMessageHandler {
     if (IsJavascriptAllowed()) {
       ResolveJavascriptCallback(callback_id, result);
     }
+  }
+
+  // args: [callbackId] -> [{tab, url, candidates: [...]}] for every open tab
+  // of this profile that has sniffed media.
+  void GetSniffedMedia(const base::ListValue& args) {
+    CHECK_EQ(1U, args.size());
+    AllowJavascript();
+    base::ListValue tabs;
+    for (Browser* browser : *BrowserList::GetInstance()) {
+      if (browser->profile() != profile()->GetOriginalProfile()) {
+        continue;
+      }
+      TabStripModel* model = browser->tab_strip_model();
+      for (int i = 0; i < model->count(); ++i) {
+        content::WebContents* contents = model->GetWebContentsAt(i);
+        auto* helper =
+            contents ? falcon::MediaSnifferTabHelper::FromWebContents(contents)
+                     : nullptr;
+        if (!helper || helper->candidates().empty()) {
+          continue;
+        }
+        base::DictValue tab;
+        tab.Set("tab", contents->GetTitle());
+        tab.Set("url", contents->GetLastCommittedURL().spec());
+        tab.Set("candidates", helper->CandidatesAsList());
+        tabs.Append(std::move(tab));
+      }
+    }
+    ResolveJavascriptCallback(args[0], tabs);
   }
 
   // ---- media (yt-dlp) ----

@@ -199,7 +199,7 @@ export function MediaPicker(props: {
                       <td>{describe(f)}{f.format_note ? ` · ${f.format_note}` : ''}</td>
                       <td style={{ opacity: 0.7 }}>{[f.vcodec, f.acodec].filter((c) => c && c !== 'none').map((c) => c!.split('.')[0]).join(' + ')}</td>
                       <td>{f.tbr ? `${Math.round(f.tbr)} kbps` : '—'}</td>
-                      <td>{fmtBytes(f.filesize || f.filesize_approx || 0)}{!f.filesize && f.filesize_approx ? ' ~' : ''}</td>
+                      <td>{f.filesize || f.filesize_approx ? `${fmtBytes(f.filesize || f.filesize_approx || 0)}${!f.filesize ? ' ~' : ''}` : '—'}</td>
                       <td>
                         <Button $small $primary onClick={() => start(describe(f) === 'video only' ? `${f.format_id}+ba/b` : f.format_id)}>Get</Button>
                       </td>
@@ -290,5 +290,59 @@ export function MediaRow({ job, onChange }: { job: MediaJob; onChange: () => voi
       </div>
       <Bar $pct={job.status === 'done' ? 100 : job.percent} $status={job.status} />
     </Row>
+  )
+}
+
+// ------------------------------------------------------- sniffed media list
+
+export interface SniffedCandidate {
+  kind: 'file' | 'playlist' | 'page'
+  url: string
+  name: string
+  mime: string
+  size: number
+}
+
+export interface SniffedTab {
+  tab: string
+  url: string
+  candidates: SniffedCandidate[]
+}
+
+const SniffPanel = styled(Card)`
+  margin-bottom: 12px;
+  display: grid;
+  gap: 6px;
+  .tab { font-size: 12px; opacity: 0.65; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+  .row .n { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row .k { opacity: 0.6; font-size: 12px; white-space: nowrap; }
+`
+
+export function SniffedList(props: {
+  tabs: SniffedTab[]
+  onFile: (url: string, referer: string) => void
+  onStream: (url: string, referer: string) => void
+  onQuality: (url: string, referer: string) => void
+}) {
+  const total = props.tabs.reduce((n, t) => n + t.candidates.length, 0)
+  if (total === 0) return null
+  return (
+    <SniffPanel>
+      <div style={{ fontSize: 13, fontWeight: 600 }}>Media spotted on open tabs · {total}</div>
+      {props.tabs.map((t) => (
+        <React.Fragment key={t.url}>
+          <div className="tab" title={t.url}>{t.tab || t.url}</div>
+          {t.candidates.map((c) => (
+            <div className="row" key={c.url} title={c.url}>
+              <span className="n">{c.name || c.url}</span>
+              <span className="k">{c.kind === 'file' ? `${c.mime || 'file'}${c.size ? ` · ${fmtBytes(c.size)}` : ''}` : c.kind === 'playlist' ? 'stream · yt-dlp' : 'page player · yt-dlp'}</span>
+              <Button $small $primary onClick={() => (c.kind === 'file' ? props.onFile(c.url, t.url) : props.onStream(c.url, t.url))}>Download</Button>
+              {c.kind !== 'file' && <Button $small onClick={() => props.onQuality(c.url, t.url)}>Quality…</Button>}
+            </div>
+          ))}
+        </React.Fragment>
+      ))}
+    </SniffPanel>
   )
 }

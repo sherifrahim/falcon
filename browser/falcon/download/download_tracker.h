@@ -105,6 +105,10 @@ class DownloadTracker
   void OnGlobalStat(std::optional<base::Value> result);
   void OnFinishedStatus(const std::string& gid,
                         std::optional<base::Value> result);
+  // Every poll: diff aria2's stopped list so completions that never showed up
+  // as "active" (small files, fast servers) are still reported once.
+  void OnStopped(std::optional<base::Value> result);
+  void HandleStopped(const Status& status);
   void MaybeRetrySingleConnection(const Status& status);
   void RetryNetworkFailures();
   void OnStoppedForRetry(std::optional<base::Value> result);
@@ -117,6 +121,7 @@ class DownloadTracker
   std::set<std::string> known_active_;
   std::map<std::string, Status> last_status_;  // by gid, for retry options
   std::set<std::string> retried_;              // gids already retried
+  std::set<std::string> reported_;             // stopped gids already reported
   bool was_offline_ = false;
   base::WeakPtrFactory<DownloadTracker> weak_factory_{this};
 };

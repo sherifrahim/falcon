@@ -147,6 +147,8 @@ const Links = styled.div<{ $cols: number }>`
 
 const Tile = styled.a`
   position: relative;
+  color: #f1f5f9;
+  text-decoration: none;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -223,6 +225,8 @@ const IconBtn = styled.button`
 `
 
 const Credit = styled.a`
+  color: #e2e8f0;
+  text-decoration: none;
   font-size: 11px;
   opacity: 0.55;
   max-width: 360px;
@@ -391,7 +395,7 @@ export function App() {
             {state.showSearch && (
               <Search onSubmit={submit}>
                 <input ref={searchRef} value={query} onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search or type a URL  ·  / to focus  ·  !y !w !gh !d for YouTube, Wikipedia, GitHub, DuckDuckGo" spellCheck={false} autoComplete="off" />
+                  placeholder="Search or type a URL  ·  press / to focus  ·  !y !w !gh for YouTube, Wikipedia, GitHub" spellCheck={false} autoComplete="off" />
                 <button type="submit" title="Search">→</button>
               </Search>
             )}
