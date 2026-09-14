@@ -442,7 +442,10 @@ int MediaService::Start(Profile* profile,
                       "%(title).120B [%(id)s].%(ext)s"
                     : "%(title).150B [%(id)s].%(ext)s");
   cmd.AppendArg("-P");
-  cmd.AppendArgPath(MediaDownloadDirectory(profile));
+  // Audio-only extractions land in the Music category folder.
+  cmd.AppendArgPath(selector == "audio"
+                        ? TargetDirectory(profile, "media." + options.audio_format)
+                        : MediaDownloadDirectory(profile));
   cmd.AppendArg(url.spec());
 
 #if BUILDFLAG(IS_WIN)
