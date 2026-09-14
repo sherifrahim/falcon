@@ -352,6 +352,7 @@ class FalconDownloaderMessageHandler : public content::WebUIMessageHandler {
           p->GetBoolean(falcon::prefs::kDownloadClipboardMonitor));
     d.Set("categoryRules", p->GetString(falcon::prefs::kDownloadCategoryRules));
     d.Set("proxy", ls->GetString(falcon::prefs::kEngineProxy));
+    d.Set("btTrackers", ls->GetString(falcon::prefs::kEngineBtTrackers));
     d.Set("duplicateAction",
           ls->GetString(falcon::prefs::kEngineDuplicateAction));
     d.Set("scheduleEnabled", ls->GetBoolean(falcon::prefs::kScheduleEnabled));
@@ -421,6 +422,9 @@ class FalconDownloaderMessageHandler : public content::WebUIMessageHandler {
     if (const std::string* v = in.FindString("proxy")) {
       ls->SetString(falcon::prefs::kEngineProxy,
                     std::string(base::TrimWhitespaceASCII(*v, base::TRIM_ALL)));
+    }
+    if (const std::string* v = in.FindString("btTrackers")) {
+      ls->SetString(falcon::prefs::kEngineBtTrackers, v->substr(0, 16384));
     }
     if (const std::string* v = in.FindString("duplicateAction")) {
       if (*v == "rename" || *v == "overwrite") {

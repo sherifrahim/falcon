@@ -27,6 +27,7 @@ export interface FalconSettings {
   clipboardMonitor: boolean
   categoryRules: string
   proxy: string
+  btTrackers: string
   duplicateAction: 'rename' | 'overwrite'
   scheduleEnabled: boolean
   scheduleStart: string
@@ -224,6 +225,19 @@ export function SettingsDrawer(props: { onClose: () => void }) {
             <Section>Torrents</Section>
             {num('seedRatio', 'Seed until ratio', '0 = stop seeding as soon as complete', 0, 100, 0.1)}
             {num('seedTimeMinutes', 'Seed time limit', 'Minutes, 0 = no time limit', 0, 1 << 20)}
+            <div style={{ fontSize: 13, paddingTop: 10 }}>
+              Extra trackers
+              <span style={{ display: 'block', fontSize: 12, opacity: 0.65 }}>
+                Added to every torrent and magnet (one per line, udp:// or http://). Public lists: ngosang/trackerslist on GitHub.
+              </span>
+              <Rules
+                value={s.btTrackers}
+                spellCheck={false}
+                placeholder={'udp://tracker.opentrackr.org:1337/announce\nudp://open.stealth.si:80/announce'}
+                onChange={(e) => setS({ ...s, btTrackers: e.target.value })}
+                onBlur={(e) => update({ btTrackers: e.target.value })}
+              />
+            </div>
 
             <Section>Security</Section>
             <Toggle as="div">

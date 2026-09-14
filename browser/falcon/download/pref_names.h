@@ -41,6 +41,8 @@ inline constexpr char kEngineSeedRatio[] = "falcon.engine.seed_ratio";
 inline constexpr char kEngineSeedTimeMinutes[] =
     "falcon.engine.seed_time_minutes";
 inline constexpr char kEngineProxy[] = "falcon.engine.proxy";
+// Extra BitTorrent trackers, one per line; added to every torrent/magnet.
+inline constexpr char kEngineBtTrackers[] = "falcon.engine.bt_trackers";
 // "rename" (file.1.ext) or "overwrite".
 inline constexpr char kEngineDuplicateAction[] =
     "falcon.engine.duplicate_action";

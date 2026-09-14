@@ -36,6 +36,7 @@ export interface NtpState {
   showQuote: boolean
   linksSeededFromHistory: boolean
   showFocus: boolean
+  showSounds: boolean
   links: QuickLink[]
   bg: Background
   weather: { enabled: boolean; city: string; latitude: number; longitude: number; unit: 'c' | 'f' }
@@ -64,6 +65,7 @@ export const DEFAULT_STATE: NtpState = {
   showQuote: true,
   linksSeededFromHistory: false,
   showFocus: false,
+  showSounds: false,
   links: [],
   bg: { mode: 'gradient', gradient: 0, color: '#0b1220', imageUrl: '', videoUrl: '', blur: 0, dim: 20, drift: true },
   weather: { enabled: false, city: '', latitude: 0, longitude: 0, unit: 'c' },

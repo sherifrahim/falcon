@@ -6,6 +6,8 @@
 #include "brave/browser/falcon/download/aria2_service.h"
 
 #include <utility>
+#include <vector>
+#include <string_view>
 
 #include "base/base_paths.h"
 #include "base/command_line.h"
@@ -20,6 +22,8 @@
 #include "base/process/launch.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
+#include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
@@ -160,7 +164,7 @@ Aria2Service::Aria2Service()
          {prefs::kEngineMaxConnections, prefs::kEngineMaxConcurrent,
           prefs::kEngineSpeedLimitKbps, prefs::kEngineSeedRatio,
           prefs::kEngineSeedTimeMinutes, prefs::kEngineProxy,
-          prefs::kEngineDuplicateAction}) {
+          prefs::kEngineDuplicateAction, prefs::kEngineBtTrackers}) {
       pref_change_registrar_.Add(pref, cb);
     }
   }
@@ -202,7 +206,7 @@ base::DictValue Aria2Service::EngineOptionsFromPrefs() const {
   base::DictValue o;
   int connections = 16, concurrent = 5, limit_kbps = 0, seed_minutes = 0;
   double seed_ratio = 1.0;
-  std::string proxy, duplicate = "rename";
+  std::string proxy, duplicate = "rename", trackers;
   if (PrefService* ls = LocalState()) {
     connections = ls->GetInteger(prefs::kEngineMaxConnections);
     concurrent = ls->GetInteger(prefs::kEngineMaxConcurrent);
@@ -211,7 +215,18 @@ base::DictValue Aria2Service::EngineOptionsFromPrefs() const {
     seed_minutes = ls->GetInteger(prefs::kEngineSeedTimeMinutes);
     proxy = ls->GetString(prefs::kEngineProxy);
     duplicate = ls->GetString(prefs::kEngineDuplicateAction);
+    trackers = ls->GetString(prefs::kEngineBtTrackers);
   }
+  // aria2 wants a comma-separated list; the pref is one URL per line.
+  std::vector<std::string> tracker_list;
+  for (std::string_view line : base::SplitStringPiece(
+           trackers, "\n,", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
+    if (base::StartsWith(line, "http") || base::StartsWith(line, "udp") ||
+        base::StartsWith(line, "wss")) {
+      tracker_list.emplace_back(line);
+    }
+  }
+  o.Set("bt-tracker", base::JoinString(tracker_list, ","));
   // An empty all-proxy means "direct" to aria2, so it is safe to always send.
   o.Set("all-proxy", proxy);
   const bool overwrite = duplicate == "overwrite";

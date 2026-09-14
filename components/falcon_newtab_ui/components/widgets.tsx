@@ -241,3 +241,111 @@ export function resolveShortcut(query: string): string | null {
   const s = SEARCH_SHORTCUTS.find((x) => x.key === key)
   return s && q ? s.url.replace('%s', encodeURIComponent(q)) : null
 }
+
+// ------------------------------------------------------------ focus sounds
+
+// Listener-supported internet radio (SomaFM) - ambient/lo-fi channels that
+// work as background focus music. Streams are plain MP3 over https.
+export const STATIONS: Array<{ id: string; name: string; url: string; note: string }> = [
+  { id: 'groove', name: 'Groove Salad', url: 'https://ice1.somafm.com/groovesalad-128-mp3', note: 'ambient downtempo' },
+  { id: 'drone', name: 'Drone Zone', url: 'https://ice1.somafm.com/dronezone-128-mp3', note: 'deep ambient' },
+  { id: 'lush', name: 'Lush', url: 'https://ice1.somafm.com/lush-128-mp3', note: 'mellow vocals' },
+  { id: 'deep', name: 'Deep Space One', url: 'https://ice1.somafm.com/deepspaceone-128-mp3', note: 'space ambient' },
+  { id: 'fluid', name: 'Fluid', url: 'https://ice1.somafm.com/fluid-128-mp3', note: 'instrumental hip-hop' },
+  { id: 'beat', name: 'Beat Blender', url: 'https://ice1.somafm.com/beatblender-128-mp3', note: 'deep house' },
+]
+
+const Sounds = styled.div`
+  position: fixed;
+  left: 18px;
+  top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(14px);
+  font-size: 13px;
+  button {
+    border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 14px;
+    background: rgba(56, 189, 248, 0.2); color: #e0f2fe;
+  }
+  button:hover { background: rgba(56, 189, 248, 0.35); }
+  select { background: transparent; color: inherit; border: none; font-size: 13px; cursor: pointer; max-width: 150px; }
+  select option { color: #000; }
+  input[type='range'] { width: 70px; accent-color: #0ea5e9; }
+  .s { font-size: 11px; opacity: 0.6; }
+`
+
+interface SoundsPersist {
+  station: string
+  volume: number
+}
+
+export function FocusSounds() {
+  const [st, setSt] = React.useState<SoundsPersist>(() => {
+    try { const raw = localStorage.getItem('falcon.sounds'); if (raw) return JSON.parse(raw) } catch { /* ignore */ }
+    return { station: 'groove', volume: 0.5 }
+  })
+  const [playing, setPlaying] = React.useState(false)
+  const [status, setStatus] = React.useState('')
+  const audio = React.useRef<HTMLAudioElement | null>(null)
+
+  const save = (next: SoundsPersist) => {
+    setSt(next)
+    try { localStorage.setItem('falcon.sounds', JSON.stringify(next)) } catch { /* ignore */ }
+  }
+
+  React.useEffect(() => {
+    const a = new Audio()
+    a.preload = 'none'
+    a.onplaying = () => setStatus('')
+    a.onwaiting = () => setStatus('buffering…')
+    a.onerror = () => { setStatus('stream unavailable'); setPlaying(false) }
+    audio.current = a
+    return () => { a.pause(); a.src = '' }
+  }, [])
+
+  React.useEffect(() => {
+    if (audio.current) audio.current.volume = st.volume
+  }, [st.volume])
+
+  const station = STATIONS.find((s) => s.id === st.station) ?? STATIONS[0]
+
+  const toggle = () => {
+    const a = audio.current
+    if (!a) return
+    if (playing) {
+      a.pause(); a.src = ''; setPlaying(false); setStatus('')
+      return
+    }
+    a.src = station.url
+    a.volume = st.volume
+    setStatus('connecting…')
+    a.play().then(() => setPlaying(true)).catch(() => { setStatus('blocked — click again'); setPlaying(false) })
+  }
+
+  const change = (id: string) => {
+    save({ ...st, station: id })
+    if (playing && audio.current) {
+      const s = STATIONS.find((x) => x.id === id)!
+      audio.current.src = s.url
+      audio.current.play().catch(() => setPlaying(false))
+    }
+  }
+
+  return (
+    <Sounds title="Focus sounds (SomaFM)">
+      <button onClick={toggle} title={playing ? 'Pause' : 'Play'}>{playing ? '❚❚' : '▶'}</button>
+      <div>
+        <select value={st.station} onChange={(e) => change(e.target.value)}>
+          {STATIONS.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+        </select>
+        <div className="s">{status || station.note}</div>
+      </div>
+      <input type="range" min={0} max={1} step={0.05} value={st.volume} onChange={(e) => save({ ...st, volume: +e.target.value })} title="Volume" />
+    </Sounds>
+  )
+}

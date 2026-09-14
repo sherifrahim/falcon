@@ -34,6 +34,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterDoublePref(kEngineSeedRatio, 1.0);
   registry->RegisterIntegerPref(kEngineSeedTimeMinutes, 0);
   registry->RegisterStringPref(kEngineProxy, std::string());
+  registry->RegisterStringPref(kEngineBtTrackers, std::string());
   registry->RegisterStringPref(kEngineDuplicateAction, "rename");
   RegisterSecurityLocalStatePrefs(registry);
   RegisterHistoryLocalStatePrefs(registry);

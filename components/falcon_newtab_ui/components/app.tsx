@@ -11,7 +11,7 @@ import {
   quoteOfTheDay, withDefaults,
 } from './state'
 import { SettingsPanel } from './settings'
-import { FocusTimer, Weather, resolveShortcut } from './widgets'
+import { FocusSounds, FocusTimer, Weather, resolveShortcut } from './widgets'
 
 const Global = createGlobalStyle`
   ::selection { background: rgba(56,189,248,0.35); }
@@ -381,6 +381,7 @@ export function App() {
       <Dim $dim={bg.dim} />
       {loaded && <Weather settings={state.weather} />}
       {loaded && state.showFocus && <FocusTimer />}
+      {loaded && state.showSounds && <FocusSounds />}
       <Page>
         {loaded && (
           <Center>

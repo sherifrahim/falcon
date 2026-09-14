@@ -197,6 +197,7 @@ export function SettingsPanel(props: {
         {bool('showLinks', 'Shortcuts', 'Right-click a tile to edit, hover for remove')}
         {bool('showQuote', 'Quote of the day')}
         {bool('showFocus', 'Focus timer', 'Pomodoro-style, bottom-left')}
+        {bool('showSounds', 'Focus sounds', 'Ambient / lo-fi radio (SomaFM), top-left')}
 
         <h3>Weather</h3>
         <Row>
