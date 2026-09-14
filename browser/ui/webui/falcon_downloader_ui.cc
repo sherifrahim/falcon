@@ -12,6 +12,7 @@
 #include <string_view>
 #include <utility>
 
+#include "base/check.h"
 #include "base/check_op.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
@@ -213,12 +214,23 @@ class FalconDownloaderMessageHandler : public content::WebUIMessageHandler {
     }
   }
 
-  // args: [url, referer, selector]
+  // args: [url, referer, selector, {playlist?, subtitles?, audioFormat?}?]
   void StartMedia(const base::ListValue& args) {
-    CHECK_EQ(3U, args.size());
+    CHECK_GE(args.size(), 3U);
+    falcon::MediaService::Options options;
+    if (args.size() > 3 && args[3].is_dict()) {
+      const base::DictValue& o = args[3].GetDict();
+      options.playlist = o.FindBool("playlist").value_or(false);
+      if (const std::string* s = o.FindString("subtitles")) {
+        options.subtitles = s->substr(0, 64);
+      }
+      if (const std::string* s = o.FindString("audioFormat")) {
+        options.audio_format = *s;
+      }
+    }
     falcon::MediaService::Get()->Start(profile(), GURL(args[0].GetString()),
                                        GURL(args[1].GetString()),
-                                       args[2].GetString());
+                                       args[2].GetString(), options);
   }
 
   // args: [id]

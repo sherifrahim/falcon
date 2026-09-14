@@ -127,6 +127,9 @@ export function MediaPicker(props: {
   const [probe, setProbe] = React.useState<MediaProbe | null>(null)
   const [busy, setBusy] = React.useState(false)
   const [showAll, setShowAll] = React.useState(false)
+  const [playlist, setPlaylist] = React.useState(false)
+  const [subs, setSubs] = React.useState(false)
+  const [audioFormat, setAudioFormat] = React.useState('m4a')
 
   const run = React.useCallback(async (u: string) => {
     const target = u.trim()
@@ -148,7 +151,8 @@ export function MediaPicker(props: {
   }, [props.initialUrl, run])
 
   const start = (selector: string) => {
-    chrome.send('falcon_downloader.startMedia', [url.trim(), props.referer, selector])
+    chrome.send('falcon_downloader.startMedia', [url.trim(), props.referer, selector,
+      { playlist, subtitles: subs ? 'en,en.*' : '', audioFormat }])
     props.onStarted()
     props.onClose()
   }
@@ -171,6 +175,20 @@ export function MediaPicker(props: {
           <Chip key={sel} $active={false} onClick={() => start(sel)} title={sub} disabled={!url.trim()}>{label}</Chip>
         ))}
       </Presets>
+      <Meta style={{ gap: 18 }}>
+        <label style={{ display: 'flex', gap: 6, alignItems: 'center', cursor: 'pointer' }}>
+          <input type="checkbox" checked={playlist} onChange={(e) => setPlaylist(e.target.checked)} /> Whole playlist (into a folder)
+        </label>
+        <label style={{ display: 'flex', gap: 6, alignItems: 'center', cursor: 'pointer' }}>
+          <input type="checkbox" checked={subs} onChange={(e) => setSubs(e.target.checked)} /> Embed English subtitles
+        </label>
+        <label style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          Audio-only format
+          <select value={audioFormat} onChange={(e) => setAudioFormat(e.target.value)} style={{ background: 'transparent', color: 'inherit', border: '1px solid #334155', borderRadius: 8, padding: '2px 6px' }}>
+            <option value="m4a">m4a</option><option value="mp3">mp3</option><option value="opus">opus</option>
+          </select>
+        </label>
+      </Meta>
       {busy && <Meta>Asking yt-dlp about this page… (a few seconds)</Meta>}
       {probe?.error && <Meta><ErrorText>{probe.error}</ErrorText></Meta>}
       {probe && !probe.error && (

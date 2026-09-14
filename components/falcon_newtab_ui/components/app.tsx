@@ -280,6 +280,8 @@ export function App() {
   const [settingsOpen, setSettingsOpen] = React.useState(false)
   const [bing, setBing] = React.useState<{ url: string; title?: string; copyright?: string; link?: string } | null>(null)
   const [editing, setEditing] = React.useState<{ index: number; link: QuickLink } | null>(null)
+  const [dragFrom, setDragFrom] = React.useState<number | null>(null)
+  const [dragOver, setDragOver] = React.useState<number | null>(null)
   const [query, setQuery] = React.useState('')
   const searchRef = React.useRef<HTMLInputElement>(null)
   const now = useClock(state.showSeconds)
@@ -359,6 +361,13 @@ export function App() {
   }
 
   const removeLink = (i: number) => update({ links: state.links.filter((_, j) => j !== i) })
+  const moveLink = (from: number, to: number) => {
+    if (from === to || from < 0 || to < 0) return
+    const links = state.links.slice()
+    const [item] = links.splice(from, 1)
+    links.splice(to, 0, item)
+    update({ links })
+  }
   const saveLink = (link: QuickLink) => {
     if (!editing) return
     const url = looksLikeUrl(link.url) || link.url
@@ -406,7 +415,14 @@ export function App() {
                   <Tile key={`${l.url}-${i}`} href={l.url} onClick={(e) => openLink(e, l.url)}
                     onAuxClick={(e) => e.button === 1 && openLink(e, l.url)}
                     onContextMenu={(e) => { e.preventDefault(); setEditing({ index: i, link: l }) }}
-                    title={`${l.url}\nRight-click to edit`}>
+                    draggable
+                    onDragStart={(e) => { setDragFrom(i); e.dataTransfer.effectAllowed = 'move' }}
+                    onDragOver={(e) => { e.preventDefault(); if (dragOver !== i) setDragOver(i) }}
+                    onDragLeave={() => setDragOver(null)}
+                    onDrop={(e) => { e.preventDefault(); if (dragFrom !== null) moveLink(dragFrom, i); setDragFrom(null); setDragOver(null) }}
+                    onDragEnd={() => { setDragFrom(null); setDragOver(null) }}
+                    style={dragOver === i && dragFrom !== null && dragFrom !== i ? { borderColor: '#38bdf8', transform: 'scale(1.06)' } : undefined}
+                    title={`${l.url}\nRight-click to edit · drag to reorder`}>
                     <img src={faviconUrl(l.url)} alt="" />
                     <span>{l.title || l.url}</span>
                     <div className="x" onClick={(e) => { e.preventDefault(); e.stopPropagation(); removeLink(i) }} title="Remove">✕</div>

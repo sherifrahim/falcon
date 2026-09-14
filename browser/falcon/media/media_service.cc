@@ -362,7 +362,8 @@ void RunDownload(std::unique_ptr<MediaService::Launch> launch,
 int MediaService::Start(Profile* profile,
                         const GURL& url,
                         const GURL& referer,
-                        const std::string& selector) {
+                        const std::string& selector,
+                        const Options& options) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!IsAvailable() || !url.SchemeIsHTTPOrHTTPS() || !profile) {
     return 0;
@@ -382,6 +383,16 @@ int MediaService::Start(Profile* profile,
   base::CommandLine& cmd = launch->cmd;
   cmd = base::CommandLine(YtDlpPath());
   AddCommonArgs(cmd, referer, launch->cookie_file);
+  if (options.playlist) {
+    cmd.AppendArg("--yes-playlist");
+  }
+  if (!options.subtitles.empty()) {
+    cmd.AppendArg("--write-subs");
+    cmd.AppendArg("--write-auto-subs");
+    cmd.AppendArg("--sub-langs");
+    cmd.AppendArg(options.subtitles);
+    cmd.AppendArg("--embed-subs");
+  }
   cmd.AppendArg("--newline");
   cmd.AppendArg("--no-simulate");
   cmd.AppendArg("--concurrent-fragments");
@@ -397,7 +408,9 @@ int MediaService::Start(Profile* profile,
   if (selector == "audio") {
     cmd.AppendArg("--extract-audio");
     cmd.AppendArg("--audio-format");
-    cmd.AppendArg("m4a");
+    cmd.AppendArg(options.audio_format == "mp3"    ? "mp3"
+                  : options.audio_format == "opus" ? "opus"
+                                                   : "m4a");
   } else {
     cmd.AppendArg("--merge-output-format");
     cmd.AppendArg("mp4");
@@ -417,7 +430,10 @@ int MediaService::Start(Profile* profile,
   cmd.AppendArg("--print");
   cmd.AppendArg(std::string("after_move:") + kFilePrefix + "%(filepath)s");
   cmd.AppendArg("-o");
-  cmd.AppendArg("%(title).150B [%(id)s].%(ext)s");
+  cmd.AppendArg(options.playlist
+                    ? "%(playlist_title).80B/%(playlist_index)03d - "
+                      "%(title).120B [%(id)s].%(ext)s"
+                    : "%(title).150B [%(id)s].%(ext)s");
   cmd.AppendArg("-P");
   cmd.AppendArgPath(MediaDownloadDirectory(profile));
   cmd.AppendArg(url.spec());

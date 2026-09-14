@@ -71,13 +71,23 @@ class MediaService {
              const GURL& referer,
              ProbeCallback callback);
 
+  // Extra knobs for Start(): whole playlist instead of the single video,
+  // subtitles (language list, e.g. "en,en.*"), audio container for the
+  // "audio" preset (m4a/mp3/opus), and a friendly title hint.
+  struct Options {
+    bool playlist = false;
+    std::string subtitles;
+    std::string audio_format = "m4a";
+  };
+
   // Starts a download. |selector| is a yt-dlp format selector ("bv*+ba/b",
   // "137+140", ...) or one of the presets: best, 1080, 720, 480, 360, audio.
   // Returns the job id (0 when yt-dlp is unavailable / url invalid).
   int Start(Profile* profile,
             const GURL& url,
             const GURL& referer,
-            const std::string& selector);
+            const std::string& selector,
+            const Options& options = Options());
   void Cancel(int id);
   void Remove(int id);
 
