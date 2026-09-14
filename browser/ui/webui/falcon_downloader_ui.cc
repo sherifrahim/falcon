@@ -35,8 +35,8 @@
 #include "brave/browser/ui/webui/brave_webui_source.h"
 #include "brave/components/falcon_downloader_ui/resources/grit/falcon_downloader_generated_map.h"
 #include "chrome/browser/download/download_prefs.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
+#include "chrome/browser/ui/browser_window/public/browser_window_interface_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -162,11 +162,11 @@ class FalconDownloaderMessageHandler : public content::WebUIMessageHandler {
     CHECK_EQ(1U, args.size());
     AllowJavascript();
     base::ListValue tabs;
-    for (Browser* browser : *BrowserList::GetInstance()) {
-      if (browser->profile() != profile()->GetOriginalProfile()) {
+    for (BrowserWindowInterface* browser : GetAllBrowserWindowInterfaces()) {
+      if (browser->GetProfile() != profile()->GetOriginalProfile()) {
         continue;
       }
-      TabStripModel* model = browser->tab_strip_model();
+      TabStripModel* model = browser->GetTabStripModel();
       for (int i = 0; i < model->count(); ++i) {
         content::WebContents* contents = model->GetWebContentsAt(i);
         auto* helper =
