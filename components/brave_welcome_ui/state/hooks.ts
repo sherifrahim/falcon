@@ -86,11 +86,8 @@ export function useViewTypeTransition(currentViewType: ViewType | undefined) : V
     // Brave Origin: skip HelpWDP (Web Discovery) but still show HelpImprove
     const nextAfterImport = ViewType.HelpImprove
     // <else>
-    // Skip HelpWDP only if web discovery is managed
-    const isWebDiscoveryEnabledManaged =
-        loadTimeData.getBoolean('isWebDiscoveryEnabledManaged')
-    const nextAfterImport = isWebDiscoveryEnabledManaged ?
-        ViewType.HelpImprove : ViewType.HelpWDP
+    // Falcon: Web Discovery is compiled out; never show that step.
+    const nextAfterImport = ViewType.HelpImprove
     // </if>
 
     return {

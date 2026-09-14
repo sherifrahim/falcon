@@ -63,20 +63,21 @@ function HelpImprove() {
   // <if expr="is_brave_origin_branded">
   const [isMetricsReportingEnabled, setMetricsReportingEnabled] = React.useState(false)
   // <else>
-  const [isMetricsReportingEnabled, setMetricsReportingEnabled] = React.useState(true)
+  // Falcon: crash reports and P3A stay off; nothing to ask.
+  const [isMetricsReportingEnabled, setMetricsReportingEnabled] = React.useState(false)
   // </if>
-  const [isP3AEnabled, setP3AEnabled] = React.useState(true)
+  const [isP3AEnabled, setP3AEnabled] = React.useState(false)
   const [completeURLPromise] = React.useState(() => {
     return WelcomeBrowserProxyImpl.getInstance().getWelcomeCompleteURL()
   })
 
-  // Show toggles only if the preference is not managed by policy
-  const showMetricsToggle = !loadTimeData.getBoolean('isMetricsReportingEnabledManaged')
+  // Falcon: never show the crash-report toggle (reports would go to Brave).
+  const showMetricsToggle = false
   // <if expr="is_brave_origin_branded">
   // Brave Origin: never show P3A toggle
   const showP3AToggle = false
   // <else>
-  const showP3AToggle = !loadTimeData.getBoolean('isP3AEnabledManaged')
+  const showP3AToggle = false  // Falcon: P3A is off, no toggle
   // </if>
 
   const handleP3AChange = () => {
