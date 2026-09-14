@@ -39,8 +39,8 @@ const std::u16string& NavigationEntryImpl::GetTitleForDisplay() const {
 
 // Virtual url should never be set to brave
 void NavigationEntryImpl::SetVirtualURL(const GURL& url) {
-  DCHECK(!url.SchemeIs(kBraveUIScheme))
-      << "Virtual URL should not use brave:// scheme";
+  DCHECK(!url.SchemeIs(kBraveUIScheme) && !url.SchemeIs("falcon"))
+      << "Virtual URL should not use brave:// or falcon:// scheme";
   SetVirtualURL_ChromiumImpl(url);
 }
 

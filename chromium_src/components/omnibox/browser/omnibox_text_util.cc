@@ -9,6 +9,7 @@
 
 #if !BUILDFLAG(IS_IOS)
 #include "content/public/common/url_constants.h"
+#include "brave/components/constants/falcon_url_constants.h"
 #endif
 
 namespace {
@@ -16,7 +17,7 @@ void BraveAdjustTextForCopy(GURL* url) {
 #if !BUILDFLAG(IS_IOS)
   if (url->scheme() == content::kChromeUIScheme) {
     GURL::Replacements replacements;
-    replacements.SetSchemeStr(content::kBraveUIScheme);
+    replacements.SetSchemeStr(falcon::kFalconUIScheme);
     *url = url->ReplaceComponents(replacements);
   }
 #endif

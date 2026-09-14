@@ -5,6 +5,8 @@
 
 #include "brave/browser/ui/brave_browser_web_contents_delegate.h"
 
+#include "brave/components/constants/falcon_url_constants.h"
+
 #include <utility>
 
 #include "base/check.h"
@@ -78,7 +80,7 @@ void BraveBrowserWebContentsDelegate::UpdateTargetURL(
   GURL target_url = url;
   if (url.SchemeIs(content::kChromeUIScheme)) {
     GURL::Replacements replacements;
-    replacements.SetSchemeStr(content::kBraveUIScheme);
+    replacements.SetSchemeStr(falcon::kFalconUIScheme);
     target_url = target_url.ReplaceComponents(replacements);
   }
   BrowserWebContentsDelegate::UpdateTargetURL(source, target_url);

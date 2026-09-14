@@ -10,6 +10,7 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/navigator/browser_navigator_params.h"
 #include "content/public/common/url_constants.h"
+#include "brave/components/constants/falcon_url_constants.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_CONTAINERS)
@@ -21,7 +22,8 @@
 namespace {
 
 void UpdateBraveScheme(NavigateParams* params) {
-  if (params->url.SchemeIs(content::kBraveUIScheme)) {
+  if (params->url.SchemeIs(content::kBraveUIScheme) ||
+      params->url.SchemeIs(falcon::kFalconUIScheme)) {
     GURL::Replacements replacements;
     replacements.SetSchemeStr(content::kChromeUIScheme);
     params->url = params->url.ReplaceComponents(replacements);

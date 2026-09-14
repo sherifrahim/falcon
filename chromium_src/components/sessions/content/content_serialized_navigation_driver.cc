@@ -11,6 +11,7 @@
 #include "brave/components/containers/buildflags/buildflags.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "content/public/common/url_constants.h"
+#include "brave/components/constants/falcon_url_constants.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_CONTAINERS)
@@ -81,7 +82,8 @@ void ContentSerializedNavigationDriver::Sanitize(
 
   // Restore previous saved urls with brave:// scheme as chrome://
   const auto& virtual_url = navigation->virtual_url();
-  if (virtual_url.SchemeIs(content::kBraveUIScheme)) {
+  if (virtual_url.SchemeIs(content::kBraveUIScheme) ||
+      virtual_url.SchemeIs(falcon::kFalconUIScheme)) {
     GURL::Replacements replacements;
     replacements.SetSchemeStr(content::kChromeUIScheme);
     navigation->set_virtual_url(virtual_url.ReplaceComponents(replacements));

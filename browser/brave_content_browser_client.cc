@@ -5,6 +5,8 @@
 
 #include "brave/browser/brave_content_browser_client.h"
 
+#include "brave/components/constants/falcon_url_constants.h"
+
 #include <algorithm>
 #include <optional>
 #include <string>
@@ -1392,6 +1394,7 @@ bool BraveContentBrowserClient::HandleURLOverrideRewrite(
   // Scope of schema is intentionally narrower than content::HasWebUIScheme(url)
   // which also allows both `chrome-untrusted` and `chrome-devtools`.
   if (!url->SchemeIs(content::kBraveUIScheme) &&
+      !url->SchemeIs(falcon::kFalconUIScheme) &&
       !url->SchemeIs(content::kChromeUIScheme)) {
     return false;
   }

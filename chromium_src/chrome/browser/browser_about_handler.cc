@@ -5,6 +5,7 @@
 
 #include "content/public/browser/browser_context.h"
 #include "content/public/common/url_constants.h"
+#include "brave/components/constants/falcon_url_constants.h"
 #include "url/gurl.h"
 
 #define HandleChromeAboutAndChromeSyncRewrite \
@@ -15,7 +16,8 @@
 bool HandleChromeAboutAndChromeSyncRewrite(
     GURL* url,
     content::BrowserContext* browser_context) {
-  if (url->SchemeIs(content::kBraveUIScheme)) {
+  if (url->SchemeIs(content::kBraveUIScheme) ||
+      url->SchemeIs(falcon::kFalconUIScheme)) {
     GURL::Replacements replacements;
     replacements.SetSchemeStr(content::kChromeUIScheme);
     *url = url->ReplaceComponents(replacements);

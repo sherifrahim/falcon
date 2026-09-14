@@ -5,6 +5,8 @@
 
 #include "brave/common/brave_content_client.h"
 
+#include "brave/components/constants/falcon_url_constants.h"
+
 #include <optional>
 #include <string>
 
@@ -90,6 +92,11 @@ void BraveContentClient::AddAdditionalSchemes(Schemes* schemes) {
   schemes->secure_schemes.push_back(content::kBraveUIScheme);
   schemes->cors_enabled_schemes.push_back(content::kBraveUIScheme);
   schemes->savable_schemes.push_back(content::kBraveUIScheme);
+  // Falcon: falcon:// is a second alias for chrome://.
+  schemes->standard_schemes.push_back(falcon::kFalconUIScheme);
+  schemes->secure_schemes.push_back(falcon::kFalconUIScheme);
+  schemes->cors_enabled_schemes.push_back(falcon::kFalconUIScheme);
+  schemes->savable_schemes.push_back(falcon::kFalconUIScheme);
 }
 
 void BraveContentClient::AddContentDecryptionModules(

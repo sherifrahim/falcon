@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "brave/components/constants/pref_names.h"
 #include "brave/components/constants/url_constants.h"
+#include "brave/components/constants/falcon_url_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/prefs/pref_service.h"
 
@@ -28,7 +29,8 @@ BraveAutocompleteSchemeClassifier::GetInputTypeForScheme(
     return metrics::OmniboxInputType::EMPTY;
   }
   if (base::IsStringASCII(scheme) &&
-      base::EqualsCaseInsensitiveASCII(scheme, kBraveUIScheme)) {
+      (base::EqualsCaseInsensitiveASCII(scheme, kBraveUIScheme) ||
+       base::EqualsCaseInsensitiveASCII(scheme, falcon::kFalconUIScheme))) {
     return metrics::OmniboxInputType::URL;
   }
 
