@@ -48,7 +48,7 @@ bool HostMatches(const GURL& url, base::span<const std::string_view> list) {
   const std::string domain =
       net::registry_controlled_domains::GetDomainAndRegistry(
           url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-  const std::string host = url.host();
+  const std::string host(url.host());
   for (std::string_view site : list) {
     if (domain == site || host == site ||
         base::EndsWith(host, std::string(".") + std::string(site))) {
@@ -59,7 +59,7 @@ bool HostMatches(const GURL& url, base::span<const std::string_view> list) {
 }
 
 std::string Extension(const GURL& url) {
-  const std::string_view path = url.path_piece();
+  const std::string_view path = url.path();
   const size_t slash = path.find_last_of('/');
   const std::string_view name =
       slash == std::string_view::npos ? path : path.substr(slash + 1);
@@ -197,10 +197,10 @@ void MediaSnifferTabHelper::Add(Candidate candidate) {
   // Same resource fetched in ranges shows up many times; keep one entry keyed
   // on host+path (the first query string wins, tokens included).
   const std::string key =
-      base::StrCat({candidate.url.host_piece(), candidate.url.path_piece()});
+      base::StrCat({candidate.url.host(), candidate.url.path()});
   for (Candidate& existing : candidates_) {
     if (existing.kind == candidate.kind &&
-        base::StrCat({existing.url.host_piece(), existing.url.path_piece()}) ==
+        base::StrCat({existing.url.host(), existing.url.path()}) ==
             key) {
       existing.size = std::max(existing.size, candidate.size);
       return;

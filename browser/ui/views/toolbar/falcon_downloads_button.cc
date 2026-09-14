@@ -19,6 +19,7 @@
 #include "brave/components/constants/webui_url_constants.h"
 #include "components/tabs/public/tab_interface.h"
 #include "content/public/browser/web_contents.h"
+#include "base/task/single_thread_task_runner.h"
 #include "ui/gfx/font_list.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/bubble/bubble_dialog_model_host.h"
@@ -58,10 +59,6 @@ FalconDownloadsButton::FalconDownloadsButton(BrowserWindowInterface* browser)
 }
 
 FalconDownloadsButton::~FalconDownloadsButton() {
-  if (bubble_widget_) {
-    bubble_widget_->RemoveObserver(this);
-    bubble_widget_ = nullptr;
-  }
   SetCallback(PressedCallback());
 }
 
@@ -96,11 +93,10 @@ void FalconDownloadsButton::OnMediaCandidatesChanged(
   SchedulePaint();
 }
 
-void FalconDownloadsButton::OnWidgetDestroying(views::Widget* widget) {
-  if (widget == bubble_widget_) {
-    bubble_widget_->RemoveObserver(this);
-    bubble_widget_ = nullptr;
-  }
+void FalconDownloadsButton::OnBubbleClosing(views::Widget::ClosedReason) {
+  // CLIENT_OWNS_WIDGET: we own it; free it after the close finishes.
+  base::SingleThreadTaskRunner::GetCurrentDefault()->DeleteSoon(
+      FROM_HERE, bubble_widget_.release());
 }
 
 void FalconDownloadsButton::OnDownloadsChanged(
@@ -145,16 +141,18 @@ void FalconDownloadsButton::ButtonPressed() {
   has_new_completed_ = false;
   SchedulePaint();
   if (bubble_widget_) {
-    bubble_widget_->Close();
+    bubble_widget_->CloseWithReason(views::Widget::ClosedReason::kUnspecified);
     return;
   }
   tabs::TabInterface* tab = browser_->GetActiveTabInterface();
   content::WebContents* contents = tab ? tab->GetContents() : nullptr;
   if (contents && media_count_ > 0) {
     auto host = falcon::CreateFalconMediaBubble(browser_, contents, this);
-    bubble_widget_ =
-        views::BubbleDialogDelegate::CreateBubble(std::move(host));
-    bubble_widget_->AddObserver(this);
+    // The host view is owned by the bubble widget's hierarchy.
+    bubble_widget_ = views::BubbleDialogDelegate::CreateBubble(
+        host.release(),
+        base::BindOnce(&FalconDownloadsButton::OnBubbleClosing,
+                       weak_factory_.GetWeakPtr()));
     bubble_widget_->Show();
     return;
   }

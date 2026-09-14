@@ -142,7 +142,7 @@ class FalconDownloaderMessageHandler : public content::WebUIMessageHandler {
   void ProbeMedia(const base::ListValue& args) {
     CHECK_EQ(3U, args.size());
     AllowJavascript();
-    const base::Value callback_id = args[0].Clone();
+    base::Value callback_id = args[0].Clone();
     falcon::MediaService::Get()->Probe(
         profile(), GURL(args[1].GetString()), GURL(args[2].GetString()),
         base::BindOnce(&FalconDownloaderMessageHandler::OnProbed,

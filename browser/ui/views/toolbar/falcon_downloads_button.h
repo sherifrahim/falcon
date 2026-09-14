@@ -6,6 +6,8 @@
 #ifndef BRAVE_BROWSER_UI_VIEWS_TOOLBAR_FALCON_DOWNLOADS_BUTTON_H_
 #define BRAVE_BROWSER_UI_VIEWS_TOOLBAR_FALCON_DOWNLOADS_BUTTON_H_
 
+#include <memory>
+
 #include "base/callback_list.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -15,7 +17,6 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_observer.h"
 
 class BrowserWindowInterface;
 
@@ -29,8 +30,7 @@ class WebContents;
 // falcon://downloader.
 class FalconDownloadsButton : public ToolbarButton,
                               public falcon::DownloadTracker::Observer,
-                              public falcon::MediaSnifferTabHelper::Observer,
-                              public views::WidgetObserver {
+                              public falcon::MediaSnifferTabHelper::Observer {
   METADATA_HEADER(FalconDownloadsButton, ToolbarButton)
  public:
   explicit FalconDownloadsButton(BrowserWindowInterface* browser);
@@ -47,9 +47,6 @@ class FalconDownloadsButton : public ToolbarButton,
   // falcon::MediaSnifferTabHelper::Observer:
   void OnMediaCandidatesChanged(content::WebContents* contents) override;
 
-  // views::WidgetObserver:
-  void OnWidgetDestroying(views::Widget* widget) override;
-
   // ToolbarButton:
   void PaintButtonContents(gfx::Canvas* canvas) override;
 
@@ -59,6 +56,7 @@ class FalconDownloadsButton : public ToolbarButton,
   void OnActiveTabChanged(BrowserWindowInterface* browser);
   void ObserveActiveTab();
   int MediaCount() const;
+  void OnBubbleClosing(views::Widget::ClosedReason reason);
 
   raw_ptr<BrowserWindowInterface> browser_;
   falcon::DownloadTracker::Snapshot snapshot_;
@@ -71,7 +69,7 @@ class FalconDownloadsButton : public ToolbarButton,
                           falcon::MediaSnifferTabHelper::Observer>
       media_observation_{this};
   base::CallbackListSubscription active_tab_subscription_;
-  raw_ptr<views::Widget> bubble_widget_ = nullptr;
+  std::unique_ptr<views::Widget> bubble_widget_;
   base::WeakPtrFactory<FalconDownloadsButton> weak_factory_{this};
 };
 
