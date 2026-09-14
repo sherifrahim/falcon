@@ -25,3 +25,7 @@ enable_email_aliases = false
 # Telemetry-ish
 enable_brave_stats_updater = false
 enable_web_discovery = false
+
+# Field-trial / Griffin seed: never fetch from Brave. A .invalid host fails
+# fast; an empty value would fall back to Google's variations server.
+brave_variations_server_url = "https://no-thanks.invalid/seed"
