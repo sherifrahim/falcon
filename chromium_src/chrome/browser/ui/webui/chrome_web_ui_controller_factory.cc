@@ -8,6 +8,7 @@
 // Needed since we define CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_PROVIDER_H_
 // below
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "brave/components/constants/falcon_url_constants.h"
 #include "brave/components/constants/webui_url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 
@@ -35,6 +36,7 @@
 // kChromeUINewTabHost above, so either spelling means "newtab" here.
 #define kChromeUIDrivePickerHostHost                                        \
   kChromeUIDrivePickerHostHost || origin.host() == kFalconDownloaderHost || \
+      origin.host() == falcon::kFalconDownloaderPanelHost ||               \
       origin.host() == chrome::kChromeUINewTabHost
 
 #include <chrome/browser/ui/webui/chrome_web_ui_controller_factory.cc>

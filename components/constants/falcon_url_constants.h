@@ -13,6 +13,9 @@
 namespace falcon {
 inline constexpr char kFalconUIScheme[] = "falcon";
 inline constexpr char16_t kFalconUIScheme16[] = u"falcon";
+// The downloader page in side-panel layout (top-chrome WebUI hosts must end
+// with .top-chrome).
+inline constexpr char kFalconDownloaderPanelHost[] = "downloader.top-chrome";
 }  // namespace falcon
 
 #endif  // BRAVE_COMPONENTS_CONSTANTS_FALCON_URL_CONSTANTS_H_

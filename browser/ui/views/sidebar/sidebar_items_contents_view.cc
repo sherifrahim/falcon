@@ -601,6 +601,8 @@ ui::ImageModel SidebarItemsContentsView::GetImageForBuiltInItems(
       return get_image_model(kLeoReadingListIcon, state);
     case sidebar::SidebarItem::BuiltInItemType::kHistory:
       return get_image_model(kLeoHistoryIcon, state);
+    case sidebar::SidebarItem::BuiltInItemType::kFalconDownloads:
+      return get_image_model(kLeoDownloadIcon, state);
 #if BUILDFLAG(ENABLE_PLAYLIST)
     case sidebar::SidebarItem::BuiltInItemType::kPlaylist:
       return get_image_model(kLeoProductPlaylistIcon, state);

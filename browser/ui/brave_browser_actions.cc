@@ -361,4 +361,18 @@ void BraveBrowserActions::InitializeBrowserActions() {
             .Build());
   }
 #endif  // BUILDFLAG(ENABLE_BRAVE_WALLET)
+
+  // Falcon downloads in the side panel.
+  root_action_item_->AddChild(
+      actions::ActionItem::Builder(CreateToggleSidePanelActionCallback(
+                                       SidePanelEntryKey(
+                                           SidePanelEntryId::kFalconDownloads),
+                                       bwi))
+          .SetActionId(kActionSidePanelShowFalconDownloads)
+          .SetText(u"Downloads")
+          .SetTooltipText(u"Falcon Downloads")
+          .SetImage(
+              ui::ImageModel::FromVectorIcon(kLeoDownloadIcon, ui::kColorIcon))
+          .SetProperty(actions::kActionItemPinnableKey, true)
+          .Build());
 }

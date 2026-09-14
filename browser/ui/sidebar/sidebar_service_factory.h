@@ -51,6 +51,7 @@ class SidebarServiceFactory : public BrowserContextKeyedServiceFactory {
 #if BUILDFLAG(ENABLE_BRAVE_WALLET)
           SidebarItem::BuiltInItemType::kWallet,
 #endif
+          SidebarItem::BuiltInItemType::kFalconDownloads,
           SidebarItem::BuiltInItemType::kBookmarks,
           SidebarItem::BuiltInItemType::kReadingList,
           SidebarItem::BuiltInItemType::kHistory,

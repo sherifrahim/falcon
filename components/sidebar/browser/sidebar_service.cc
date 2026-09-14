@@ -96,6 +96,10 @@ SidebarItem::BuiltInItemType GetBuiltInItemTypeForLegacyURL(
     return SidebarItem::BuiltInItemType::kHistory;
   }
 
+  if (url == "chrome://downloader/") {
+    return SidebarItem::BuiltInItemType::kFalconDownloads;
+  }
+
   NOTREACHED() << url;
 }
 
@@ -521,6 +525,7 @@ std::optional<SidebarItem> SidebarService::GetDefaultPanelItem() const {
 #if BUILDFLAG(ENABLE_BRAVE_NEWS)
       SidebarItem::BuiltInItemType::kBraveNews,
 #endif
+      SidebarItem::BuiltInItemType::kFalconDownloads,
       SidebarItem::BuiltInItemType::kReadingList,
       SidebarItem::BuiltInItemType::kBookmarks,
 #if BUILDFLAG(ENABLE_PLAYLIST)
@@ -709,6 +714,12 @@ SidebarItem SidebarService::GetBuiltInItemForType(
       return SidebarItem();
     }
 #endif  // BUILDFLAG(ENABLE_BRAVE_WALLET)
+    case SidebarItem::BuiltInItemType::kFalconDownloads:
+      return SidebarItem::Create(
+          GURL("chrome://downloader/"), u"Downloads",
+          SidebarItem::Type::kTypeBuiltIn,
+          SidebarItem::BuiltInItemType::kFalconDownloads,
+          /* open_in_panel = */ true);
     case SidebarItem::BuiltInItemType::kBookmarks:
       return SidebarItem::Create(
           l10n_util::GetStringUTF16(IDS_SIDEBAR_BOOKMARKS_ITEM_TITLE),

@@ -154,6 +154,7 @@ void RegisterChromeWebUIConfigs() {
   map.AddWebUIConfig(std::make_unique<BraveAdblockUIConfig>());
   map.AddWebUIConfig(std::make_unique<BraveAdblockInternalsUIConfig>());
   map.AddWebUIConfig(std::make_unique<FalconDownloaderUIConfig>());
+  map.AddWebUIConfig(std::make_unique<FalconDownloaderPanelUIConfig>());
 #if BUILDFLAG(ENABLE_BRAVE_ADS)
   map.AddWebUIConfig(std::make_unique<AdsInternalsUIConfig>());
 #endif

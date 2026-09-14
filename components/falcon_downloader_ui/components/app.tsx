@@ -21,6 +21,8 @@ import { MediaJob, MediaPicker, MediaRow, SniffedList, SniffedTab } from './medi
 import { SettingsDrawer } from './settings_drawer'
 
 const MEDIA_AVAILABLE = loadTimeData.getBoolean('mediaAvailable')
+// Side-panel layout: narrower paddings, no page title, wrapped toolbar.
+const PANEL = 'panel' in (loadTimeData.data_ || {}) && loadTimeData.getBoolean('panel')
 
 // #media=<url>&referer=<url> opens the quality picker (from the toolbar bubble).
 function pickerFromHash(): { url: string; referer: string } | null {
@@ -36,7 +38,7 @@ function pickerFromHash(): { url: string; referer: string } | null {
 const Page = styled.div<{ $drag: boolean }>`
   max-width: 1040px;
   margin: 0 auto;
-  padding: 28px 24px 48px;
+  padding: ${PANEL ? '12px 10px 24px' : '28px 24px 48px'};
   min-height: 100%;
   outline: ${(p) => (p.$drag ? '2px dashed #38bdf8' : 'none')};
   outline-offset: -12px;
@@ -70,6 +72,7 @@ const AddRow = styled.form`
   display: flex;
   gap: 8px;
   margin-bottom: 10px;
+  flex-wrap: ${PANEL ? 'wrap' : 'nowrap'};
 `
 
 const Batch = styled.textarea`
@@ -389,7 +392,7 @@ export function App() {
         <SettingsDrawer onClose={() => { setSettingsOpen(false); if (location.hash) window.history.replaceState(null, '', ' ') }} />
       )}
       <Header>
-        <Title>Downloads</Title>
+        {!PANEL && <Title>Downloads</Title>}
         <Stat>
           <Dot $on={connected} />
           {connected ? 'Engine connected' : 'Connecting to engine…'}
@@ -400,7 +403,8 @@ export function App() {
             &nbsp; · {stat.numActive} active{+stat.numWaiting > 0 ? ` · ${stat.numWaiting} queued` : ''}
           </Stat>
         )}
-        <Button onClick={() => setSettingsOpen(true)} title="Engine settings">⚙ Settings</Button>
+        <Button $small={PANEL} onClick={() => setSettingsOpen(true)} title="Engine settings">⚙ Settings</Button>
+        {PANEL && <Button $small onClick={() => window.open('chrome://downloader', '_blank')} title="Open as a full page">⤢</Button>}
       </Header>
 
       <AddRow onSubmit={add}>

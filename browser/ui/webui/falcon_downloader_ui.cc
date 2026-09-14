@@ -489,14 +489,18 @@ class FalconDownloaderMessageHandler : public content::WebUIMessageHandler {
 
 }  // namespace
 
-FalconDownloaderUI::FalconDownloaderUI(content::WebUI* web_ui)
-    : content::WebUIController(web_ui) {
+namespace {
+
+// Shared by the tab page and the side-panel variant.
+void SetUpDownloaderDataSource(content::WebUI* web_ui,
+                               const char* host,
+                               bool panel) {
   auto* aria2 = falcon::Aria2Service::Get();
   aria2->EnsureRunning();
 
   content::WebUIDataSource* source = CreateAndAddWebUIDataSource(
-      web_ui, kFalconDownloaderHost, kFalconDownloaderGenerated,
-      IDR_FALCON_DOWNLOADER_HTML);
+      web_ui, host, kFalconDownloaderGenerated, IDR_FALCON_DOWNLOADER_HTML);
+  source->AddBoolean("panel", panel);
 
   source->AddString("rpcUrl", aria2->rpc_ws_url());
   source->AddString("rpcSecret", aria2->rpc_secret());
@@ -527,4 +531,25 @@ FalconDownloaderUI::FalconDownloaderUI(content::WebUI* web_ui)
       std::make_unique<FalconDownloaderMessageHandler>());
 }
 
+}  // namespace
+
+FalconDownloaderUI::FalconDownloaderUI(content::WebUI* web_ui)
+    : content::WebUIController(web_ui) {
+  SetUpDownloaderDataSource(web_ui, kFalconDownloaderHost, /*panel=*/false);
+}
+
 FalconDownloaderUI::~FalconDownloaderUI() = default;
+
+FalconDownloaderPanelUI::FalconDownloaderPanelUI(content::WebUI* web_ui)
+    : TopChromeWebUIController(web_ui, /*enable_chrome_send=*/true) {
+  SetUpDownloaderDataSource(web_ui, falcon::kFalconDownloaderPanelHost,
+                            /*panel=*/true);
+}
+
+FalconDownloaderPanelUI::~FalconDownloaderPanelUI() = default;
+
+WEB_UI_CONTROLLER_TYPE_IMPL(FalconDownloaderPanelUI)
+
+bool FalconDownloaderPanelUIConfig::ShouldAutoResizeHost() {
+  return false;
+}

@@ -25,6 +25,8 @@
 #include "brave/components/brave_wallet/common/features.h"
 #endif
 
+#include "brave/browser/ui/views/side_panel/falcon/falcon_downloads_side_panel_web_view.h"
+
 namespace brave {
 
 // Register here for an entry that is used for all tabs and its life time is
@@ -32,10 +34,18 @@ namespace brave {
 // registering it.
 void RegisterContextualSidePanel(SidePanelRegistry* registry,
                                  content::WebContents* web_contents) {
-#if BUILDFLAG(ENABLE_AI_CHAT) || BUILDFLAG(ENABLE_BRAVE_WALLET)
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-#endif
+
+  // Falcon downloads panel (regular profiles; the engine is not used in
+  // private windows).
+  if (!profile->IsOffTheRecord()) {
+    registry->Register(std::make_unique<SidePanelEntry>(
+        SidePanelEntry::Key(SidePanelEntry::Id::kFalconDownloads),
+        base::BindRepeating(&FalconDownloadsSidePanelWebView::CreateView,
+                            profile),
+        /*default_content_width_callback=*/base::NullCallback()));
+  }
 
 #if BUILDFLAG(ENABLE_AI_CHAT)
   // Disable tab-scoped panel for content agent profiles.

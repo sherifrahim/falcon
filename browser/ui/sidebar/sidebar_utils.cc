@@ -186,6 +186,8 @@ SidePanelEntryId SidePanelIdFromSideBarItemType(BuiltInItemType type) {
       return SidePanelEntryId::kReadingList;
     case BuiltInItemType::kBookmarks:
       return SidePanelEntryId::kBookmarks;
+    case BuiltInItemType::kFalconDownloads:
+      return SidePanelEntryId::kFalconDownloads;
 #if BUILDFLAG(ENABLE_PLAYLIST)
     case BuiltInItemType::kPlaylist:
       return SidePanelEntryId::kPlaylist;
@@ -223,6 +225,8 @@ std::optional<BuiltInItemType> BuiltInItemTypeFromSidePanelId(
       return BuiltInItemType::kReadingList;
     case SidePanelEntryId::kBookmarks:
       return BuiltInItemType::kBookmarks;
+    case SidePanelEntryId::kFalconDownloads:
+      return BuiltInItemType::kFalconDownloads;
 #if BUILDFLAG(ENABLE_PLAYLIST)
     case SidePanelEntryId::kPlaylist:
       return BuiltInItemType::kPlaylist;
@@ -280,6 +284,9 @@ void SetLastUsedSidePanel(PrefService* prefs,
         break;
       case SidePanelEntryId::kBookmarks:
         type = BuiltInItemType::kBookmarks;
+        break;
+      case SidePanelEntryId::kFalconDownloads:
+        type = BuiltInItemType::kFalconDownloads;
         break;
 #if BUILDFLAG(ENABLE_PLAYLIST)
       case SidePanelEntryId::kPlaylist:

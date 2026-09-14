@@ -6,7 +6,7 @@ index 3e9dc27c0b3e393ecef67e31ce2f5a73e1cccab7..abc95e5994a754868f6ca5962e6d7621
    V(kSideSearch, kActionSidePanelShowSideSearch, "SideSearch")                \
    V(kLens, kActionSidePanelShowLens, "Lens")                                  \
    V(kAssistant, kActionSidePanelShowAssistant, "Assistant")                   \
-+  V(kPlaylist, kActionSidePanelShowPlaylist, "Playlist") V(kChatUI, kActionSidePanelShowChatUI, "ChatUI") V(kBraveNews, kActionSidePanelShowBraveNews, "BraveNews") V(kWallet, kActionSidePanelShowWallet, "Wallet") \
++  V(kPlaylist, kActionSidePanelShowPlaylist, "Playlist") V(kChatUI, kActionSidePanelShowChatUI, "ChatUI") V(kBraveNews, kActionSidePanelShowBraveNews, "BraveNews") V(kWallet, kActionSidePanelShowWallet, "Wallet") V(kFalconDownloads, kActionSidePanelShowFalconDownloads, "FalconDownloads") \
    V(kAboutThisSite, kActionSidePanelShowAboutThisSite, "AboutThisSite")       \
    V(kCustomizeChrome, kActionSidePanelShowCustomizeChrome, "CustomizeChrome") \
    V(kSearchCompanion, kActionSidePanelShowSearchCompanion, "Companion")       \
