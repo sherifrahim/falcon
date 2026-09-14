@@ -362,6 +362,13 @@ void RunDownload(std::unique_ptr<MediaService::Launch> launch,
 int MediaService::Start(Profile* profile,
                         const GURL& url,
                         const GURL& referer,
+                        const std::string& selector) {
+  return Start(profile, url, referer, selector, Options());
+}
+
+int MediaService::Start(Profile* profile,
+                        const GURL& url,
+                        const GURL& referer,
                         const std::string& selector,
                         const Options& options) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

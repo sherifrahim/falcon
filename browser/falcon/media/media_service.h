@@ -87,7 +87,11 @@ class MediaService {
             const GURL& url,
             const GURL& referer,
             const std::string& selector,
-            const Options& options = Options());
+            const Options& options);
+  int Start(Profile* profile,
+            const GURL& url,
+            const GURL& referer,
+            const std::string& selector);
   void Cancel(int id);
   void Remove(int id);
 
