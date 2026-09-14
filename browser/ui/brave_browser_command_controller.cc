@@ -5,6 +5,10 @@
 
 #include "brave/browser/ui/brave_browser_command_controller.h"
 
+#include "brave/browser/falcon/falcon_command_ids.h"
+#include "chrome/browser/ui/singleton_tabs.h"
+#include "url/gurl.h"
+
 #include <optional>
 
 #include "base/check.h"
@@ -591,6 +595,8 @@ void BraveBrowserCommandController::UpdateCommandForSplitView() {
 
 void BraveBrowserCommandController::UpdateCommandForBraveSync() {
   UpdateCommandEnabled(IDC_SHOW_BRAVE_SYNC, true);
+  UpdateCommandEnabled(IDC_FALCON_SHOW_DOWNLOADS, true);
+  UpdateCommandEnabled(IDC_FALCON_SHOW_CONTROL, true);
 }
 
 #if BUILDFLAG(ENABLE_BRAVE_WALLET)
@@ -650,6 +656,12 @@ bool BraveBrowserCommandController::ExecuteBraveCommandWithDisposition(
 #endif
     case IDC_SHOW_BRAVE_SYNC:
       brave::ShowSync(&*browser_);
+      break;
+    case IDC_FALCON_SHOW_DOWNLOADS:
+      ShowSingletonTab(&*browser_, GURL("chrome://downloader"));
+      break;
+    case IDC_FALCON_SHOW_CONTROL:
+      ShowSingletonTab(&*browser_, GURL("chrome://falcon"));
       break;
 #if BUILDFLAG(ENABLE_BRAVE_WALLET)
     case IDC_SHOW_BRAVE_WALLET:

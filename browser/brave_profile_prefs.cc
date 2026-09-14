@@ -6,6 +6,7 @@
 #include "brave/browser/brave_profile_prefs.h"
 
 #include <string>
+#include <utility>
 
 #include "base/feature_list.h"
 #include "brave/browser/brave_browser_features.h"
@@ -142,6 +143,7 @@
 #include "brave/browser/ui/webui/brave_welcome_page/brave_welcome_page_prefs.h"
 #include "brave/browser/falcon/ux/mouse_gesture_tab_helper.h"
 #include "brave/browser/ui/webui/falcon_newtab_ui.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "brave/components/brave_private_new_tab_ui/common/pref_names.h"
 #include "chrome/browser/ui/webui/bookmarks/bookmark_prefs.h"
 #include "chrome/browser/ui/webui/side_panel/bookmarks/bookmarks.mojom.h"
@@ -649,6 +651,11 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->SetDefaultPrefValue(brave_tabs::kVerticalTabsEnabled,
                                 base::Value(true));
   registry->SetDefaultPrefValue(kWebViewRoundedCorners, base::Value(true));
+  // Dark-first. Brave migrated its old local-state dark-mode pref to
+  // Chromium's per-profile colour scheme, so this is the one that counts.
+  registry->SetDefaultPrefValue(
+      prefs::kBrowserColorScheme,
+      base::Value(std::to_underlying(ThemeService::BrowserColorScheme::kDark)));
 #endif
 }
 

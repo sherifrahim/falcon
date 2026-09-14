@@ -5,6 +5,8 @@
 
 #include "brave/browser/ui/toolbar/brave_app_menu_model.h"
 
+#include "brave/browser/falcon/falcon_command_ids.h"
+
 #include <memory>
 #include <optional>
 #include <string>
@@ -179,6 +181,13 @@ void BraveAppMenuModel::BuildTabsAndWindowsSection() {
 void BraveAppMenuModel::BuildBraveProductsSection() {
   // Needs to add separator as this section is brave specific section.
   bool need_separator = false;
+
+  // Falcon entries first in the products section.
+  InsertItemAt(GetNextIndexOfBraveProductsSection(), IDC_FALCON_SHOW_DOWNLOADS,
+               u"Falcon Downloads");
+  InsertItemAt(GetNextIndexOfBraveProductsSection(), IDC_FALCON_SHOW_CONTROL,
+               u"Falcon control panel");
+  need_separator = true;
 
 #if BUILDFLAG(ENABLE_AI_CHAT)
   if (IsCommandIdEnabled(IDC_TOGGLE_AI_CHAT)) {
