@@ -81,6 +81,7 @@ class DownloadSecurity : public DownloadTracker::Observer {
   // Windows Sandbox: launches a throwaway VM with the file's folder mapped
   // read-only. Available only when the optional Windows feature is on.
   static bool IsSandboxAvailable();
+  static void ProbeSandboxAvailability();
   static void OpenInSandbox(const base::FilePath& file, bool networking);
 
   struct LocalScan;  // result of the blocking quarantine+hash step

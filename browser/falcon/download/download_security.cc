@@ -6,6 +6,7 @@
 #include "brave/browser/falcon/download/download_security.h"
 
 #include <array>
+#include <atomic>
 #include <utility>
 
 #include "base/base_paths.h"
@@ -167,6 +168,7 @@ base::FilePath MoveToQuarantine(base::FilePath path) {
 
 DownloadSecurity::DownloadSecurity(DownloadTracker* tracker) {
   observation_.Observe(tracker);
+  ProbeSandboxAvailability();
 }
 
 DownloadSecurity::~DownloadSecurity() = default;
@@ -423,18 +425,36 @@ void DownloadSecurity::Notify(const std::string& title,
                    nullptr);
 }
 
-// static
-bool DownloadSecurity::IsSandboxAvailable() {
+namespace {
+
+// Probed once on the thread pool (a stat is blocking; the UI thread may not
+// block); false until the probe lands.
+std::atomic<bool> g_sandbox_available{false};
+
+bool ProbeSandbox() {
 #if BUILDFLAG(IS_WIN)
   base::FilePath system;
-  if (!base::PathService::Get(base::DIR_SYSTEM, &system)) {
-    return false;
-  }
-  // Checked on the UI thread at startup only; a stat is acceptable here.
-  return base::PathExists(system.AppendASCII("WindowsSandbox.exe"));
+  return base::PathService::Get(base::DIR_SYSTEM, &system) &&
+         base::PathExists(system.AppendASCII("WindowsSandbox.exe"));
 #else
   return false;
 #endif
+}
+
+}  // namespace
+
+// static
+bool DownloadSecurity::IsSandboxAvailable() {
+  return g_sandbox_available.load(std::memory_order_relaxed);
+}
+
+// static
+void DownloadSecurity::ProbeSandboxAvailability() {
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&ProbeSandbox), base::BindOnce([](bool available) {
+        g_sandbox_available.store(available, std::memory_order_relaxed);
+      }));
 }
 
 // static
