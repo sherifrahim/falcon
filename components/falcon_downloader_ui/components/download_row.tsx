@@ -145,9 +145,25 @@ interface Props {
   // Position among queued (waiting) downloads, for reordering.
   queueIndex?: number
   queueSize?: number
+  speedHistory?: number[]
 }
 
-export function DownloadRow({ d, scan, client, open, onToggle, refresh, setError, queueIndex, queueSize }: Props) {
+// Tiny inline speed graph (last minute).
+function Sparkline({ data }: { data: number[] }) {
+  if (data.length < 2) return null
+  const w = 220
+  const h = 34
+  const max = Math.max(...data, 1)
+  const pts = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - (v / max) * (h - 2) - 1}`).join(' ')
+  return (
+    <svg width={w} height={h} style={{ display: 'block' }}>
+      <polyline points={pts} fill="none" stroke="#38bdf8" strokeWidth={1.5} />
+      <polyline points={`0,${h} ${pts} ${w},${h}`} fill="rgba(56,189,248,0.15)" stroke="none" />
+    </svg>
+  )
+}
+
+export function DownloadRow({ d, scan, client, open, onToggle, refresh, setError, queueIndex, queueSize, speedHistory }: Props) {
   const total = +d.totalLength
   const done = +d.completedLength
   const speed = +d.downloadSpeed
@@ -340,6 +356,12 @@ export function DownloadRow({ d, scan, client, open, onToggle, refresh, setError
         <Button $small onClick={onToggle}>{open ? 'Less' : 'More'}</Button>
       </Actions>
       <Bar $pct={pct} $status={d.status} />
+      {open && d.status === 'active' && speedHistory && speedHistory.length > 1 && (
+        <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: 10, fontSize: 11, opacity: 0.8 }}>
+          <Sparkline data={speedHistory} />
+          <span>peak {fmtSpeed(Math.max(...speedHistory))} · avg {fmtSpeed(speedHistory.reduce((a, b) => a + b, 0) / speedHistory.length)}</span>
+        </div>
+      )}
       {open && segments && (
         <Segments title="Pieces downloaded">
           {segments.map((on, i) => <span key={i} className={on ? 'on' : ''} />)}

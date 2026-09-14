@@ -74,6 +74,10 @@ class DownloadTracker
   void Poke();
   void Stop();
 
+  // Lets other engines (yt-dlp media jobs) feed the same observers:
+  // notifications, history, security scan.
+  void NotifyExternalFinished(const Finished& finished);
+
   const Snapshot& snapshot() const { return snapshot_; }
 
   // Parsed status of one download, shared with notifications/retry.

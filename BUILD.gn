@@ -194,7 +194,11 @@ if (!is_ios) {
 
     # Falcon: aria2c download engine sidecar next to the browser binary.
     if (is_win) {
-      data_deps += [ "//brave/third_party/aria2:aria2c" ]
+      data_deps += [
+        "//brave/third_party/aria2:aria2c",
+        "//brave/third_party/ffmpeg-bin:ffmpeg",
+        "//brave/third_party/yt-dlp:yt_dlp",
+      ]
     }
 
     if (!is_ios) {

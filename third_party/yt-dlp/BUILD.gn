@@ -1,0 +1,15 @@
+# Copyright (c) 2026 Falcon. Personal fork of Brave.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this file,
+# You can obtain one at https://mozilla.org/MPL/2.0/.
+
+# yt-dlp (https://github.com/yt-dlp/yt-dlp, Unlicense) is Falcon's media
+# extractor for HLS/DASH/site players. Sidecar process, driven over stdout.
+# The binary is not in git: run D:/falcon/tools/fetch-sidecars.ps1.
+
+if (is_win) {
+  copy("yt_dlp") {
+    sources = [ "win/yt-dlp.exe" ]
+    outputs = [ "$root_out_dir/yt-dlp.exe" ]
+  }
+}

@@ -20,6 +20,9 @@
 #include "brave/browser/brave_browser_process.h"
 #include "brave/browser/falcon/download/download_interceptor.h"
 #include "brave/browser/falcon/download/pref_names.h"
+#include "brave/browser/falcon/falcon_command_ids.h"
+#include "brave/browser/falcon/media/media_service.h"
+#include "brave/browser/falcon/media/media_sniffer_tab_helper.h"
 #include "brave/browser/brave_shields/brave_shields_tab_helper.h"
 #include "brave/browser/cosmetic_filters/cosmetic_filters_tab_helper.h"
 #include "brave/browser/misc_metrics/process_misc_metrics.h"
@@ -375,6 +378,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return params_.link_url.is_valid() || params_.src_url.is_valid();
     case IDC_FALCON_DOWNLOAD_ALL_LINKS:
     case IDC_FALCON_DOWNLOAD_ALL_IMAGES:
+    case IDC_FALCON_DOWNLOAD_MEDIA:
       return true;
     case IDC_CONTENT_CONTEXT_FORCE_PASTE:
       // only enable if there is plain text data to paste - this is what
@@ -441,6 +445,30 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_FALCON_DOWNLOAD_ALL_IMAGES:
       falcon::DownloadAllFromPage(GetProfile(), source_web_contents_, true);
       return;
+    case IDC_FALCON_DOWNLOAD_MEDIA: {
+      // A <video>/<audio> with a plain file source goes to the engine; player
+      // pages (YouTube-class) and streams go through yt-dlp at best quality.
+      const GURL& src = params_.src_url;
+      bool is_media = false;
+      const auto kind =
+          src.is_valid()
+              ? falcon::MediaSnifferTabHelper::Classify(src, std::string(),
+                                                        &is_media)
+              : falcon::MediaSnifferTabHelper::Kind::kPage;
+      if (src.is_valid() && is_media &&
+          kind == falcon::MediaSnifferTabHelper::Kind::kFile &&
+          !src.SchemeIsBlob()) {
+        falcon::StartEngineDownload(GetProfile(), src, params_.page_url);
+      } else {
+        const GURL target =
+            (src.is_valid() && is_media && src.SchemeIsHTTPOrHTTPS())
+                ? src
+                : params_.page_url;
+        falcon::MediaService::Get()->Start(GetProfile(), target,
+                                           params_.page_url, "best");
+      }
+      return;
+    }
     case IDC_COPY_CLEAN_LINK: {
       GURL link_url = params_.link_url;
       if (!link_url.is_valid()) {
@@ -947,20 +975,30 @@ void RenderViewContextMenu::InitMenu() {
       std::optional<size_t> at = menu_model_.GetIndexOfCommandId(anchor);
       if (at.has_value() &&
           (params_.link_url.is_valid() || params_.src_url.is_valid())) {
-        menu_model_.InsertItemWithStringIdAt(at.value() + 1,
-                                             IDC_FALCON_DOWNLOAD_LINK,
-                                             IDS_FALCON_DOWNLOAD_LINK);
+        menu_model_.InsertItemAt(at.value() + 1, IDC_FALCON_DOWNLOAD_LINK,
+                                 u"Download with Falcon");
         added_link = true;
         break;
       }
     }
-    if (!added_link && content_type_->SupportsGroup(
-                           ContextMenuContentType::ITEM_GROUP_PAGE)) {
+    const bool on_media =
+        params_.media_type == blink::mojom::ContextMenuDataMediaType::kVideo ||
+        params_.media_type == blink::mojom::ContextMenuDataMediaType::kAudio;
+    if (on_media) {
       menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
-      menu_model_.AddItemWithStringId(IDC_FALCON_DOWNLOAD_ALL_LINKS,
-                                      IDS_FALCON_DOWNLOAD_ALL_LINKS);
-      menu_model_.AddItemWithStringId(IDC_FALCON_DOWNLOAD_ALL_IMAGES,
-                                      IDS_FALCON_DOWNLOAD_ALL_IMAGES);
+      menu_model_.AddItem(IDC_FALCON_DOWNLOAD_MEDIA,
+                          u"Download video/audio with Falcon");
+    } else if (!added_link && content_type_->SupportsGroup(
+                                  ContextMenuContentType::ITEM_GROUP_PAGE)) {
+      menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+      if (falcon::MediaSnifferTabHelper::IsExtractorSite(params_.page_url)) {
+        menu_model_.AddItem(IDC_FALCON_DOWNLOAD_MEDIA,
+                            u"Download video from this page with Falcon");
+      }
+      menu_model_.AddItem(IDC_FALCON_DOWNLOAD_ALL_LINKS,
+                          u"Download all files on page with Falcon");
+      menu_model_.AddItem(IDC_FALCON_DOWNLOAD_ALL_IMAGES,
+                          u"Download all images with Falcon");
     }
   }
 

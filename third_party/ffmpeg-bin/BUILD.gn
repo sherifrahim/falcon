@@ -1,0 +1,25 @@
+# Copyright (c) 2026 Falcon. Personal fork of Brave.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this file,
+# You can obtain one at https://mozilla.org/MPL/2.0/.
+
+# ffmpeg CLI + shared libs (yt-dlp/FFmpeg-Builds, GPL) used by yt-dlp to merge
+# and remux streams. Sidecar only; nothing links against these.
+# Binaries are not in git: run D:/falcon/tools/fetch-sidecars.ps1.
+
+if (is_win) {
+  copy("ffmpeg") {
+    sources = [
+      "win/avcodec-63.dll",
+      "win/avdevice-63.dll",
+      "win/avfilter-12.dll",
+      "win/avformat-63.dll",
+      "win/avutil-61.dll",
+      "win/ffmpeg.exe",
+      "win/ffprobe.exe",
+      "win/swresample-7.dll",
+      "win/swscale-10.dll",
+    ]
+    outputs = [ "$root_out_dir/ffmpeg/{{source_file_part}}" ]
+  }
+}

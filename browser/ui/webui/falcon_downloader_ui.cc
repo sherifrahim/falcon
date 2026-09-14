@@ -25,6 +25,8 @@
 #include "brave/browser/falcon/download/download_history.h"
 #include "brave/browser/falcon/download/download_scheduler.h"
 #include "brave/browser/falcon/download/download_security.h"
+#include "brave/browser/falcon/media/media_service.h"
+#include "brave/browser/falcon/media/media_sniffer_tab_helper.h"
 #include "brave/browser/falcon/download/download_tracker.h"
 #include "brave/browser/falcon/download/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -39,6 +41,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -103,6 +106,73 @@ class FalconDownloaderMessageHandler : public content::WebUIMessageHandler {
         "falcon_downloader.renameFile",
         base::BindRepeating(&FalconDownloaderMessageHandler::RenameFile,
                             base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "falcon_downloader.getMediaJobs",
+        base::BindRepeating(&FalconDownloaderMessageHandler::GetMediaJobs,
+                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "falcon_downloader.probeMedia",
+        base::BindRepeating(&FalconDownloaderMessageHandler::ProbeMedia,
+                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "falcon_downloader.startMedia",
+        base::BindRepeating(&FalconDownloaderMessageHandler::StartMedia,
+                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "falcon_downloader.cancelMedia",
+        base::BindRepeating(&FalconDownloaderMessageHandler::CancelMedia,
+                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "falcon_downloader.removeMedia",
+        base::BindRepeating(&FalconDownloaderMessageHandler::RemoveMedia,
+                            base::Unretained(this)));
+  }
+
+  // ---- media (yt-dlp) ----
+
+  // args: [callbackId]
+  void GetMediaJobs(const base::ListValue& args) {
+    CHECK_EQ(1U, args.size());
+    AllowJavascript();
+    ResolveJavascriptCallback(args[0],
+                              falcon::MediaService::Get()->JobsAsList());
+  }
+
+  // args: [callbackId, url, referer] -> probe dict
+  void ProbeMedia(const base::ListValue& args) {
+    CHECK_EQ(3U, args.size());
+    AllowJavascript();
+    const base::Value callback_id = args[0].Clone();
+    falcon::MediaService::Get()->Probe(
+        profile(), GURL(args[1].GetString()), GURL(args[2].GetString()),
+        base::BindOnce(&FalconDownloaderMessageHandler::OnProbed,
+                       weak_factory_.GetWeakPtr(), std::move(callback_id)));
+  }
+
+  void OnProbed(base::Value callback_id, base::DictValue result) {
+    if (IsJavascriptAllowed()) {
+      ResolveJavascriptCallback(callback_id, result);
+    }
+  }
+
+  // args: [url, referer, selector]
+  void StartMedia(const base::ListValue& args) {
+    CHECK_EQ(3U, args.size());
+    falcon::MediaService::Get()->Start(profile(), GURL(args[0].GetString()),
+                                       GURL(args[1].GetString()),
+                                       args[2].GetString());
+  }
+
+  // args: [id]
+  void CancelMedia(const base::ListValue& args) {
+    CHECK_EQ(1U, args.size());
+    falcon::MediaService::Get()->Cancel(args[0].GetInt());
+  }
+
+  // args: [id]
+  void RemoveMedia(const base::ListValue& args) {
+    CHECK_EQ(1U, args.size());
+    falcon::MediaService::Get()->Remove(args[0].GetInt());
   }
 
   // args: [callbackId] -> {entries: [...], stats: {...}}
@@ -381,6 +451,8 @@ FalconDownloaderUI::FalconDownloaderUI(content::WebUI* web_ui)
   source->AddString("downloadDir", download_dir);
   source->AddBoolean("sandboxAvailable",
                      falcon::DownloadSecurity::IsSandboxAvailable());
+  source->AddBoolean("mediaAvailable", falcon::MediaService::IsAvailable());
+  source->AddString("mediaDir", falcon::MediaDownloadDirectory(profile).AsUTF8Unsafe());
   source->AddBoolean(
       "categoriesEnabled",
       profile->GetPrefs()->GetBoolean(falcon::prefs::kDownloadCategoriesEnabled));
@@ -389,6 +461,10 @@ FalconDownloaderUI::FalconDownloaderUI(content::WebUI* web_ui)
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ConnectSrc,
       "connect-src 'self' ws://127.0.0.1:* http://127.0.0.1:*;");
+  // Media thumbnails from the yt-dlp probe.
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ImgSrc,
+      "img-src 'self' chrome://resources chrome://theme data: https:;");
 
   web_ui->AddMessageHandler(
       std::make_unique<FalconDownloaderMessageHandler>());

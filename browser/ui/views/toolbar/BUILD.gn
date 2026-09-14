@@ -7,6 +7,8 @@ source_set("falcon_downloads") {
   sources = [
     "falcon_downloads_button.cc",
     "falcon_downloads_button.h",
+    "falcon_media_bubble.cc",
+    "falcon_media_bubble.h",
   ]
 
   deps = [
@@ -16,6 +18,8 @@ source_set("falcon_downloads") {
     "//chrome/app/vector_icons",
     "//chrome/browser:primitives",
     "//chrome/browser/ui/views/toolbar",
+    "//components/tabs:public",
+    "//content/public/browser",
     "//skia",
     "//ui/base",
     "//ui/gfx",

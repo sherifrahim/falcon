@@ -30,8 +30,12 @@
 // from an allowlist (IsWebUIAllowedToMakeNetworkRequests); this appends our
 // host to that expression. kChromeUIDrivePickerHostHost is its last term and
 // is used exactly once in the upstream file.
-#define kChromeUIDrivePickerHostHost \
-  kChromeUIDrivePickerHostHost || origin.host() == kFalconDownloaderHost
+// falcon://newtab loads wallpapers (Bing daily / user image URLs) from the
+// web, so it is allowlisted too. Note kChromeUINewTabPageHost is #defined to
+// kChromeUINewTabHost above, so either spelling means "newtab" here.
+#define kChromeUIDrivePickerHostHost                                        \
+  kChromeUIDrivePickerHostHost || origin.host() == kFalconDownloaderHost || \
+      origin.host() == chrome::kChromeUINewTabHost
 
 #include <chrome/browser/ui/webui/chrome_web_ui_controller_factory.cc>
 

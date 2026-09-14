@@ -5,6 +5,8 @@
 
 #include "brave/browser/ui/webui/brave_web_ui_controller_factory.h"
 
+#include "brave/browser/ui/webui/falcon_newtab_ui.h"
+
 #include <memory>
 #include <string>
 
@@ -134,21 +136,9 @@ WebUIController* NewWebUI(WebUI* web_ui, const GURL& url) {
       return new AIChatAgentNewTabPageUI(web_ui);
     }
 #endif
-    if (base::FeatureList::IsEnabled(
-            features::kBraveNewTabPageRefreshEnabled)) {
-      return new BraveNewTabPageUI(web_ui);
-    }
-    return new BraveNewTabUI(
-        web_ui, url.host(),
-#if BUILDFLAG(ENABLE_BRAVE_ADS)
-        brave_ads::AdsServiceFactory::GetForProfile(profile),
-#else
-        nullptr,
-#endif  // BUILDFLAG(ENABLE_BRAVE_ADS)
-        ntp_background_images::ViewCounterServiceFactory::GetForProfile(
-            profile),
-        regional_capabilities::RegionalCapabilitiesServiceFactory::
-            GetForProfile(profile));
+    // Falcon: our own new tab page replaces both Brave NTPs (BraveNewTabUI /
+    // BraveNewTabPageUI) for regular profiles.
+    return new FalconNewTabUI(web_ui);
 #endif  // !BUILDFLAG(IS_ANDROID)
 #if BUILDFLAG(ENABLE_TOR)
   } else if (host == kTorInternalsHost) {

@@ -16,7 +16,21 @@ import {
   Stat, fmtBytes, fmtSpeed, matchesFilter, nameOf,
 } from './common'
 import { DownloadRow, ScanResult } from './download_row'
+import { MediaJob, MediaPicker, MediaRow } from './media_panel'
 import { SettingsDrawer } from './settings_drawer'
+
+const MEDIA_AVAILABLE = loadTimeData.getBoolean('mediaAvailable')
+
+// #media=<url>&referer=<url> opens the quality picker (from the toolbar bubble).
+function pickerFromHash(): { url: string; referer: string } | null {
+  const m = location.hash.match(/^#media=([^&]*)(?:&referer=([^&]*))?/)
+  if (!m) return null
+  try {
+    return { url: decodeURIComponent(m[1]), referer: m[2] ? decodeURIComponent(m[2]) : '' }
+  } catch {
+    return null
+  }
+}
 
 const Page = styled.div<{ $drag: boolean }>`
   max-width: 1040px;
@@ -176,11 +190,15 @@ export function App() {
   const [stats, setStats] = React.useState<{ totalBytes: number; totalFiles: number } | null>(null)
   const [optionsOpen, setOptionsOpen] = React.useState(false)
   const [opts, setOpts] = React.useState<AddOptions>(EMPTY_OPTIONS)
+  const [mediaJobs, setMediaJobs] = React.useState<MediaJob[]>([])
+  const [picker, setPicker] = React.useState<{ url: string; referer: string } | null>(() => pickerFromHash())
   const fileInput = React.useRef<HTMLInputElement>(null)
   const listInput = React.useRef<HTMLInputElement>(null)
   const order = React.useRef(new Map<string, number>())
   const sessionBytes = React.useRef(0)
   const lastDone = React.useRef(new Map<string, number>())
+  // Per-download speed samples (last ~60 s) for the sparkline in the row.
+  const speeds = React.useRef(new Map<string, number[]>())
 
   const refresh = React.useCallback(async () => {
     if (!client.connected) return
@@ -192,6 +210,12 @@ export function App() {
         const now = +d.completedLength
         if (now > prev) sessionBytes.current += now - prev
         lastDone.current.set(d.gid, now)
+        if (d.status === 'active') {
+          const arr = speeds.current.get(d.gid) ?? []
+          arr.push(+d.downloadSpeed)
+          if (arr.length > 60) arr.shift()
+          speeds.current.set(d.gid, arr)
+        }
       }
       setDownloads(snap.downloads)
       setStat(snap.stat)
@@ -199,6 +223,11 @@ export function App() {
       /* transient */
     }
   }, [client])
+
+  const loadMedia = React.useCallback(() => {
+    if (!MEDIA_AVAILABLE) return
+    sendWithPromise('falcon_downloader.getMediaJobs').then((jobs: MediaJob[]) => setMediaJobs(jobs ?? [])).catch(() => {})
+  }, [])
 
   const loadHistory = React.useCallback(() => {
     sendWithPromise('falcon_downloader.getHistory')
@@ -217,12 +246,17 @@ export function App() {
     client.onNotification = () => { refresh(); window.setTimeout(loadHistory, 800) }
     client.connect()
     loadHistory()
-    const timer = window.setInterval(refresh, 1000)
+    loadMedia()
+    const timer = window.setInterval(() => { refresh(); loadMedia() }, 1000)
     const scanTimer = window.setInterval(() => {
       sendWithPromise('falcon_downloader.getScanResults').then(setScans).catch(() => {})
       loadHistory()
     }, 2000)
-    const onHash = () => setSettingsOpen(location.hash === '#settings')
+    const onHash = () => {
+      setSettingsOpen(location.hash === '#settings')
+      const p = pickerFromHash()
+      if (p) setPicker(p)
+    }
     window.addEventListener('hashchange', onHash)
     return () => {
       window.clearInterval(timer)
@@ -230,7 +264,7 @@ export function App() {
       window.removeEventListener('hashchange', onHash)
       client.close()
     }
-  }, [client, refresh, loadHistory])
+  }, [client, refresh, loadHistory, loadMedia])
 
   const poke = () => chrome.send('falcon_downloader.poke')
 
@@ -327,10 +361,15 @@ export function App() {
   }
   visible.sort((a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status] || cmp[sort](a, b))
 
+  const mediaLive = (j: MediaJob) => j.status === 'starting' || j.status === 'downloading' || j.status === 'merging'
+  const visibleMedia = mediaJobs
+    .filter((j) => filter === 'all' || (filter === 'active' && mediaLive(j)) || (filter === 'done' && j.status === 'done') || (filter === 'failed' && (j.status === 'error' || j.status === 'cancelled')))
+    .filter((j) => !q || (j.title || j.url).toLowerCase().includes(q))
+    .sort((a, b) => b.started - a.started)
   const counts = {
-    active: downloads.filter((d) => matchesFilter(d, 'active')).length,
-    done: merged.filter((d) => d.status === 'complete').length,
-    failed: merged.filter((d) => d.status === 'error').length,
+    active: downloads.filter((d) => matchesFilter(d, 'active')).length + mediaJobs.filter(mediaLive).length,
+    done: merged.filter((d) => d.status === 'complete').length + mediaJobs.filter((j) => j.status === 'done').length,
+    failed: merged.filter((d) => d.status === 'error').length + mediaJobs.filter((j) => j.status === 'error').length,
   }
   const anyActive = downloads.some((d) => d.status === 'active' || d.status === 'waiting')
   const anyPaused = downloads.some((d) => d.status === 'paused')
@@ -370,6 +409,10 @@ export function App() {
           spellCheck={false}
         />
         <Button $primary type="submit" disabled={!connected || !url.trim()}>Download</Button>
+        {MEDIA_AVAILABLE && (
+          <Button type="button" onClick={() => setPicker({ url: url.trim(), referer: '' })}
+            title="Grab video/audio from a page or stream (YouTube, Vimeo, HLS, DASH…) at a chosen quality">Video</Button>
+        )}
         <Button type="button" onClick={() => setOptionsOpen((v) => !v)} disabled={!connected}
           title="Filename, folder, checksum, login, proxy, connections">{optionsOpen ? 'Options ▴' : 'Options ▾'}</Button>
         <Button type="button" onClick={() => setBatchOpen((v) => !v)} disabled={!connected}>Batch</Button>
@@ -382,6 +425,14 @@ export function App() {
           }}
         />
       </AddRow>
+      {picker && (
+        <MediaPicker
+          initialUrl={picker.url}
+          referer={picker.referer}
+          onClose={() => { setPicker(null); if (location.hash.startsWith('#media=')) window.history.replaceState(null, '', ' ') }}
+          onStarted={() => { setUrl(''); window.setTimeout(loadMedia, 300) }}
+        />
+      )}
       {optionsOpen && (
         <Options>
           <label>Save as (single link)
@@ -460,7 +511,7 @@ export function App() {
         )}
       </Toolbar>
 
-      {visible.length === 0 ? (
+      {visible.length === 0 && visibleMedia.length === 0 ? (
         <Empty>
           {!connected
             ? 'Starting the download engine…'
@@ -470,6 +521,9 @@ export function App() {
         </Empty>
       ) : (
         <List>
+          {visibleMedia.map((j) => (
+            <MediaRow key={`m${j.id}`} job={j} onChange={() => window.setTimeout(loadMedia, 200)} />
+          ))}
           {visible.map((d) => (
             <DownloadRow
               key={d.gid} d={d} client={client}
@@ -479,13 +533,14 @@ export function App() {
               scan={scans[d.gid]}
               queueIndex={d.status === 'waiting' ? queue.indexOf(d.gid) : undefined}
               queueSize={queue.length}
+              speedHistory={speeds.current.get(d.gid)}
             />
           ))}
         </List>
       )}
 
       <Footer>
-        <span>{merged.length} downloads listed</span>
+        <span>{merged.length + mediaJobs.length} downloads listed</span>
         <span>{fmtBytes(sessionBytes.current)} received this session</span>
         {stats && stats.totalFiles > 0 && (
           <span>{fmtBytes(stats.totalBytes)} · {stats.totalFiles} files all-time</span>

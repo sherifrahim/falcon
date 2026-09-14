@@ -14,7 +14,14 @@
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "brave/browser/falcon/download/aria2_service.h"
+#include "brave/browser/falcon/media/media_sniffer_tab_helper.h"
+#include "brave/browser/ui/views/toolbar/falcon_media_bubble.h"
 #include "brave/components/constants/webui_url_constants.h"
+#include "components/tabs/public/tab_interface.h"
+#include "content/public/browser/web_contents.h"
+#include "ui/gfx/font_list.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
+#include "ui/views/bubble/bubble_dialog_model_host.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "base/byte_size.h"
 #include "cc/paint/paint_flags.h"
@@ -33,6 +40,7 @@ namespace {
 constexpr SkColor kRingTrack = SkColorSetA(SK_ColorGRAY, 0x50);
 constexpr SkColor kRingProgress = SkColorSetRGB(0x1D, 0x9B, 0xFF);
 constexpr SkColor kDoneDot = SkColorSetRGB(0x22, 0xC5, 0x5E);
+constexpr SkColor kMediaBadge = SkColorSetRGB(0xF4, 0x3F, 0x5E);
 
 }  // namespace
 
@@ -43,10 +51,56 @@ FalconDownloadsButton::FalconDownloadsButton(BrowserWindowInterface* browser)
   SetVectorIcon(kDownloadToolbarButtonChromeRefreshOldIcon);
   UpdateTooltip();
   observation_.Observe(falcon::Aria2Service::Get()->tracker());
+  active_tab_subscription_ = browser_->RegisterActiveTabDidChange(
+      base::BindRepeating(&FalconDownloadsButton::OnActiveTabChanged,
+                          base::Unretained(this)));
+  ObserveActiveTab();
 }
 
 FalconDownloadsButton::~FalconDownloadsButton() {
+  if (bubble_widget_) {
+    bubble_widget_->RemoveObserver(this);
+    bubble_widget_ = nullptr;
+  }
   SetCallback(PressedCallback());
+}
+
+void FalconDownloadsButton::OnActiveTabChanged(BrowserWindowInterface*) {
+  ObserveActiveTab();
+}
+
+void FalconDownloadsButton::ObserveActiveTab() {
+  media_observation_.Reset();
+  tabs::TabInterface* tab = browser_->GetActiveTabInterface();
+  content::WebContents* contents = tab ? tab->GetContents() : nullptr;
+  auto* helper =
+      contents ? falcon::MediaSnifferTabHelper::FromWebContents(contents)
+               : nullptr;
+  if (helper) {
+    media_observation_.Observe(helper);
+  }
+  media_count_ = helper ? static_cast<int>(helper->candidates().size()) : 0;
+  UpdateTooltip();
+  SchedulePaint();
+}
+
+int FalconDownloadsButton::MediaCount() const {
+  return media_count_;
+}
+
+void FalconDownloadsButton::OnMediaCandidatesChanged(
+    content::WebContents* contents) {
+  auto* helper = falcon::MediaSnifferTabHelper::FromWebContents(contents);
+  media_count_ = helper ? static_cast<int>(helper->candidates().size()) : 0;
+  UpdateTooltip();
+  SchedulePaint();
+}
+
+void FalconDownloadsButton::OnWidgetDestroying(views::Widget* widget) {
+  if (widget == bubble_widget_) {
+    bubble_widget_->RemoveObserver(this);
+    bubble_widget_ = nullptr;
+  }
 }
 
 void FalconDownloadsButton::OnDownloadsChanged(
@@ -66,6 +120,11 @@ void FalconDownloadsButton::OnDownloadFinished(
 
 void FalconDownloadsButton::UpdateTooltip() {
   std::u16string tip = u"Falcon Downloads";
+  if (media_count_ > 0) {
+    tip = base::StrCat({base::FormatNumber(media_count_),
+                        media_count_ == 1 ? u" media item on this page"
+                                          : u" media items on this page"});
+  }
   if (snapshot_.active > 0) {
     tip = base::StrCat(
         {base::FormatNumber(snapshot_.active), u" downloading · ",
@@ -85,6 +144,20 @@ void FalconDownloadsButton::UpdateTooltip() {
 void FalconDownloadsButton::ButtonPressed() {
   has_new_completed_ = false;
   SchedulePaint();
+  if (bubble_widget_) {
+    bubble_widget_->Close();
+    return;
+  }
+  tabs::TabInterface* tab = browser_->GetActiveTabInterface();
+  content::WebContents* contents = tab ? tab->GetContents() : nullptr;
+  if (contents && media_count_ > 0) {
+    auto host = falcon::CreateFalconMediaBubble(browser_, contents, this);
+    bubble_widget_ =
+        views::BubbleDialogDelegate::CreateBubble(std::move(host));
+    bubble_widget_->AddObserver(this);
+    bubble_widget_->Show();
+    return;
+  }
   ShowSingletonTab(browser_,
                    GURL(std::string("chrome://") + kFalconDownloaderHost));
 }
@@ -92,12 +165,27 @@ void FalconDownloadsButton::ButtonPressed() {
 void FalconDownloadsButton::PaintButtonContents(gfx::Canvas* canvas) {
   ToolbarButton::PaintButtonContents(canvas);
 
-  if (snapshot_.active <= 0 && !has_new_completed_) {
-    return;
-  }
   constexpr int kRingRadius = 9;
   const int cx = width() / 2;
   const int cy = height() / 2;
+
+  if (media_count_ > 0) {
+    // Count badge, bottom-right, like a notification pip.
+    const std::u16string text = base::FormatNumber(std::min(media_count_, 9));
+    const gfx::FontList font = gfx::FontList().DeriveWithSizeDelta(-3);
+    const int d = 13;
+    const gfx::Rect badge(width() - d - 2, height() - d - 2, d, d);
+    cc::PaintFlags flags;
+    flags.setAntiAlias(true);
+    flags.setColor(kMediaBadge);
+    canvas->DrawCircle(gfx::PointF(badge.CenterPoint()), d / 2.f, flags);
+    canvas->DrawStringRectWithFlags(text, font, SK_ColorWHITE, badge,
+                                    gfx::Canvas::TEXT_ALIGN_CENTER);
+  }
+
+  if (snapshot_.active <= 0 && !has_new_completed_) {
+    return;
+  }
 
   if (snapshot_.active > 0) {
     const gfx::RectF ring(cx - kRingRadius, cy - kRingRadius, 2 * kRingRadius,

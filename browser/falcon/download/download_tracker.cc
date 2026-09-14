@@ -175,6 +175,12 @@ void DownloadTracker::Poke() {
   ScheduleNext(200);
 }
 
+void DownloadTracker::NotifyExternalFinished(const Finished& finished) {
+  for (Observer& o : observers_) {
+    o.OnDownloadFinished(finished);
+  }
+}
+
 void DownloadTracker::Stop() {
   timer_.Stop();
   polling_ = false;

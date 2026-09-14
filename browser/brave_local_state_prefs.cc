@@ -142,6 +142,11 @@ void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
 
   // Added 10/2025
   dark_mode::RegisterBraveDarkModeLocalStatePrefs(registry);
+  // Falcon is dark-first; "system" and light stay available in settings.
+  registry->SetDefaultPrefValue(
+      kBraveDarkMode,
+      base::Value(static_cast<int>(
+          dark_mode::BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DARK)));
 #endif
 
   misc_metrics::UptimeMonitorImpl::RegisterPrefsForMigration(registry);

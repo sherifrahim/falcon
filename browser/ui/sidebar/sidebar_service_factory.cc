@@ -108,8 +108,10 @@ content::BrowserContext* SidebarServiceFactory::GetBrowserContextToUse(
 
 void SidebarServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+  // Falcon: the sidebar is part of the layout (Zen/Arc style), not a
+  // mouse-over flyout. Still user-configurable in settings.
   SidebarService::RegisterProfilePrefs(
-      registry, GetDefaultShowSidebarOption(chrome::GetChannel()));
+      registry, SidebarService::ShowSidebarOption::kShowAlways);
 }
 
 }  // namespace sidebar

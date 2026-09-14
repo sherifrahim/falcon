@@ -140,6 +140,7 @@
 #include "brave/browser/themes/pref_names.h"
 #include "brave/browser/ui/tabs/brave_tab_prefs.h"
 #include "brave/browser/ui/webui/brave_welcome_page/brave_welcome_page_prefs.h"
+#include "brave/browser/ui/webui/falcon_newtab_ui.h"
 #include "brave/components/brave_private_new_tab_ui/common/pref_names.h"
 #include "chrome/browser/ui/webui/bookmarks/bookmark_prefs.h"
 #include "chrome/browser/ui/webui/side_panel/bookmarks/bookmarks.mojom.h"
@@ -420,6 +421,9 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   brave_shields::BraveShieldsWebContentsObserver::RegisterProfilePrefs(
       registry);
   falcon::prefs::RegisterProfilePrefs(registry);
+#if !BUILDFLAG(IS_ANDROID)
+  falcon::prefs::RegisterNtpProfilePrefs(registry);
+#endif
 
   brave_perf_predictor::PerfPredictorTabHelper::RegisterProfilePrefs(registry);
   brave_perf_predictor::P3ABandwidthSavingsTracker::RegisterProfilePrefs(
@@ -636,6 +640,13 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       brave_shields::prefs::kShredBrowsingHistoryEnabled, false);
 
   OverrideDefaultPrefValues(registry);
+
+  // Falcon UX defaults (Zen/Arc direction): vertical tabs on, tab strip
+  // collapsible with titles on the window. Users can flip them in settings.
+#if !BUILDFLAG(IS_ANDROID)
+  registry->SetDefaultPrefValue(brave_tabs::kVerticalTabsEnabled,
+                                base::Value(true));
+#endif
 }
 
 }  // namespace brave

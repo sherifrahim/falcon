@@ -210,15 +210,6 @@
           Show all bookmarks button
         </message>
       </if>
-      <message name="IDS_FALCON_DOWNLOAD_LINK" desc="Context menu: download this link/media with the Falcon engine">
-        Download with Falcon
-      </message>
-      <message name="IDS_FALCON_DOWNLOAD_ALL_LINKS" desc="Context menu: download every file link on the page with the Falcon engine">
-        Download all files on page with Falcon
-      </message>
-      <message name="IDS_FALCON_DOWNLOAD_ALL_IMAGES" desc="Context menu: download every image on the page with the Falcon engine">
-        Download all images with Falcon
-      </message>
       <message name="IDS_COPY_CLEAN_LINK_SHARING_HUB" desc="The name of the Sharing Hub's menu item to copy clean link">
         Copy clean link
       </message>
