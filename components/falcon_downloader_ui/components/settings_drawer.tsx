@@ -20,6 +20,10 @@ export interface FalconSettings {
   speedLimitKbps: number
   seedRatio: number
   seedTimeMinutes: number
+  vtApiKey: string
+  vtEnabled: boolean
+  quarantineFlagged: boolean
+  sandboxNetworking: boolean
 }
 
 const Drawer = styled.div`
@@ -143,6 +147,25 @@ export function SettingsDrawer(props: { onClose: () => void }) {
             <Section>Torrents</Section>
             {num('seedRatio', 'Seed until ratio', '0 = stop seeding as soon as complete', 0, 100, 0.1)}
             {num('seedTimeMinutes', 'Seed time limit', 'Minutes, 0 = no time limit', 0, 1 << 20)}
+
+            <Section>Security</Section>
+            <Toggle as="div">
+              <span>
+                VirusTotal API key
+                <span className="sub">Only the SHA-256 of finished files is sent, never the file. Free key at virustotal.com</span>
+              </span>
+              <Input
+                type="password"
+                placeholder="paste key"
+                style={{ width: 170 }}
+                value={s.vtApiKey}
+                onChange={(e) => setS({ ...s, vtApiKey: e.target.value })}
+                onBlur={(e) => update({ vtApiKey: e.target.value })}
+              />
+            </Toggle>
+            {bool('vtEnabled', 'Check hashes on VirusTotal', 'When a key is set')}
+            {bool('quarantineFlagged', 'Quarantine flagged files', 'Move files VirusTotal flags into a Quarantine folder')}
+            {bool('sandboxNetworking', 'Network inside Windows Sandbox', 'Off is safer for suspicious files')}
           </>
         )}
       </Drawer>

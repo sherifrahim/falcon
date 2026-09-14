@@ -67,8 +67,21 @@ DownloadTracker::Status DownloadTracker::ParseStatus(
     s.error_message = *v;
   }
   if (const base::DictValue* bt = d.FindDict("bittorrent")) {
+    s.is_torrent = true;
     if (const base::DictValue* info = bt->FindDict("info")) {
       if (const std::string* n = info->FindString("name")) s.name = *n;
+    }
+  }
+  if (const base::ListValue* files = d.FindList("files")) {
+    for (const base::Value& fv : *files) {
+      if (!fv.is_dict()) continue;
+      const base::DictValue& fd = fv.GetDict();
+      const std::string* sel = fd.FindString("selected");
+      const std::string* p = fd.FindString("path");
+      if (p && !p->empty() && (!sel || *sel == "true") &&
+          ToInt64(fd, "completedLength") == ToInt64(fd, "length")) {
+        s.paths.push_back(*p);
+      }
     }
   }
   if (const base::ListValue* files = d.FindList("files");
@@ -201,6 +214,9 @@ void DownloadTracker::OnFinishedStatus(const std::string& gid,
   f.gid = gid;
   f.name = s.name;
   f.path = s.path;
+  f.paths = s.paths;
+  f.source_url = s.first_uri;
+  f.is_torrent = s.is_torrent;
   f.success = s.status == "complete";
   f.error_code = s.error_code;
   f.error_message = s.error_message;

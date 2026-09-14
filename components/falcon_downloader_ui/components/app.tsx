@@ -6,6 +6,7 @@
 import * as React from 'react'
 import styled from 'styled-components'
 import { loadTimeData } from '$web-common/loadTimeData'
+import { sendWithPromise } from 'chrome://resources/js/cr.js'
 import {
   Aria2Client, Aria2Download, Aria2GlobalStat, expandBatch, isDownloadable,
 } from '../aria2_client'
@@ -13,7 +14,7 @@ import {
   Button, Chip, ErrorText, Filter, Input, Meta, STATUS_ORDER, Select, SortKey,
   Stat, fmtBytes, fmtSpeed, matchesFilter, nameOf,
 } from './common'
-import { DownloadRow } from './download_row'
+import { DownloadRow, ScanResult } from './download_row'
 import { SettingsDrawer } from './settings_drawer'
 
 const Page = styled.div<{ $drag: boolean }>`
@@ -123,6 +124,7 @@ export function App() {
     () => location.hash === '#settings',
   )
   const [drag, setDrag] = React.useState(false)
+  const [scans, setScans] = React.useState<Record<string, ScanResult>>({})
   const fileInput = React.useRef<HTMLInputElement>(null)
   const order = React.useRef(new Map<string, number>())
   const sessionBytes = React.useRef(0)
@@ -154,10 +156,14 @@ export function App() {
     client.onNotification = () => refresh()
     client.connect()
     const timer = window.setInterval(refresh, 1000)
+    const scanTimer = window.setInterval(() => {
+      sendWithPromise('falcon_downloader.getScanResults').then(setScans).catch(() => {})
+    }, 2000)
     const onHash = () => setSettingsOpen(location.hash === '#settings')
     window.addEventListener('hashchange', onHash)
     return () => {
       window.clearInterval(timer)
+      window.clearInterval(scanTimer)
       window.removeEventListener('hashchange', onHash)
       client.close()
     }
@@ -341,6 +347,7 @@ export function App() {
               open={openGid === d.gid}
               onToggle={() => setOpenGid(openGid === d.gid ? null : d.gid)}
               refresh={refresh} setError={setError}
+              scan={scans[d.gid]}
             />
           ))}
         </List>

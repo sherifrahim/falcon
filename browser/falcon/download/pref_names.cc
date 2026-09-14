@@ -5,6 +5,8 @@
 
 #include "brave/browser/falcon/download/pref_names.h"
 
+#include "brave/browser/falcon/download/download_security.h"
+
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 
@@ -25,6 +27,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(kEngineSpeedLimitKbps, 0);
   registry->RegisterDoublePref(kEngineSeedRatio, 1.0);
   registry->RegisterIntegerPref(kEngineSeedTimeMinutes, 0);
+  RegisterSecurityLocalStatePrefs(registry);
 }
 
 }  // namespace falcon::prefs

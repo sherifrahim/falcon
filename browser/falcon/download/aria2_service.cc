@@ -25,6 +25,7 @@
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "brave/browser/falcon/download/download_notifier.h"
+#include "brave/browser/falcon/download/download_security.h"
 #include "brave/browser/falcon/download/download_tracker.h"
 #include "brave/browser/falcon/download/pref_names.h"
 #include "chrome/browser/browser_process.h"
@@ -143,7 +144,8 @@ Aria2Service* Aria2Service::Get() {
 
 Aria2Service::Aria2Service()
     : tracker_(std::make_unique<DownloadTracker>(this)),
-      notifier_(std::make_unique<DownloadNotifier>(tracker_.get())) {
+      notifier_(std::make_unique<DownloadNotifier>(tracker_.get())),
+      security_(std::make_unique<DownloadSecurity>(tracker_.get())) {
   if (PrefService* local_state = LocalState()) {
     pref_change_registrar_.Init(local_state);
     auto cb = base::BindRepeating(&Aria2Service::ApplyEnginePrefs,

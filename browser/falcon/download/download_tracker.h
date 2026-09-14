@@ -11,6 +11,7 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -39,7 +40,10 @@ class DownloadTracker {
   struct Finished {
     std::string gid;
     std::string name;
-    std::string path;  // first file, may be empty
+    std::string path;                // first file, may be empty
+    std::vector<std::string> paths;  // every completed file (torrents)
+    std::string source_url;          // first URI, may be empty (torrent)
+    bool is_torrent = false;
     bool success = false;
     int error_code = 0;
     std::string error_message;
@@ -78,6 +82,8 @@ class DownloadTracker {
     int error_code = 0;
     std::string error_message;
     std::string first_uri;
+    std::vector<std::string> paths;
+    bool is_torrent = false;
   };
   static Status ParseStatus(const base::DictValue& dict);
 

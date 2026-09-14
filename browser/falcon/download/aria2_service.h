@@ -33,6 +33,7 @@ class SimpleURLLoader;
 namespace falcon {
 
 class DownloadNotifier;
+class DownloadSecurity;
 class DownloadTracker;
 
 // Owns the aria2c sidecar process for the whole browser and speaks JSON-RPC to
@@ -61,6 +62,7 @@ class Aria2Service {
   std::string rpc_ws_url() const;
 
   DownloadTracker* tracker() { return tracker_.get(); }
+  DownloadSecurity* security() { return security_.get(); }
 
   // Builds aria2 options for a download taken over from the browser.
   static base::DictValue BuildOptions(const std::string& referer,
@@ -120,6 +122,7 @@ class Aria2Service {
   std::vector<std::unique_ptr<network::SimpleURLLoader>> loaders_;
   std::unique_ptr<DownloadTracker> tracker_;
   std::unique_ptr<DownloadNotifier> notifier_;
+  std::unique_ptr<DownloadSecurity> security_;
   PrefChangeRegistrar pref_change_registrar_;
 
   SEQUENCE_CHECKER(sequence_checker_);

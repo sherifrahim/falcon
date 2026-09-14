@@ -16,8 +16,10 @@
 #include "base/functional/bind.h"
 #include "base/values.h"
 #include "base/files/file_util.h"
+#include "base/strings/string_util.h"
 #include "base/task/thread_pool.h"
 #include "brave/browser/falcon/download/aria2_service.h"
+#include "brave/browser/falcon/download/download_security.h"
 #include "brave/browser/falcon/download/download_tracker.h"
 #include "brave/browser/falcon/download/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -66,6 +68,44 @@ class FalconDownloaderMessageHandler : public content::WebUIMessageHandler {
         "falcon_downloader.setSettings",
         base::BindRepeating(&FalconDownloaderMessageHandler::SetSettings,
                             base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "falcon_downloader.getScanResults",
+        base::BindRepeating(&FalconDownloaderMessageHandler::GetScanResults,
+                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "falcon_downloader.rescan",
+        base::BindRepeating(&FalconDownloaderMessageHandler::Rescan,
+                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "falcon_downloader.openInSandbox",
+        base::BindRepeating(&FalconDownloaderMessageHandler::OpenInSandbox,
+                            base::Unretained(this)));
+  }
+
+  // args: [callbackId]
+  void GetScanResults(const base::ListValue& args) {
+    CHECK_EQ(1U, args.size());
+    AllowJavascript();
+    ResolveJavascriptCallback(
+        args[0], falcon::Aria2Service::Get()->security()->ResultsAsDict());
+  }
+
+  // args: [gid]
+  void Rescan(const base::ListValue& args) {
+    CHECK_EQ(1U, args.size());
+    falcon::Aria2Service::Get()->security()->Rescan(args[0].GetString());
+  }
+
+  // args: [path]
+  void OpenInSandbox(const base::ListValue& args) {
+    CHECK_EQ(1U, args.size());
+    const base::FilePath path =
+        base::FilePath::FromUTF8Unsafe(args[0].GetString());
+    if (path.empty() || path.ReferencesParent()) {
+      return;
+    }
+    falcon::DownloadSecurity::OpenInSandbox(
+        path, LocalState()->GetBoolean(falcon::prefs::kSecuritySandboxNetworking));
   }
 
   static PrefService* LocalState() { return g_browser_process->local_state(); }
@@ -91,6 +131,12 @@ class FalconDownloaderMessageHandler : public content::WebUIMessageHandler {
     d.Set("seedRatio", ls->GetDouble(falcon::prefs::kEngineSeedRatio));
     d.Set("seedTimeMinutes",
           ls->GetInteger(falcon::prefs::kEngineSeedTimeMinutes));
+    d.Set("vtApiKey", ls->GetString(falcon::prefs::kSecurityVtApiKey));
+    d.Set("vtEnabled", ls->GetBoolean(falcon::prefs::kSecurityVtEnabled));
+    d.Set("quarantineFlagged",
+          ls->GetBoolean(falcon::prefs::kSecurityQuarantineFlagged));
+    d.Set("sandboxNetworking",
+          ls->GetBoolean(falcon::prefs::kSecuritySandboxNetworking));
     return d;
   }
 
@@ -135,6 +181,13 @@ class FalconDownloaderMessageHandler : public content::WebUIMessageHandler {
             1 << 24);
     set_int("seedTimeMinutes", falcon::prefs::kEngineSeedTimeMinutes, ls, 0,
             1 << 20);
+    if (const std::string* v = in.FindString("vtApiKey")) {
+      ls->SetString(falcon::prefs::kSecurityVtApiKey,
+                    std::string(base::TrimWhitespaceASCII(*v, base::TRIM_ALL)));
+    }
+    set_bool("vtEnabled", falcon::prefs::kSecurityVtEnabled, ls);
+    set_bool("quarantineFlagged", falcon::prefs::kSecurityQuarantineFlagged, ls);
+    set_bool("sandboxNetworking", falcon::prefs::kSecuritySandboxNetworking, ls);
     if (std::optional<double> v = in.FindDouble("seedRatio")) {
       ls->SetDouble(falcon::prefs::kEngineSeedRatio,
                     std::clamp(*v, 0.0, 100.0));
@@ -209,6 +262,8 @@ FalconDownloaderUI::FalconDownloaderUI(content::WebUI* web_ui)
     download_dir = prefs->DownloadPath().AsUTF8Unsafe();
   }
   source->AddString("downloadDir", download_dir);
+  source->AddBoolean("sandboxAvailable",
+                     falcon::DownloadSecurity::IsSandboxAvailable());
   source->AddBoolean(
       "categoriesEnabled",
       profile->GetPrefs()->GetBoolean(falcon::prefs::kDownloadCategoriesEnabled));
