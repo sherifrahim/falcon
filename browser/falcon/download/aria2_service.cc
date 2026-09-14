@@ -24,7 +24,10 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
+#include "brave/browser/falcon/download/clipboard_monitor.h"
+#include "brave/browser/falcon/download/download_history.h"
 #include "brave/browser/falcon/download/download_notifier.h"
+#include "brave/browser/falcon/download/download_scheduler.h"
 #include "brave/browser/falcon/download/download_security.h"
 #include "brave/browser/falcon/download/download_tracker.h"
 #include "brave/browser/falcon/download/pref_names.h"
@@ -145,7 +148,10 @@ Aria2Service* Aria2Service::Get() {
 Aria2Service::Aria2Service()
     : tracker_(std::make_unique<DownloadTracker>(this)),
       notifier_(std::make_unique<DownloadNotifier>(tracker_.get())),
-      security_(std::make_unique<DownloadSecurity>(tracker_.get())) {
+      security_(std::make_unique<DownloadSecurity>(tracker_.get())),
+      history_(std::make_unique<DownloadHistory>(tracker_.get())),
+      scheduler_(std::make_unique<DownloadScheduler>(this)),
+      clipboard_monitor_(std::make_unique<ClipboardMonitor>()) {
   if (PrefService* local_state = LocalState()) {
     pref_change_registrar_.Init(local_state);
     auto cb = base::BindRepeating(&Aria2Service::ApplyEnginePrefs,
@@ -153,7 +159,8 @@ Aria2Service::Aria2Service()
     for (const char* pref :
          {prefs::kEngineMaxConnections, prefs::kEngineMaxConcurrent,
           prefs::kEngineSpeedLimitKbps, prefs::kEngineSeedRatio,
-          prefs::kEngineSeedTimeMinutes}) {
+          prefs::kEngineSeedTimeMinutes, prefs::kEngineProxy,
+          prefs::kEngineDuplicateAction}) {
       pref_change_registrar_.Add(pref, cb);
     }
   }
@@ -195,13 +202,21 @@ base::DictValue Aria2Service::EngineOptionsFromPrefs() const {
   base::DictValue o;
   int connections = 16, concurrent = 5, limit_kbps = 0, seed_minutes = 0;
   double seed_ratio = 1.0;
+  std::string proxy, duplicate = "rename";
   if (PrefService* ls = LocalState()) {
     connections = ls->GetInteger(prefs::kEngineMaxConnections);
     concurrent = ls->GetInteger(prefs::kEngineMaxConcurrent);
     limit_kbps = ls->GetInteger(prefs::kEngineSpeedLimitKbps);
     seed_ratio = ls->GetDouble(prefs::kEngineSeedRatio);
     seed_minutes = ls->GetInteger(prefs::kEngineSeedTimeMinutes);
+    proxy = ls->GetString(prefs::kEngineProxy);
+    duplicate = ls->GetString(prefs::kEngineDuplicateAction);
   }
+  // An empty all-proxy means "direct" to aria2, so it is safe to always send.
+  o.Set("all-proxy", proxy);
+  const bool overwrite = duplicate == "overwrite";
+  o.Set("allow-overwrite", overwrite ? "true" : "false");
+  o.Set("auto-file-renaming", overwrite ? "false" : "true");
   connections = std::clamp(connections, 1, 32);
   concurrent = std::clamp(concurrent, 1, 20);
   o.Set("max-connection-per-server", base::NumberToString(connections));
@@ -241,7 +256,6 @@ void Aria2Service::Launch() {
   cmd.AppendArg("--continue=true");
   cmd.AppendArg("--min-split-size=1M");
   cmd.AppendArg("--file-allocation=none");
-  cmd.AppendArg("--auto-file-renaming=true");
   cmd.AppendArg("--remote-time=true");
   cmd.AppendArg("--content-disposition-default-utf8=true");
   cmd.AppendArg("--max-tries=5");
@@ -363,6 +377,10 @@ void Aria2Service::AddUri(const GURL& url, base::DictValue options) {
                                      std::move(options)));
     return;
   }
+  // Outside the scheduler's window, queue instead of starting.
+  if (scheduler_ && !scheduler_->InWindow() && !options.contains("pause")) {
+    options.Set("pause", "true");
+  }
   base::ListValue params;
   base::ListValue uris;
   uris.Append(url.spec());
@@ -448,6 +466,8 @@ void Aria2Service::OnRpcResponse(network::SimpleURLLoader* loader,
 
 void Aria2Service::Shutdown() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  clipboard_monitor_.reset();
+  scheduler_.reset();
   tracker_->Stop();
   loaders_.clear();
   queued_.clear();

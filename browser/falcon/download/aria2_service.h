@@ -32,7 +32,10 @@ class SimpleURLLoader;
 
 namespace falcon {
 
+class ClipboardMonitor;
+class DownloadHistory;
 class DownloadNotifier;
+class DownloadScheduler;
 class DownloadSecurity;
 class DownloadTracker;
 
@@ -63,6 +66,8 @@ class Aria2Service {
 
   DownloadTracker* tracker() { return tracker_.get(); }
   DownloadSecurity* security() { return security_.get(); }
+  DownloadHistory* history() { return history_.get(); }
+  DownloadScheduler* scheduler() { return scheduler_.get(); }
 
   // Builds aria2 options for a download taken over from the browser.
   static base::DictValue BuildOptions(const std::string& referer,
@@ -123,6 +128,9 @@ class Aria2Service {
   std::unique_ptr<DownloadTracker> tracker_;
   std::unique_ptr<DownloadNotifier> notifier_;
   std::unique_ptr<DownloadSecurity> security_;
+  std::unique_ptr<DownloadHistory> history_;
+  std::unique_ptr<DownloadScheduler> scheduler_;
+  std::unique_ptr<ClipboardMonitor> clipboard_monitor_;
   PrefChangeRegistrar pref_change_registrar_;
 
   SEQUENCE_CHECKER(sequence_checker_);

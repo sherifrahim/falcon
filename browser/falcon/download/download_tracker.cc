@@ -5,6 +5,8 @@
 
 #include "brave/browser/falcon/download/download_tracker.h"
 
+#include <algorithm>
+#include <iterator>
 #include <utility>
 #include <vector>
 
@@ -103,9 +105,63 @@ DownloadTracker::Status DownloadTracker::ParseStatus(
   return s;
 }
 
-DownloadTracker::DownloadTracker(Aria2Service* service) : service_(service) {}
+DownloadTracker::DownloadTracker(Aria2Service* service) : service_(service) {
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+}
 
-DownloadTracker::~DownloadTracker() = default;
+DownloadTracker::~DownloadTracker() {
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+}
+
+void DownloadTracker::OnNetworkChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
+  const bool offline = type == net::NetworkChangeNotifier::CONNECTION_NONE;
+  if (offline) {
+    was_offline_ = true;
+    return;
+  }
+  if (was_offline_ && service_->IsLaunched()) {
+    was_offline_ = false;
+    RetryNetworkFailures();
+  }
+}
+
+// After the network comes back, re-add downloads that died with network-ish
+// aria2 errors (1 unknown, 2 timeout, 5 too slow, 6 network, 19 dns).
+void DownloadTracker::RetryNetworkFailures() {
+  base::ListValue params;
+  params.Append(0);
+  params.Append(200);
+  params.Append(StatusKeys());
+  service_->Call("aria2.tellStopped", std::move(params),
+                 base::BindOnce(&DownloadTracker::OnStoppedForRetry,
+                                weak_factory_.GetWeakPtr()));
+}
+
+void DownloadTracker::OnStoppedForRetry(std::optional<base::Value> result) {
+  if (!result || !result->is_list()) {
+    return;
+  }
+  static constexpr int kNetworkErrors[] = {1, 2, 5, 6, 19};
+  for (const base::Value& item : result->GetList()) {
+    if (!item.is_dict()) continue;
+    Status s = ParseStatus(item.GetDict());
+    if (s.status != "error" || s.first_uri.empty() || s.is_torrent) continue;
+    if (std::find(std::begin(kNetworkErrors), std::end(kNetworkErrors),
+                  s.error_code) == std::end(kNetworkErrors)) {
+      continue;
+    }
+    VLOG(1) << "Falcon: network back, retrying " << s.name;
+    base::DictValue options;
+    if (!s.dir.empty()) options.Set("dir", s.dir);
+    if (!s.path.empty()) options.Set("out", Basename(s.path));
+    base::ListValue rm;
+    rm.Append(s.gid);
+    service_->Call("aria2.removeDownloadResult", std::move(rm),
+                   base::DoNothing());
+    service_->AddUri(GURL(s.first_uri), std::move(options));
+  }
+}
 
 void DownloadTracker::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
@@ -220,6 +276,7 @@ void DownloadTracker::OnFinishedStatus(const std::string& gid,
   f.success = s.status == "complete";
   f.error_code = s.error_code;
   f.error_message = s.error_message;
+  f.total_bytes = s.total > 0 ? s.total : s.completed;
   if (s.status == "removed") {
     return;
   }

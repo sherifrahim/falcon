@@ -8,7 +8,8 @@ import styled from 'styled-components'
 import { loadTimeData } from '$web-common/loadTimeData'
 import { sendWithPromise } from 'chrome://resources/js/cr.js'
 import {
-  Aria2Client, Aria2Download, Aria2GlobalStat, expandBatch, isDownloadable,
+  Aria2Client, Aria2Download, Aria2GlobalStat, HistoryEntry, expandBatch,
+  historyToDownload, isDownloadable,
 } from '../aria2_client'
 import {
   Button, Chip, ErrorText, Filter, Input, Meta, STATUS_ORDER, Select, SortKey,
@@ -70,6 +71,52 @@ const Batch = styled.textarea`
   resize: vertical;
 `
 
+const Options = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px 12px;
+  margin-bottom: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--leo-color-divider-subtle, #334155);
+  label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; opacity: 0.85; }
+  label.row { flex-direction: row; align-items: center; gap: 8px; }
+  input[type='text'], input[type='password'], input[type='number'], select { padding: 6px 10px; font-size: 13px; }
+`
+
+// Per-download aria2 options from the "Options" panel.
+interface AddOptions {
+  out: string
+  dir: string
+  checksumAlgo: string
+  checksum: string
+  user: string
+  pass: string
+  proxy: string
+  split: string
+  pause: boolean
+}
+
+const EMPTY_OPTIONS: AddOptions = {
+  out: '', dir: '', checksumAlgo: 'sha-256', checksum: '', user: '', pass: '',
+  proxy: '', split: '', pause: false,
+}
+
+function toAria2Options(o: AddOptions, single: boolean): Record<string, string> {
+  const r: Record<string, string> = {}
+  if (single && o.out.trim()) r.out = o.out.trim()
+  if (o.dir.trim()) r.dir = o.dir.trim()
+  const sum = o.checksum.trim().toLowerCase()
+  if (single && sum && /^[0-9a-f]+$/.test(sum)) r.checksum = `${o.checksumAlgo}=${sum}`
+  if (o.user) { r['http-user'] = o.user; r['ftp-user'] = o.user }
+  if (o.pass) { r['http-passwd'] = o.pass; r['ftp-passwd'] = o.pass }
+  if (o.proxy.trim()) r['all-proxy'] = o.proxy.trim()
+  const n = parseInt(o.split, 10)
+  if (isFinite(n) && n > 0) { r.split = String(n); r['max-connection-per-server'] = String(Math.min(n, 16)) }
+  if (o.pause) r.pause = 'true'
+  return r
+}
+
 const Toolbar = styled.div`
   display: flex;
   gap: 6px;
@@ -125,7 +172,12 @@ export function App() {
   )
   const [drag, setDrag] = React.useState(false)
   const [scans, setScans] = React.useState<Record<string, ScanResult>>({})
+  const [history, setHistory] = React.useState<HistoryEntry[]>([])
+  const [stats, setStats] = React.useState<{ totalBytes: number; totalFiles: number } | null>(null)
+  const [optionsOpen, setOptionsOpen] = React.useState(false)
+  const [opts, setOpts] = React.useState<AddOptions>(EMPTY_OPTIONS)
   const fileInput = React.useRef<HTMLInputElement>(null)
+  const listInput = React.useRef<HTMLInputElement>(null)
   const order = React.useRef(new Map<string, number>())
   const sessionBytes = React.useRef(0)
   const lastDone = React.useRef(new Map<string, number>())
@@ -148,16 +200,27 @@ export function App() {
     }
   }, [client])
 
+  const loadHistory = React.useCallback(() => {
+    sendWithPromise('falcon_downloader.getHistory')
+      .then((r: { entries: HistoryEntry[]; stats: { totalBytes: number; totalFiles: number } }) => {
+        setHistory(r.entries ?? [])
+        setStats(r.stats ?? null)
+      })
+      .catch(() => {})
+  }, [])
+
   React.useEffect(() => {
     client.onConnectionChange = (c) => {
       setConnected(c)
       if (c) refresh()
     }
-    client.onNotification = () => refresh()
+    client.onNotification = () => { refresh(); window.setTimeout(loadHistory, 800) }
     client.connect()
+    loadHistory()
     const timer = window.setInterval(refresh, 1000)
     const scanTimer = window.setInterval(() => {
       sendWithPromise('falcon_downloader.getScanResults').then(setScans).catch(() => {})
+      loadHistory()
     }, 2000)
     const onHash = () => setSettingsOpen(location.hash === '#settings')
     window.addEventListener('hashchange', onHash)
@@ -167,7 +230,7 @@ export function App() {
       window.removeEventListener('hashchange', onHash)
       client.close()
     }
-  }, [client, refresh])
+  }, [client, refresh, loadHistory])
 
   const poke = () => chrome.send('falcon_downloader.poke')
 
@@ -177,14 +240,30 @@ export function App() {
       setError('Nothing downloadable found (http, https, ftp, sftp or magnet links)')
       return
     }
-    setError(null)
+    // Skip links that are already queued or running.
+    const inList = new Set(
+      downloads
+        .filter((d) => d.status === 'active' || d.status === 'waiting' || d.status === 'paused')
+        .map((d) => d.files?.[0]?.uris?.[0]?.uri)
+        .filter(Boolean),
+    )
+    const fresh = valid.filter((u) => !inList.has(u))
+    setError(fresh.length < valid.length ? `${valid.length - fresh.length} already in the list, skipped` : null)
     try {
-      for (const u of valid) await client.addUri([u])
+      const options = toAria2Options(opts, fresh.length === 1)
+      for (const u of fresh) await client.addUri([u], options)
+      if (fresh.length > 0) setOpts((o) => ({ ...o, out: '', checksum: '' }))
       refresh()
       poke()
     } catch (err: any) {
       setError(err?.message ?? 'Could not add download')
     }
+  }
+
+  const importList = async (f: File) => {
+    const text = await f.text()
+    setBatchText((t) => (t ? t + '\n' : '') + text)
+    setBatchOpen(true)
   }
 
   const add = (e: React.FormEvent) => {
@@ -227,11 +306,20 @@ export function App() {
   }
 
   const q = query.trim().toLowerCase()
-  const visible = downloads
+  const known = new Set(downloads.map((d) => d.gid))
+  const merged: Aria2Download[] = [
+    ...downloads,
+    ...history.filter((h) => !known.has(h.gid)).map(historyToDownload),
+  ]
+  const queue = downloads.filter((d) => d.status === 'waiting').map((d) => d.gid)
+  const visible = merged
     .filter((d) => matchesFilter(d, filter))
     .filter((d) => !q || nameOf(d).toLowerCase().includes(q))
   const cmp: Record<SortKey, (a: Aria2Download, b: Aria2Download) => number> = {
-    added: (a, b) => (order.current.get(b.gid) ?? 0) - (order.current.get(a.gid) ?? 0),
+    added: (a, b) =>
+      a.fromHistory && b.fromHistory
+        ? (b.finishedAt ?? 0) - (a.finishedAt ?? 0)
+        : (order.current.get(b.gid) ?? -1) - (order.current.get(a.gid) ?? -1),
     name: (a, b) => nameOf(a).localeCompare(nameOf(b)),
     size: (a, b) => +b.totalLength - +a.totalLength,
     progress: (a, b) => (+b.completedLength / (+b.totalLength || 1)) - (+a.completedLength / (+a.totalLength || 1)),
@@ -241,8 +329,8 @@ export function App() {
 
   const counts = {
     active: downloads.filter((d) => matchesFilter(d, 'active')).length,
-    done: downloads.filter((d) => d.status === 'complete').length,
-    failed: downloads.filter((d) => d.status === 'error').length,
+    done: merged.filter((d) => d.status === 'complete').length,
+    failed: merged.filter((d) => d.status === 'error').length,
   }
   const anyActive = downloads.some((d) => d.status === 'active' || d.status === 'waiting')
   const anyPaused = downloads.some((d) => d.status === 'paused')
@@ -255,7 +343,7 @@ export function App() {
       onDrop={onDrop}
     >
       {settingsOpen && (
-        <SettingsDrawer onClose={() => { setSettingsOpen(false); if (location.hash) history.replaceState(null, '', ' ') }} />
+        <SettingsDrawer onClose={() => { setSettingsOpen(false); if (location.hash) window.history.replaceState(null, '', ' ') }} />
       )}
       <Header>
         <Title>Downloads</Title>
@@ -282,6 +370,8 @@ export function App() {
           spellCheck={false}
         />
         <Button $primary type="submit" disabled={!connected || !url.trim()}>Download</Button>
+        <Button type="button" onClick={() => setOptionsOpen((v) => !v)} disabled={!connected}
+          title="Filename, folder, checksum, login, proxy, connections">{optionsOpen ? 'Options ▴' : 'Options ▾'}</Button>
         <Button type="button" onClick={() => setBatchOpen((v) => !v)} disabled={!connected}>Batch</Button>
         <Button type="button" onClick={() => fileInput.current?.click()} disabled={!connected}>.torrent</Button>
         <input
@@ -292,6 +382,39 @@ export function App() {
           }}
         />
       </AddRow>
+      {optionsOpen && (
+        <Options>
+          <label>Save as (single link)
+            <Input type="text" value={opts.out} placeholder="keep server name" onChange={(e) => setOpts({ ...opts, out: e.target.value })} /></label>
+          <label>Save to folder
+            <Input type="text" value={opts.dir} placeholder={loadTimeData.getString('downloadDir') || 'default'} onChange={(e) => setOpts({ ...opts, dir: e.target.value })} /></label>
+          <label>Verify checksum (single link)
+            <span style={{ display: 'flex', gap: 6 }}>
+              <Select value={opts.checksumAlgo} onChange={(e) => setOpts({ ...opts, checksumAlgo: e.target.value })}>
+                <option value="sha-256">SHA-256</option><option value="sha-1">SHA-1</option><option value="md5">MD5</option>
+                <option value="sha-512">SHA-512</option>
+              </Select>
+              <Input type="text" style={{ flex: 1 }} value={opts.checksum} placeholder="hex digest" spellCheck={false}
+                onChange={(e) => setOpts({ ...opts, checksum: e.target.value })} />
+            </span></label>
+          <label>Site login (HTTP/FTP basic auth)
+            <span style={{ display: 'flex', gap: 6 }}>
+              <Input type="text" style={{ flex: 1 }} value={opts.user} placeholder="user" autoComplete="off" onChange={(e) => setOpts({ ...opts, user: e.target.value })} />
+              <Input type="password" style={{ flex: 1 }} value={opts.pass} placeholder="password" autoComplete="new-password" onChange={(e) => setOpts({ ...opts, pass: e.target.value })} />
+            </span></label>
+          <label>Proxy for this download
+            <Input type="text" value={opts.proxy} placeholder="http://host:port or socks5://…" onChange={(e) => setOpts({ ...opts, proxy: e.target.value })} /></label>
+          <label>Connections
+            <Input type="number" min={1} max={64} value={opts.split} placeholder="engine default" onChange={(e) => setOpts({ ...opts, split: e.target.value })} /></label>
+          <label className="row">
+            <input type="checkbox" checked={opts.pause} onChange={(e) => setOpts({ ...opts, pause: e.target.checked })} />
+            Add paused (start later)
+          </label>
+          <label className="row" style={{ justifyContent: 'flex-end' }}>
+            <Button $small type="button" onClick={() => setOpts(EMPTY_OPTIONS)}>Reset</Button>
+          </label>
+        </Options>
+      )}
       {batchOpen && (
         <div>
           <Batch
@@ -303,6 +426,9 @@ export function App() {
             <Button $primary onClick={() => addUrls(expandBatch(batchText)).then(() => { setBatchText(''); setBatchOpen(false) })}>
               Add {expandBatch(batchText).filter(isDownloadable).length || ''} downloads
             </Button>
+            <Button onClick={() => listInput.current?.click()}>Import .txt list…</Button>
+            <input ref={listInput} type="file" accept=".txt,.csv,.lst,text/plain" style={{ display: 'none' }}
+              onChange={(e) => { for (const f of Array.from(e.target.files ?? [])) importList(f); e.target.value = '' }} />
             <Button onClick={() => setBatchOpen(false)}>Cancel</Button>
           </div>
         </div>
@@ -329,6 +455,9 @@ export function App() {
         {anyActive && <Button $small onClick={() => client.pauseAll().then(refresh)}>Pause all</Button>}
         {anyPaused && <Button $small $primary onClick={() => client.unpauseAll().then(refresh)}>Resume all</Button>}
         <Button $small onClick={() => client.purge().then(refresh)} disabled={!connected}>Clear finished</Button>
+        {filter === 'done' && history.length > 0 && (
+          <Button $small onClick={() => { chrome.send('falcon_downloader.clearHistory'); setHistory([]) }}>Clear history</Button>
+        )}
       </Toolbar>
 
       {visible.length === 0 ? (
@@ -346,16 +475,21 @@ export function App() {
               key={d.gid} d={d} client={client}
               open={openGid === d.gid}
               onToggle={() => setOpenGid(openGid === d.gid ? null : d.gid)}
-              refresh={refresh} setError={setError}
+              refresh={() => { refresh(); loadHistory() }} setError={setError}
               scan={scans[d.gid]}
+              queueIndex={d.status === 'waiting' ? queue.indexOf(d.gid) : undefined}
+              queueSize={queue.length}
             />
           ))}
         </List>
       )}
 
       <Footer>
-        <span>{downloads.length} downloads listed</span>
+        <span>{merged.length} downloads listed</span>
         <span>{fmtBytes(sessionBytes.current)} received this session</span>
+        {stats && stats.totalFiles > 0 && (
+          <span>{fmtBytes(stats.totalBytes)} · {stats.totalFiles} files all-time</span>
+        )}
         <span>Saving to {loadTimeData.getString('downloadDir') || 'default folder'}{loadTimeData.getBoolean('categoriesEnabled') ? ' (sorted by category)' : ''}</span>
       </Footer>
     </Page>

@@ -41,6 +41,19 @@ bool MaybeInterceptDownload(Profile* profile,
 // when a magnet: link was routed to the engine.
 bool MaybeHandleMagnet(Profile* profile, const GURL& url);
 
+// Explicit "Download with Falcon": fetches the profile's cookies for |url|
+// and hands it to the engine with |referrer| and the category folder.
+void StartEngineDownload(Profile* profile,
+                         const GURL& url,
+                         const GURL& referrer);
+
+// "Download all links/images with Falcon": collects candidate URLs from the
+// page's main frame (links whose file name has a known category, or every
+// image) and starts them.
+void DownloadAllFromPage(Profile* profile,
+                         content::WebContents* web_contents,
+                         bool images);
+
 }  // namespace falcon
 
 #endif  // BRAVE_BROWSER_FALCON_DOWNLOAD_DOWNLOAD_INTERCEPTOR_H_

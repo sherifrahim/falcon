@@ -10,15 +10,20 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <utility>
 
 #include "base/check_op.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
+#include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "base/files/file_util.h"
 #include "base/strings/string_util.h"
 #include "base/task/thread_pool.h"
 #include "brave/browser/falcon/download/aria2_service.h"
+#include "brave/browser/falcon/download/download_history.h"
+#include "brave/browser/falcon/download/download_scheduler.h"
 #include "brave/browser/falcon/download/download_security.h"
 #include "brave/browser/falcon/download/download_tracker.h"
 #include "brave/browser/falcon/download/pref_names.h"
@@ -43,6 +48,8 @@ class FalconDownloaderMessageHandler : public content::WebUIMessageHandler {
   ~FalconDownloaderMessageHandler() override = default;
 
  private:
+  base::WeakPtrFactory<FalconDownloaderMessageHandler> weak_factory_{this};
+
   void RegisterMessages() override {
     web_ui()->RegisterMessageCallback(
         "falcon_downloader.openFolder",
@@ -80,6 +87,82 @@ class FalconDownloaderMessageHandler : public content::WebUIMessageHandler {
         "falcon_downloader.openInSandbox",
         base::BindRepeating(&FalconDownloaderMessageHandler::OpenInSandbox,
                             base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "falcon_downloader.getHistory",
+        base::BindRepeating(&FalconDownloaderMessageHandler::GetHistory,
+                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "falcon_downloader.removeHistory",
+        base::BindRepeating(&FalconDownloaderMessageHandler::RemoveHistory,
+                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "falcon_downloader.clearHistory",
+        base::BindRepeating(&FalconDownloaderMessageHandler::ClearHistory,
+                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "falcon_downloader.renameFile",
+        base::BindRepeating(&FalconDownloaderMessageHandler::RenameFile,
+                            base::Unretained(this)));
+  }
+
+  // args: [callbackId] -> {entries: [...], stats: {...}}
+  void GetHistory(const base::ListValue& args) {
+    CHECK_EQ(1U, args.size());
+    AllowJavascript();
+    auto* history = falcon::Aria2Service::Get()->history();
+    base::DictValue result;
+    result.Set("entries", history->Entries());
+    result.Set("stats", history->Stats());
+    ResolveJavascriptCallback(args[0], result);
+  }
+
+  // args: [gid]
+  void RemoveHistory(const base::ListValue& args) {
+    CHECK_EQ(1U, args.size());
+    falcon::Aria2Service::Get()->history()->Remove(args[0].GetString());
+  }
+
+  void ClearHistory(const base::ListValue& args) {
+    falcon::Aria2Service::Get()->history()->Clear();
+  }
+
+  // args: [gid, path, newName] - renames a finished file in place. The aria2
+  // entry is dropped (its path would be stale); the history entry is updated.
+  void RenameFile(const base::ListValue& args) {
+    CHECK_EQ(3U, args.size());
+    const std::string gid = args[0].GetString();
+    const base::FilePath path =
+        base::FilePath::FromUTF8Unsafe(args[1].GetString());
+    const base::FilePath new_name =
+        base::FilePath::FromUTF8Unsafe(args[2].GetString());
+    if (path.empty() || path.ReferencesParent() || new_name.empty() ||
+        new_name != new_name.BaseName() || new_name.ReferencesParent()) {
+      return;
+    }
+    const base::FilePath target = path.DirName().Append(new_name);
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+        base::BindOnce(
+            [](const base::FilePath& from, const base::FilePath& to) {
+              return !base::PathExists(to) && base::Move(from, to);
+            },
+            path, target),
+        base::BindOnce(&FalconDownloaderMessageHandler::OnRenamed,
+                       weak_factory_.GetWeakPtr(), gid, target));
+  }
+
+  void OnRenamed(const std::string& gid, base::FilePath target, bool ok) {
+    if (!ok) {
+      return;
+    }
+    auto* service = falcon::Aria2Service::Get();
+    base::ListValue rm;
+    rm.Append(gid);
+    service->Call("aria2.removeDownloadResult", std::move(rm),
+                  base::DoNothing());
+    service->history()->UpdatePath(gid, target.BaseName().AsUTF8Unsafe(),
+                                   target.AsUTF8Unsafe());
+    service->tracker()->Poke();
   }
 
   // args: [callbackId]
@@ -137,6 +220,16 @@ class FalconDownloaderMessageHandler : public content::WebUIMessageHandler {
           ls->GetBoolean(falcon::prefs::kSecurityQuarantineFlagged));
     d.Set("sandboxNetworking",
           ls->GetBoolean(falcon::prefs::kSecuritySandboxNetworking));
+    d.Set("clipboardMonitor",
+          p->GetBoolean(falcon::prefs::kDownloadClipboardMonitor));
+    d.Set("categoryRules", p->GetString(falcon::prefs::kDownloadCategoryRules));
+    d.Set("proxy", ls->GetString(falcon::prefs::kEngineProxy));
+    d.Set("duplicateAction",
+          ls->GetString(falcon::prefs::kEngineDuplicateAction));
+    d.Set("scheduleEnabled", ls->GetBoolean(falcon::prefs::kScheduleEnabled));
+    d.Set("scheduleStart", ls->GetString(falcon::prefs::kScheduleStart));
+    d.Set("scheduleStop", ls->GetString(falcon::prefs::kScheduleStop));
+    d.Set("historyKeepDays", ls->GetInteger(falcon::prefs::kHistoryKeepDays));
     return d;
   }
 
@@ -192,6 +285,30 @@ class FalconDownloaderMessageHandler : public content::WebUIMessageHandler {
       ls->SetDouble(falcon::prefs::kEngineSeedRatio,
                     std::clamp(*v, 0.0, 100.0));
     }
+    set_bool("clipboardMonitor", falcon::prefs::kDownloadClipboardMonitor, p);
+    if (const std::string* v = in.FindString("categoryRules")) {
+      p->SetString(falcon::prefs::kDownloadCategoryRules, v->substr(0, 8192));
+    }
+    if (const std::string* v = in.FindString("proxy")) {
+      ls->SetString(falcon::prefs::kEngineProxy,
+                    std::string(base::TrimWhitespaceASCII(*v, base::TRIM_ALL)));
+    }
+    if (const std::string* v = in.FindString("duplicateAction")) {
+      if (*v == "rename" || *v == "overwrite") {
+        ls->SetString(falcon::prefs::kEngineDuplicateAction, *v);
+      }
+    }
+    set_bool("scheduleEnabled", falcon::prefs::kScheduleEnabled, ls);
+    for (const auto& [key, pref] :
+         {std::pair{"scheduleStart", falcon::prefs::kScheduleStart},
+          std::pair{"scheduleStop", falcon::prefs::kScheduleStop}}) {
+      if (const std::string* v = in.FindString(key)) {
+        if (falcon::DownloadScheduler::ParseTime(*v).has_value()) {
+          ls->SetString(pref, *v);
+        }
+      }
+    }
+    set_int("historyKeepDays", falcon::prefs::kHistoryKeepDays, ls, 0, 3650);
     // Engine prefs are pushed to aria2 by Aria2Service's pref observer.
   }
 

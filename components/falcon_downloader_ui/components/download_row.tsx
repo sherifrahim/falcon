@@ -142,9 +142,12 @@ interface Props {
   onToggle: () => void
   refresh: () => void
   setError: (m: string | null) => void
+  // Position among queued (waiting) downloads, for reordering.
+  queueIndex?: number
+  queueSize?: number
 }
 
-export function DownloadRow({ d, scan, client, open, onToggle, refresh, setError }: Props) {
+export function DownloadRow({ d, scan, client, open, onToggle, refresh, setError, queueIndex, queueSize }: Props) {
   const total = +d.totalLength
   const done = +d.completedLength
   const speed = +d.downloadSpeed
@@ -157,6 +160,9 @@ export function DownloadRow({ d, scan, client, open, onToggle, refresh, setError
   const [files, setFiles] = React.useState<Aria2File[] | null>(null)
   const [limit, setLimit] = React.useState('')
   const [bitfield, setBitfield] = React.useState<string>('')
+  const [renaming, setRenaming] = React.useState(false)
+  const [newName, setNewName] = React.useState('')
+  const fromHistory = !!d.fromHistory
   const badge = scanBadge(scan)
   const sandboxAvailable = loadTimeData.getBoolean('sandboxAvailable')
   const quarantined = scan?.files.find((f) => f.quarantinedTo)?.quarantinedTo
@@ -167,7 +173,7 @@ export function DownloadRow({ d, scan, client, open, onToggle, refresh, setError
      .catch((e: any) => setError(e?.message ?? 'Action failed'))
 
   React.useEffect(() => {
-    if (!open) return
+    if (!open || fromHistory) return
     if (torrent) client.getFiles(d.gid).then(setFiles).catch(() => {})
     client.getOption(d.gid)
       .then((o) => setLimit(o['max-download-limit'] ? String(Math.round(+o['max-download-limit'] / 1024) || '') : ''))
@@ -175,19 +181,52 @@ export function DownloadRow({ d, scan, client, open, onToggle, refresh, setError
     if (d.status === 'active') {
       client.call('aria2.tellStatus', d.gid, ['bitfield']).then((s: any) => setBitfield(s?.bitfield ?? '')).catch(() => {})
     }
-  }, [open, d.gid, d.status, torrent, client])
+  }, [open, d.gid, d.status, torrent, client, fromHistory])
+
+  // History rows are not known to aria2 any more; drop them from Falcon's
+  // own list instead.
+  const removeEntry = () =>
+    fromHistory
+      ? act(Promise.resolve(chrome.send('falcon_downloader.removeHistory', [d.gid])))
+      : act(client.removeResult(d.gid))
+
+  const rename = () => {
+    const name = newName.trim()
+    setRenaming(false)
+    if (!name || name === basename(path) || /[\\/:*?"<>|]/.test(name)) return
+    if (d.status === 'complete' && path) {
+      // Finished: move the file on disk; the entry then lives in history.
+      act(Promise.resolve(chrome.send('falcon_downloader.renameFile', [d.gid, path, name])))
+    } else if (!fromHistory && !torrent) {
+      act(client.changeOption(d.gid, { out: name }))
+    }
+  }
+
+  const move = (how: 'top' | 'up' | 'down' | 'bottom') => {
+    const call =
+      how === 'top' ? client.changePosition(d.gid, 0, 'POS_SET')
+      : how === 'bottom' ? client.changePosition(d.gid, 0, 'POS_END')
+      : client.changePosition(d.gid, how === 'up' ? -1 : 1, 'POS_CUR')
+    act(call)
+  }
 
   const retry = () => {
     if (!uri) return
     const opts: Record<string, string> = {}
     if (d.dir) opts.dir = d.dir
     if (path && !torrent) opts.out = basename(path)
-    act(client.removeResult(d.gid).catch(() => {}).then(() => client.addUri([uri], opts)))
+    const drop = fromHistory
+      ? Promise.resolve(chrome.send('falcon_downloader.removeHistory', [d.gid]))
+      : client.removeResult(d.gid).catch(() => {})
+    act(drop.then(() => client.addUri([uri], opts)))
   }
 
   const deleteWithFile = () => {
     const files = d.files?.map((f) => f.path).filter(Boolean) ?? []
-    act((live ? client.remove(d.gid) : client.removeResult(d.gid)).then(() => {
+    const drop = fromHistory
+      ? Promise.resolve(chrome.send('falcon_downloader.removeHistory', [d.gid]))
+      : live ? client.remove(d.gid) : client.removeResult(d.gid)
+    act(drop.then(() => {
       for (const f of files) chrome.send('falcon_downloader.deleteFile', [f])
     }))
   }
@@ -236,9 +275,23 @@ export function DownloadRow({ d, scan, client, open, onToggle, refresh, setError
   return (
     <Row $open={open}>
       <div style={{ minWidth: 0 }}>
-        <Name title={path || nameOf(d)} onClick={onToggle}>{nameOf(d)}</Name>
+        {renaming ? (
+          <Input
+            autoFocus
+            style={{ width: '100%', padding: '4px 8px', fontSize: 13 }}
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            onBlur={rename}
+            onKeyDown={(e) => { if (e.key === 'Enter') rename(); if (e.key === 'Escape') setRenaming(false) }}
+          />
+        ) : (
+          <Name title={path || nameOf(d)} onClick={onToggle}>{nameOf(d)}</Name>
+        )}
         <Meta>
-          <span>{STATUS_LABEL[d.status]}{torrent ? ' · torrent' : ''}</span>
+          <span>
+            {STATUS_LABEL[d.status]}{torrent ? ' · torrent' : ''}
+            {d.finishedAt ? ` · ${new Date(d.finishedAt * 1000).toLocaleString()}` : ''}
+          </span>
           <span>
             {fmtBytes(done)}
             {total > 0 ? ` / ${fmtBytes(total)}` : ''}
@@ -273,10 +326,16 @@ export function DownloadRow({ d, scan, client, open, onToggle, refresh, setError
         {d.status === 'complete' && effectivePath && sandboxAvailable && RISKY.test(effectivePath) && (
           <Button $small onClick={() => chrome.send('falcon_downloader.openInSandbox', [effectivePath])} title="Open in a disposable Windows Sandbox VM">Sandbox</Button>
         )}
+        {d.status === 'waiting' && queueIndex !== undefined && (queueSize ?? 0) > 1 && (
+          <>
+            <Button $small disabled={queueIndex === 0} onClick={() => move('up')} title="Move up in queue">↑</Button>
+            <Button $small disabled={queueIndex === (queueSize ?? 1) - 1} onClick={() => move('down')} title="Move down in queue">↓</Button>
+          </>
+        )}
         {live ? (
           <Button $small $danger onClick={() => act(client.remove(d.gid))}>Cancel</Button>
         ) : (
-          <Button $small onClick={() => act(client.removeResult(d.gid))}>Remove</Button>
+          <Button $small onClick={removeEntry}>Remove</Button>
         )}
         <Button $small onClick={onToggle}>{open ? 'Less' : 'More'}</Button>
       </Actions>
@@ -294,7 +353,22 @@ export function DownloadRow({ d, scan, client, open, onToggle, refresh, setError
             {uri && <Button $small onClick={() => navigator.clipboard.writeText(uri)}>Copy</Button>}
           </span>
           <span className="k">Saved to</span>
-          <span className="v">{path || d.dir || '—'}</span>
+          <span className="v">
+            {path || d.dir || '—'}{' '}
+            {!torrent && (d.status === 'complete' ? !!path : d.status !== 'error' && !fromHistory) && (
+              <Button $small onClick={() => { setNewName(basename(path) || nameOf(d)); setRenaming(true) }}>Rename</Button>
+            )}
+          </span>
+          {d.status === 'waiting' && queueIndex !== undefined && (
+            <>
+              <span className="k">Queue</span>
+              <span className="v">
+                #{queueIndex + 1} of {queueSize}{' '}
+                <Button $small onClick={() => move('top')}>Start next</Button>{' '}
+                <Button $small onClick={() => move('bottom')}>Send to back</Button>
+              </span>
+            </>
+          )}
           {torrent && <><span className="k">Info hash</span><span className="v">{d.infoHash || '—'}</span></>}
           {scan?.files[0]?.sha256 && (
             <><span className="k">SHA-256</span><span className="v">{scan.files[0].sha256}{' '}
@@ -306,13 +380,13 @@ export function DownloadRow({ d, scan, client, open, onToggle, refresh, setError
             </span></>
           )}
           {d.errorCode && d.errorCode !== '0' && <><span className="k">Error</span><span className="v">#{d.errorCode} {d.errorMessage}</span></>}
-          <span className="k">Speed limit</span>
-          <span className="v" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          {!fromHistory && <span className="k">Speed limit</span>}
+          {!fromHistory && <span className="v" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <Input style={{ width: 100, padding: '5px 8px' }} placeholder="KB/s" value={limit}
               onChange={(e) => setLimit(e.target.value)} onBlur={applyLimit}
               onKeyDown={(e) => e.key === 'Enter' && applyLimit()} />
             <span style={{ opacity: 0.6 }}>0 = unlimited (this download only)</span>
-          </span>
+          </span>}
           <span className="k">Danger zone</span>
           <span className="v">
             <Button $small $danger onClick={deleteWithFile}>Delete with file{files && files.length > 1 ? 's' : ''}</Button>

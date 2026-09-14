@@ -6,7 +6,7 @@
 import * as React from 'react'
 import styled from 'styled-components'
 import { sendWithPromise } from 'chrome://resources/js/cr.js'
-import { Button, Input, Toggle } from './common'
+import { Button, Input, Select, Toggle } from './common'
 
 export interface FalconSettings {
   engineEnabled: boolean
@@ -24,6 +24,14 @@ export interface FalconSettings {
   vtEnabled: boolean
   quarantineFlagged: boolean
   sandboxNetworking: boolean
+  clipboardMonitor: boolean
+  categoryRules: string
+  proxy: string
+  duplicateAction: 'rename' | 'overwrite'
+  scheduleEnabled: boolean
+  scheduleStart: string
+  scheduleStop: string
+  historyKeepDays: number
 }
 
 const Drawer = styled.div`
@@ -50,6 +58,20 @@ const Backdrop = styled.div`
 const H = styled.h2`
   font-size: 18px;
   margin: 0 0 6px;
+`
+
+const Rules = styled.textarea`
+  width: 100%;
+  min-height: 84px;
+  margin: 6px 0 2px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--leo-color-divider-subtle, #334155);
+  background: var(--leo-color-container-background, #1e293b);
+  color: inherit;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 12px;
+  resize: vertical;
 `
 
 const Section = styled.h3`
@@ -117,6 +139,23 @@ export function SettingsDrawer(props: { onClose: () => void }) {
     </Toggle>
   )
 
+  const text = (key: keyof FalconSettings, label: string, sub: string, placeholder = '', type = 'text', width = 170) => (
+    <Toggle as="div">
+      <span>
+        {label}
+        <span className="sub">{sub}</span>
+      </span>
+      <Input
+        type={type}
+        placeholder={placeholder}
+        style={{ width }}
+        value={s ? String(s[key]) : ''}
+        onChange={(e) => s && setS({ ...s, [key]: e.target.value })}
+        onBlur={(e) => update({ [key]: e.target.value } as Partial<FalconSettings>)}
+      />
+    </Toggle>
+  )
+
   return (
     <>
       <Backdrop onClick={props.onClose} />
@@ -136,13 +175,46 @@ export function SettingsDrawer(props: { onClose: () => void }) {
             {bool('magnetEnabled', 'Handle magnet links', 'Open magnet: links in the engine')}
             {bool('notificationsEnabled', 'Notifications', 'Toast when a download finishes or fails')}
             {bool('showToolbarButton', 'Toolbar button', 'Show the Downloads button with progress ring')}
+            {bool('clipboardMonitor', 'Watch the clipboard',
+              'Offer to download file links and magnets copied anywhere on the PC')}
             {bool('categoriesEnabled', 'Sort into category folders',
               'Video, Music, Images, Documents, Compressed, Programs, Apps, Torrents')}
+            <div style={{ fontSize: 13, paddingTop: 10 }}>
+              Custom folder rules
+              <span style={{ display: 'block', fontSize: 12, opacity: 0.65 }}>
+                One per line: <code>ext = Folder</code>. Folder is a sub-folder of Downloads, or a full path.
+                Example: <code>psd = Design</code>, <code>{'iso = D:\\ISOs'}</code>
+              </span>
+              <Rules
+                value={s.categoryRules}
+                spellCheck={false}
+                onChange={(e) => setS({ ...s, categoryRules: e.target.value })}
+                onBlur={(e) => update({ categoryRules: e.target.value })}
+              />
+            </div>
+            <Toggle as="div">
+              <span>
+                When the file already exists
+                <span className="sub">Rename keeps both (file.1.zip); overwrite replaces it</span>
+              </span>
+              <Select value={s.duplicateAction} onChange={(e) => update({ duplicateAction: e.target.value as FalconSettings['duplicateAction'] })}>
+                <option value="rename">Rename new file</option>
+                <option value="overwrite">Overwrite</option>
+              </Select>
+            </Toggle>
+            {num('historyKeepDays', 'Keep history for', 'Days, 0 = forever. Finished entries stay listed after restarts', 0, 3650)}
 
             <Section>Engine</Section>
             {num('maxConnections', 'Connections per download', '1–32 parallel segments per server', 1, 32)}
             {num('maxConcurrent', 'Simultaneous downloads', 'Others wait in the queue', 1, 20)}
             {num('speedLimitKbps', 'Global speed limit', 'KB/s, 0 = unlimited', 0, 1 << 24)}
+            {text('proxy', 'Proxy for the engine', 'http://, https:// or socks5://host:port — blank = direct. user:pass@ allowed', 'none')}
+
+            <Section>Schedule</Section>
+            {bool('scheduleEnabled', 'Only download during a time window',
+              'Everything pauses outside the window and resumes inside it; new downloads queue as paused')}
+            {text('scheduleStart', 'Start at', '24h clock, e.g. 01:00', '01:00', 'time', 130)}
+            {text('scheduleStop', 'Stop at', 'May be past midnight', '07:00', 'time', 130)}
 
             <Section>Torrents</Section>
             {num('seedRatio', 'Seed until ratio', '0 = stop seeding as soon as complete', 0, 100, 0.1)}

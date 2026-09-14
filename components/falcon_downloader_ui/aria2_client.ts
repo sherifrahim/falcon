@@ -40,6 +40,48 @@ export interface Aria2Download {
   infoHash?: string
   verifiedLength?: string
   verifyIntegrityPending?: string
+  // Set on entries synthesised from Falcon's persistent history (aria2 no
+  // longer knows the gid).
+  fromHistory?: boolean
+  finishedAt?: number
+}
+
+// One row of falcon.history.entries (local state), as sent by getHistory.
+export interface HistoryEntry {
+  gid: string
+  name: string
+  path: string
+  url: string
+  size: number
+  time: number
+  success: boolean
+  torrent: boolean
+  error?: string
+}
+
+export function historyToDownload(h: HistoryEntry): Aria2Download {
+  const size = String(Math.max(0, Math.round(h.size || 0)))
+  const dir = h.path ? h.path.replace(/[\\/][^\\/]*$/, '') : ''
+  return {
+    gid: h.gid,
+    status: h.success ? 'complete' : 'error',
+    totalLength: size,
+    completedLength: h.success ? size : '0',
+    uploadLength: '0',
+    downloadSpeed: '0',
+    uploadSpeed: '0',
+    connections: '0',
+    errorCode: h.success ? '0' : '1',
+    errorMessage: h.error,
+    dir,
+    files: [{
+      index: '1', path: h.path, length: size, completedLength: h.success ? size : '0',
+      selected: 'true', uris: h.url ? [{ uri: h.url, status: 'used' }] : [],
+    }],
+    bittorrent: h.torrent ? { info: { name: h.name } } : undefined,
+    fromHistory: true,
+    finishedAt: h.time,
+  }
 }
 
 export interface Aria2GlobalStat {
@@ -220,6 +262,11 @@ export class Aria2Client {
 
   changeOption(gid: string, options: Record<string, string>) {
     return this.call('aria2.changeOption', gid, options)
+  }
+
+  // how: POS_SET (absolute), POS_CUR (relative), POS_END (from the end).
+  changePosition(gid: string, pos: number, how: 'POS_SET' | 'POS_CUR' | 'POS_END') {
+    return this.call<number>('aria2.changePosition', gid, pos, how)
   }
 
   setGlobalSpeedLimit(bytesPerSec: number) {

@@ -27,6 +27,11 @@ inline constexpr char kDownloadNotificationsEnabled[] =
     "falcon.download.notifications_enabled";
 inline constexpr char kShowDownloadsToolbarButton[] =
     "falcon.download.show_toolbar_button";
+inline constexpr char kDownloadClipboardMonitor[] =
+    "falcon.download.clipboard_monitor";
+// "ext = Folder" lines; Folder is relative to the download dir or absolute.
+inline constexpr char kDownloadCategoryRules[] =
+    "falcon.download.category_rules";
 
 // ---- Local-state prefs (engine, browser-wide) ----
 inline constexpr char kEngineMaxConnections[] = "falcon.engine.max_connections";
@@ -35,6 +40,10 @@ inline constexpr char kEngineSpeedLimitKbps[] = "falcon.engine.speed_limit_kbps"
 inline constexpr char kEngineSeedRatio[] = "falcon.engine.seed_ratio";
 inline constexpr char kEngineSeedTimeMinutes[] =
     "falcon.engine.seed_time_minutes";
+inline constexpr char kEngineProxy[] = "falcon.engine.proxy";
+// "rename" (file.1.ext) or "overwrite".
+inline constexpr char kEngineDuplicateAction[] =
+    "falcon.engine.duplicate_action";
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry);

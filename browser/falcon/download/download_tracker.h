@@ -19,6 +19,7 @@
 #include "base/observer_list_types.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
+#include "net/base/network_change_notifier.h"
 
 namespace falcon {
 
@@ -27,7 +28,8 @@ class Aria2Service;
 // Polls aria2 and turns its state into events: aggregate progress for the
 // toolbar badge, and per-download finished/failed for notifications and the
 // single-connection retry. UI thread only.
-class DownloadTracker {
+class DownloadTracker
+    : public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   struct Snapshot {
     int active = 0;
@@ -47,6 +49,7 @@ class DownloadTracker {
     bool success = false;
     int error_code = 0;
     std::string error_message;
+    int64_t total_bytes = 0;
   };
 
   class Observer : public base::CheckedObserver {
@@ -58,7 +61,11 @@ class DownloadTracker {
   explicit DownloadTracker(Aria2Service* service);
   DownloadTracker(const DownloadTracker&) = delete;
   DownloadTracker& operator=(const DownloadTracker&) = delete;
-  ~DownloadTracker();
+  ~DownloadTracker() override;
+
+  // net::NetworkChangeNotifier::NetworkChangeObserver:
+  void OnNetworkChanged(
+      net::NetworkChangeNotifier::ConnectionType type) override;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -95,6 +102,8 @@ class DownloadTracker {
   void OnFinishedStatus(const std::string& gid,
                         std::optional<base::Value> result);
   void MaybeRetrySingleConnection(const Status& status);
+  void RetryNetworkFailures();
+  void OnStoppedForRetry(std::optional<base::Value> result);
 
   const raw_ptr<Aria2Service> service_;
   base::ObserverList<Observer> observers_;
@@ -104,6 +113,7 @@ class DownloadTracker {
   std::set<std::string> known_active_;
   std::map<std::string, Status> last_status_;  // by gid, for retry options
   std::set<std::string> retried_;              // gids already retried
+  bool was_offline_ = false;
   base::WeakPtrFactory<DownloadTracker> weak_factory_{this};
 };
 

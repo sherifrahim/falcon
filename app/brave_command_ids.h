@@ -171,6 +171,11 @@
 // acceleratable so users can assign it a custom keyboard shortcut.
 #define IDC_BLOCK_ELEMENTS 56470
 
+// Falcon download engine
+#define IDC_FALCON_DOWNLOAD_LINK 56480
+#define IDC_FALCON_DOWNLOAD_ALL_LINKS 56481
+#define IDC_FALCON_DOWNLOAD_ALL_IMAGES 56482
+
 #define IDC_BRAVE_COMMANDS_LAST 57000
 
 #endif  // BRAVE_APP_BRAVE_COMMAND_IDS_H_

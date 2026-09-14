@@ -5,7 +5,11 @@
 
 #include "brave/browser/falcon/download/pref_names.h"
 
+#include "brave/browser/falcon/download/download_history.h"
+#include "brave/browser/falcon/download/download_scheduler.h"
 #include "brave/browser/falcon/download/download_security.h"
+
+#include <string>
 
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -19,6 +23,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(kDownloadMagnetEnabled, true);
   registry->RegisterBooleanPref(kDownloadNotificationsEnabled, true);
   registry->RegisterBooleanPref(kShowDownloadsToolbarButton, true);
+  registry->RegisterBooleanPref(kDownloadClipboardMonitor, true);
+  registry->RegisterStringPref(kDownloadCategoryRules, std::string());
 }
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
@@ -27,7 +33,11 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(kEngineSpeedLimitKbps, 0);
   registry->RegisterDoublePref(kEngineSeedRatio, 1.0);
   registry->RegisterIntegerPref(kEngineSeedTimeMinutes, 0);
+  registry->RegisterStringPref(kEngineProxy, std::string());
+  registry->RegisterStringPref(kEngineDuplicateAction, "rename");
   RegisterSecurityLocalStatePrefs(registry);
+  RegisterHistoryLocalStatePrefs(registry);
+  RegisterSchedulerLocalStatePrefs(registry);
 }
 
 }  // namespace falcon::prefs

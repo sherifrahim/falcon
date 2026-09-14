@@ -18,6 +18,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "brave/browser/autocomplete/brave_autocomplete_scheme_classifier.h"
 #include "brave/browser/brave_browser_process.h"
+#include "brave/browser/falcon/download/download_interceptor.h"
+#include "brave/browser/falcon/download/pref_names.h"
 #include "brave/browser/brave_shields/brave_shields_tab_helper.h"
 #include "brave/browser/cosmetic_filters/cosmetic_filters_tab_helper.h"
 #include "brave/browser/misc_metrics/process_misc_metrics.h"
@@ -369,6 +371,11 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_COPY_CLEAN_LINK:
       return params_.link_url.is_valid() ||
              GetSelectedURL(GetProfile(), params_.selection_text).has_value();
+    case IDC_FALCON_DOWNLOAD_LINK:
+      return params_.link_url.is_valid() || params_.src_url.is_valid();
+    case IDC_FALCON_DOWNLOAD_ALL_LINKS:
+    case IDC_FALCON_DOWNLOAD_ALL_IMAGES:
+      return true;
     case IDC_CONTENT_CONTEXT_FORCE_PASTE:
       // only enable if there is plain text data to paste - this is what
       // IsPasteAndMatchStyleEnabled checks internally, but IsPasteEnabled
@@ -422,6 +429,18 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
 
 void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
   switch (id) {
+    case IDC_FALCON_DOWNLOAD_LINK: {
+      const GURL& url =
+          params_.link_url.is_valid() ? params_.link_url : params_.src_url;
+      falcon::StartEngineDownload(GetProfile(), url, params_.page_url);
+      return;
+    }
+    case IDC_FALCON_DOWNLOAD_ALL_LINKS:
+      falcon::DownloadAllFromPage(GetProfile(), source_web_contents_, false);
+      return;
+    case IDC_FALCON_DOWNLOAD_ALL_IMAGES:
+      falcon::DownloadAllFromPage(GetProfile(), source_web_contents_, true);
+      return;
     case IDC_COPY_CLEAN_LINK: {
       GURL link_url = params_.link_url;
       if (!link_url.is_valid()) {
@@ -913,6 +932,35 @@ void RenderViewContextMenu::InitMenu() {
         !menu_model_.GetIndexOfCommandId(IDC_COPY_CLEAN_LINK).has_value()) {
       menu_model_.InsertItemWithStringIdAt(
           copy_index.value() + 1, IDC_COPY_CLEAN_LINK, IDS_COPY_CLEAN_LINK);
+    }
+  }
+
+  // Falcon download engine entries.
+  if (GetProfile() && !GetProfile()->IsOffTheRecord() &&
+      GetProfile()->GetPrefs()->GetBoolean(
+          falcon::prefs::kDownloadEngineEnabled)) {
+    const int anchors[] = {IDC_CONTENT_CONTEXT_SAVELINKAS,
+                           IDC_CONTENT_CONTEXT_SAVEAVAS,
+                           IDC_CONTENT_CONTEXT_SAVEIMAGEAS};
+    bool added_link = false;
+    for (int anchor : anchors) {
+      std::optional<size_t> at = menu_model_.GetIndexOfCommandId(anchor);
+      if (at.has_value() &&
+          (params_.link_url.is_valid() || params_.src_url.is_valid())) {
+        menu_model_.InsertItemWithStringIdAt(at.value() + 1,
+                                             IDC_FALCON_DOWNLOAD_LINK,
+                                             IDS_FALCON_DOWNLOAD_LINK);
+        added_link = true;
+        break;
+      }
+    }
+    if (!added_link && content_type_->SupportsGroup(
+                           ContextMenuContentType::ITEM_GROUP_PAGE)) {
+      menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+      menu_model_.AddItemWithStringId(IDC_FALCON_DOWNLOAD_ALL_LINKS,
+                                      IDS_FALCON_DOWNLOAD_ALL_LINKS);
+      menu_model_.AddItemWithStringId(IDC_FALCON_DOWNLOAD_ALL_IMAGES,
+                                      IDS_FALCON_DOWNLOAD_ALL_IMAGES);
     }
   }
 
