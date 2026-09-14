@@ -5,7 +5,9 @@
 
 #include "brave/browser/brave_content_browser_client.h"
 
+#include "brave/browser/falcon/download/download_interceptor.h"
 #include "brave/components/constants/falcon_url_constants.h"
+#include "brave/components/constants/url_constants.h"
 
 #include <algorithm>
 #include <optional>
@@ -1112,6 +1114,17 @@ bool BraveContentBrowserClient::HandleExternalProtocol(
     content::RenderFrameHost* initiator_document,
     const net::IsolationInfo& isolation_info,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>* out_factory) {
+  // Falcon: magnet links go to the download engine.
+  if (url.SchemeIs(kMagnetScheme)) {
+    content::WebContents* web_contents =
+        web_contents_getter ? web_contents_getter.Run() : nullptr;
+    Profile* profile = web_contents ? Profile::FromBrowserContext(
+                                          web_contents->GetBrowserContext())
+                                    : nullptr;
+    if (falcon::MaybeHandleMagnet(profile, url)) {
+      return true;
+    }
+  }
   return ChromeContentBrowserClient::HandleExternalProtocol(
       url, web_contents_getter, frame_tree_node_id, navigation_data,
       is_primary_main_frame, is_in_fenced_frame_tree, sandbox_flags,

@@ -3,6 +3,27 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
+source_set("falcon_downloads") {
+  sources = [
+    "falcon_downloads_button.cc",
+    "falcon_downloads_button.h",
+  ]
+
+  deps = [
+    "//base",
+    "//brave/components/constants",
+    "//brave/components/vector_icons",
+    "//cc/paint",
+    "//chrome/browser:primitives",
+    "//chrome/browser/ui/views/toolbar",
+    "//skia",
+    "//ui/base",
+    "//ui/gfx",
+    "//ui/views",
+    "//url",
+  ]
+}
+
 source_set("screenshot") {
   sources = [
     "screenshot_bubble_view.cc",

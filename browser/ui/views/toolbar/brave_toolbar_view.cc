@@ -73,6 +73,8 @@
 #endif
 
 #include "brave/browser/ui/screenshot/features.h"
+#include "brave/browser/falcon/download/pref_names.h"
+#include "brave/browser/ui/views/toolbar/falcon_downloads_button.h"
 #include "brave/browser/ui/views/toolbar/screenshot_button.h"
 
 #if BUILDFLAG(ENABLE_BRAVE_VPN)
@@ -420,6 +422,19 @@ void BraveToolbarView::Init() {
     screenshot_button_->SetVisible(show_screenshot_button_.GetValue());
   }
 
+  // Falcon: download engine button, before the app menu.
+  falcon_downloads_button_ =
+      AddChildViewAt(std::make_unique<FalconDownloadsButton>(browser()),
+                     *GetIndexOf(app_menu_button()) - 1);
+  SetBraveButtonFlexBehavior(falcon_downloads_button_);
+  show_falcon_downloads_button_.Init(
+      falcon::prefs::kShowDownloadsToolbarButton, profile->GetPrefs(),
+      base::BindRepeating(
+          &BraveToolbarView::OnShowFalconDownloadsButtonChanged,
+          base::Unretained(this)));
+  falcon_downloads_button_->SetVisible(
+      show_falcon_downloads_button_.GetValue());
+
 #if BUILDFLAG(ENABLE_BRAVE_VPN)
   if (brave_vpn::BraveVpnServiceFactory::GetForProfile(profile)) {
     brave_vpn_ = AddChildViewAt(std::make_unique<BraveVPNButton>(browser()),
@@ -478,6 +493,12 @@ void BraveToolbarView::OnShowBookmarksButtonChanged() {
 void BraveToolbarView::OnShowScreenshotButtonChanged() {
   CHECK(screenshot_button_);
   screenshot_button_->SetVisible(show_screenshot_button_.GetValue());
+}
+
+void BraveToolbarView::OnShowFalconDownloadsButtonChanged() {
+  CHECK(falcon_downloads_button_);
+  falcon_downloads_button_->SetVisible(
+      show_falcon_downloads_button_.GetValue());
 }
 
 void BraveToolbarView::OnLocationBarIsWideChanged() {

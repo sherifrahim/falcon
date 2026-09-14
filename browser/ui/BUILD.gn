@@ -860,7 +860,10 @@ source_set("ui") {
       ]
     }
 
-    deps += [ "//brave/browser/ui/views/toolbar:screenshot" ]
+    deps += [
+      "//brave/browser/ui/views/toolbar:falcon_downloads",
+      "//brave/browser/ui/views/toolbar:screenshot",
+    ]
   }
 
   if (is_win || is_mac || is_linux) {

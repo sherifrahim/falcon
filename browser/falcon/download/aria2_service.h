@@ -19,6 +19,7 @@
 #include "base/sequence_checker.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_WIN)
@@ -31,12 +32,16 @@ class SimpleURLLoader;
 
 namespace falcon {
 
+class DownloadNotifier;
+class DownloadTracker;
+
 // Owns the aria2c sidecar process for the whole browser and speaks JSON-RPC to
 // it over 127.0.0.1. UI-thread only. One instance per browser process.
 //
 // The WebUI (falcon://downloader) talks to aria2 directly over WebSocket using
-// the same port/secret; this class only launches/supervises the process and
-// submits downloads handed over from Chromium's download interception.
+// the same port/secret; this class launches/supervises the process, submits
+// downloads handed over from Chromium, and (via DownloadTracker) turns aria2
+// state into events for the toolbar badge, notifications and auto-retry.
 class Aria2Service {
  public:
   static Aria2Service* Get();
@@ -49,25 +54,34 @@ class Aria2Service {
   void EnsureRunning();
 
   bool IsLaunched() const { return launched_; }
+  bool IsReady() const { return ready_; }
   int rpc_port() const { return rpc_port_; }
   const std::string& rpc_secret() const { return rpc_secret_; }
   std::string rpc_http_url() const;
   std::string rpc_ws_url() const;
 
-  // Submits |url| to aria2 with the given request headers. |out_filename| may
-  // be empty (aria2 derives one). Queued until the RPC endpoint answers.
-  void AddUri(const GURL& url,
-              const std::string& referer,
-              const std::string& user_agent,
-              const std::string& cookie_header,
-              const std::string& out_filename,
-              const base::FilePath& download_dir);
+  DownloadTracker* tracker() { return tracker_.get(); }
+
+  // Builds aria2 options for a download taken over from the browser.
+  static base::DictValue BuildOptions(const std::string& referer,
+                                      const std::string& user_agent,
+                                      const std::string& cookie_header,
+                                      const std::string& out_filename,
+                                      const base::FilePath& download_dir);
+
+  // Submits |url| (http(s), ftp, magnet, ...) with aria2 |options|. Queued
+  // until the RPC endpoint answers.
+  void AddUri(const GURL& url, base::DictValue options);
 
   // Generic RPC call; |params| excludes the secret token (prepended here).
   using RpcCallback = base::OnceCallback<void(std::optional<base::Value>)>;
   void Call(const std::string& method,
             base::ListValue params,
             RpcCallback callback);
+
+  // Push the engine prefs (connections, concurrency, limits, seeding) to the
+  // running aria2 instance.
+  void ApplyEnginePrefs();
 
   void Shutdown();
 
@@ -89,6 +103,7 @@ class Aria2Service {
   void OnRpcResponse(network::SimpleURLLoader* loader,
                      RpcCallback callback,
                      std::optional<std::string> body);
+  base::DictValue EngineOptionsFromPrefs() const;
 
   base::FilePath SessionFile() const;
 
@@ -103,6 +118,9 @@ class Aria2Service {
 #endif
   std::vector<base::OnceClosure> queued_;
   std::vector<std::unique_ptr<network::SimpleURLLoader>> loaders_;
+  std::unique_ptr<DownloadTracker> tracker_;
+  std::unique_ptr<DownloadNotifier> notifier_;
+  PrefChangeRegistrar pref_change_registrar_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<Aria2Service> weak_factory_{this};

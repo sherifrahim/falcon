@@ -6,12 +6,21 @@
 brave_browser_falcon_download_sources = [
   "//brave/browser/falcon/download/aria2_service.cc",
   "//brave/browser/falcon/download/aria2_service.h",
+  "//brave/browser/falcon/download/download_categories.cc",
+  "//brave/browser/falcon/download/download_categories.h",
   "//brave/browser/falcon/download/download_interceptor.cc",
   "//brave/browser/falcon/download/download_interceptor.h",
+  "//brave/browser/falcon/download/download_notifier.cc",
+  "//brave/browser/falcon/download/download_notifier.h",
+  "//brave/browser/falcon/download/download_tracker.cc",
+  "//brave/browser/falcon/download/download_tracker.h",
+  "//brave/browser/falcon/download/pref_names.cc",
+  "//brave/browser/falcon/download/pref_names.h",
 ]
 
 brave_browser_falcon_download_deps = [
   "//base",
+  "//brave/components/constants",
   "//chrome/common",
   "//components/pref_registry",
   "//components/prefs",
@@ -19,5 +28,6 @@ brave_browser_falcon_download_deps = [
   "//net",
   "//services/network/public/cpp",
   "//services/network/public/mojom",
+  "//ui/message_center/public/cpp",
   "//url",
 ]

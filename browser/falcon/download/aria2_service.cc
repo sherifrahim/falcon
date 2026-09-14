@@ -24,9 +24,13 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
+#include "brave/browser/falcon/download/download_notifier.h"
+#include "brave/browser/falcon/download/download_tracker.h"
+#include "brave/browser/falcon/download/pref_names.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/prefs/pref_service.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -67,6 +71,10 @@ base::FilePath Aria2Dir() {
   base::FilePath user_data;
   base::PathService::Get(chrome::DIR_USER_DATA, &user_data);
   return user_data.AppendASCII("falcon");
+}
+
+PrefService* LocalState() {
+  return g_browser_process ? g_browser_process->local_state() : nullptr;
 }
 
 }  // namespace
@@ -133,7 +141,22 @@ Aria2Service* Aria2Service::Get() {
   return instance.get();
 }
 
-Aria2Service::Aria2Service() = default;
+Aria2Service::Aria2Service()
+    : tracker_(std::make_unique<DownloadTracker>(this)),
+      notifier_(std::make_unique<DownloadNotifier>(tracker_.get())) {
+  if (PrefService* local_state = LocalState()) {
+    pref_change_registrar_.Init(local_state);
+    auto cb = base::BindRepeating(&Aria2Service::ApplyEnginePrefs,
+                                  base::Unretained(this));
+    for (const char* pref :
+         {prefs::kEngineMaxConnections, prefs::kEngineMaxConcurrent,
+          prefs::kEngineSpeedLimitKbps, prefs::kEngineSeedRatio,
+          prefs::kEngineSeedTimeMinutes}) {
+      pref_change_registrar_.Add(pref, cb);
+    }
+  }
+}
+
 Aria2Service::~Aria2Service() = default;
 
 std::string Aria2Service::rpc_http_url() const {
@@ -166,6 +189,29 @@ void Aria2Service::EnsureRunning() {
   Launch();
 }
 
+base::DictValue Aria2Service::EngineOptionsFromPrefs() const {
+  base::DictValue o;
+  int connections = 16, concurrent = 5, limit_kbps = 0, seed_minutes = 0;
+  double seed_ratio = 1.0;
+  if (PrefService* ls = LocalState()) {
+    connections = ls->GetInteger(prefs::kEngineMaxConnections);
+    concurrent = ls->GetInteger(prefs::kEngineMaxConcurrent);
+    limit_kbps = ls->GetInteger(prefs::kEngineSpeedLimitKbps);
+    seed_ratio = ls->GetDouble(prefs::kEngineSeedRatio);
+    seed_minutes = ls->GetInteger(prefs::kEngineSeedTimeMinutes);
+  }
+  connections = std::clamp(connections, 1, 32);
+  concurrent = std::clamp(concurrent, 1, 20);
+  o.Set("max-connection-per-server", base::NumberToString(connections));
+  o.Set("split", base::NumberToString(connections));
+  o.Set("max-concurrent-downloads", base::NumberToString(concurrent));
+  o.Set("max-overall-download-limit",
+        base::NumberToString(std::max(0, limit_kbps) * 1024));
+  o.Set("seed-ratio", base::NumberToString(std::max(0.0, seed_ratio)));
+  o.Set("seed-time", base::NumberToString(std::max(0, seed_minutes)));
+  return o;
+}
+
 void Aria2Service::Launch() {
   ++launch_attempts_;
 
@@ -186,25 +232,27 @@ void Aria2Service::Launch() {
   cmd.AppendArg("--input-file=" + SessionFile().AsUTF8Unsafe());
   cmd.AppendArg("--save-session=" + SessionFile().AsUTF8Unsafe());
   cmd.AppendArg("--save-session-interval=30");
-  // Engine defaults (IDM-class). Per-download overrides come via RPC.
+  // Engine defaults; the pref-driven ones are pushed via ApplyEnginePrefs.
+  for (const auto [key, value] : EngineOptionsFromPrefs()) {
+    cmd.AppendArg("--" + key + "=" + value.GetString());
+  }
   cmd.AppendArg("--continue=true");
-  cmd.AppendArg("--max-connection-per-server=16");
-  cmd.AppendArg("--split=16");
   cmd.AppendArg("--min-split-size=1M");
-  cmd.AppendArg("--max-concurrent-downloads=5");
   cmd.AppendArg("--file-allocation=none");
   cmd.AppendArg("--auto-file-renaming=true");
   cmd.AppendArg("--remote-time=true");
   cmd.AppendArg("--content-disposition-default-utf8=true");
   cmd.AppendArg("--max-tries=5");
   cmd.AppendArg("--retry-wait=3");
+  cmd.AppendArg("--summary-interval=0");
   // BitTorrent / magnet.
   cmd.AppendArg("--enable-dht=true");
   cmd.AppendArg("--enable-dht6=true");
   cmd.AppendArg("--enable-peer-exchange=true");
   cmd.AppendArg("--bt-enable-lpd=true");
   cmd.AppendArg("--bt-max-peers=100");
-  cmd.AppendArg("--seed-time=0");
+  cmd.AppendArg("--bt-save-metadata=true");
+  cmd.AppendArg("--follow-torrent=mem");
   cmd.AppendArg("--dht-file-path=" +
                 dir.AppendASCII("dht.dat").AsUTF8Unsafe());
   cmd.AppendArg("--dht-file-path6=" +
@@ -255,6 +303,7 @@ void Aria2Service::OnProbeResult(std::optional<base::Value> result) {
     ready_ = true;
     VLOG(1) << "Falcon: aria2c ready on port " << rpc_port_;
     FlushQueue();
+    tracker_->Poke();
     return;
   }
   if (++launch_attempts_ > kMaxProbeAttempts) {
@@ -276,22 +325,12 @@ void Aria2Service::FlushQueue() {
   }
 }
 
-void Aria2Service::AddUri(const GURL& url,
-                          const std::string& referer,
-                          const std::string& user_agent,
-                          const std::string& cookie_header,
-                          const std::string& out_filename,
-                          const base::FilePath& download_dir) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  EnsureRunning();
-  if (!ready_) {
-    queued_.push_back(base::BindOnce(&Aria2Service::AddUri,
-                                     weak_factory_.GetWeakPtr(), url, referer,
-                                     user_agent, cookie_header, out_filename,
-                                     download_dir));
-    return;
-  }
-
+// static
+base::DictValue Aria2Service::BuildOptions(const std::string& referer,
+                                           const std::string& user_agent,
+                                           const std::string& cookie_header,
+                                           const std::string& out_filename,
+                                           const base::FilePath& download_dir) {
   base::DictValue options;
   if (!download_dir.empty()) {
     options.Set("dir", download_dir.AsUTF8Unsafe());
@@ -305,26 +344,52 @@ void Aria2Service::AddUri(const GURL& url,
   if (!user_agent.empty()) {
     options.Set("user-agent", user_agent);
   }
-  base::ListValue headers;
   if (!cookie_header.empty()) {
+    base::ListValue headers;
     headers.Append("Cookie: " + cookie_header);
-  }
-  if (!headers.empty()) {
     options.Set("header", std::move(headers));
   }
+  return options;
+}
 
+void Aria2Service::AddUri(const GURL& url, base::DictValue options) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  EnsureRunning();
+  if (!ready_) {
+    queued_.push_back(base::BindOnce(&Aria2Service::AddUri,
+                                     weak_factory_.GetWeakPtr(), url,
+                                     std::move(options)));
+    return;
+  }
   base::ListValue params;
   base::ListValue uris;
   uris.Append(url.spec());
   params.Append(std::move(uris));
   params.Append(std::move(options));
   Call("aria2.addUri", std::move(params), base::DoNothing());
+  tracker_->Poke();
+}
+
+void Aria2Service::ApplyEnginePrefs() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!ready_) {
+    return;  // launch reads the prefs itself
+  }
+  base::ListValue params;
+  params.Append(EngineOptionsFromPrefs());
+  Call("aria2.changeGlobalOption", std::move(params), base::DoNothing());
 }
 
 void Aria2Service::Call(const std::string& method,
                         base::ListValue params,
                         RpcCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!g_browser_process ||
+      !g_browser_process->system_network_context_manager()) {
+    std::move(callback).Run(std::nullopt);
+    return;
+  }
+
   base::ListValue full_params;
   full_params.Append("token:" + rpc_secret_);
   for (auto& p : params) {
@@ -337,11 +402,6 @@ void Aria2Service::Call(const std::string& method,
   body.Set("params", std::move(full_params));
   std::string json;
   base::JSONWriter::Write(body, &json);
-
-  if (!g_browser_process || !g_browser_process->system_network_context_manager()) {
-    std::move(callback).Run(std::nullopt);
-    return;
-  }
 
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = GURL(rpc_http_url());
@@ -377,7 +437,7 @@ void Aria2Service::OnRpcResponse(network::SimpleURLLoader* loader,
         result = std::move(*r);
       } else if (const base::DictValue* err =
                      parsed->GetDict().FindDict("error")) {
-        LOG(WARNING) << "Falcon: aria2 RPC error: " << *err;
+        VLOG(1) << "Falcon: aria2 RPC error: " << *err;
       }
     }
   }
@@ -386,6 +446,7 @@ void Aria2Service::OnRpcResponse(network::SimpleURLLoader* loader,
 
 void Aria2Service::Shutdown() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  tracker_->Stop();
   loaders_.clear();
   queued_.clear();
   if (process_.IsValid()) {

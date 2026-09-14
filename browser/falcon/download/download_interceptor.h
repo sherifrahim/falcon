@@ -9,28 +9,20 @@
 #include <cstdint>
 #include <string>
 
+#include "base/files/file_path.h"
+
 class GURL;
 class Profile;
-class PrefRegistrySimple;
 
 namespace content {
 class WebContents;
 }  // namespace content
 
-namespace user_prefs {
-class PrefRegistrySyncable;
-}  // namespace user_prefs
-
 namespace falcon {
 
-namespace prefs {
-// Profile prefs.
-inline constexpr char kDownloadEngineEnabled[] = "falcon.download.engine_enabled";
-inline constexpr char kDownloadMinInterceptBytes[] =
-    "falcon.download.min_intercept_bytes";
-}  // namespace prefs
-
-void RegisterDownloadProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+// Download directory for |profile|, with the category sub-folder applied when
+// categories are enabled. |filename| may be empty.
+base::FilePath TargetDirectory(Profile* profile, const std::string& filename);
 
 // Called from BraveDownloadManagerDelegate::InterceptDownloadIfApplicable.
 // Returns true when Falcon's engine takes the download; Chromium then drops
@@ -44,6 +36,10 @@ bool MaybeInterceptDownload(Profile* profile,
                             bool is_transient,
                             bool is_content_initiated,
                             content::WebContents* web_contents);
+
+// Called from BraveContentBrowserClient::HandleExternalProtocol. Returns true
+// when a magnet: link was routed to the engine.
+bool MaybeHandleMagnet(Profile* profile, const GURL& url);
 
 }  // namespace falcon
 

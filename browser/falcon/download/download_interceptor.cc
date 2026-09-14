@@ -13,9 +13,11 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "brave/browser/falcon/download/aria2_service.h"
+#include "brave/browser/falcon/download/download_categories.h"
+#include "brave/browser/falcon/download/pref_names.h"
+#include "brave/components/constants/url_constants.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -30,8 +32,6 @@
 namespace falcon {
 
 namespace {
-
-constexpr int64_t kDefaultMinInterceptBytes = 1024 * 1024;  // 1 MiB
 
 void OnCookiesForDownload(const GURL& url,
                           const std::string& referer,
@@ -48,16 +48,24 @@ void OnCookiesForDownload(const GURL& url,
     }
     cookie_header += cookie.Name() + "=" + cookie.Value();
   }
-  Aria2Service::Get()->AddUri(url, referer, user_agent, cookie_header,
-                              out_filename, download_dir);
+  Aria2Service::Get()->AddUri(
+      url, Aria2Service::BuildOptions(referer, user_agent, cookie_header,
+                                      out_filename, download_dir));
 }
 
 }  // namespace
 
-void RegisterDownloadProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kDownloadEngineEnabled, true);
-  registry->RegisterInt64Pref(prefs::kDownloadMinInterceptBytes,
-                              kDefaultMinInterceptBytes);
+base::FilePath TargetDirectory(Profile* profile, const std::string& filename) {
+  base::FilePath dir;
+  if (auto* download_prefs = DownloadPrefs::FromBrowserContext(profile)) {
+    dir = download_prefs->DownloadPath();
+  }
+  if (dir.empty() ||
+      !profile->GetPrefs()->GetBoolean(prefs::kDownloadCategoriesEnabled)) {
+    return dir;
+  }
+  const std::string category = CategoryForFilename(filename);
+  return category.empty() ? dir : dir.AppendASCII(category);
 }
 
 bool MaybeInterceptDownload(Profile* profile,
@@ -69,8 +77,8 @@ bool MaybeInterceptDownload(Profile* profile,
                             bool is_transient,
                             bool is_content_initiated,
                             content::WebContents* web_contents) {
-  if (!profile || !profile->GetPrefs()->GetBoolean(
-                      prefs::kDownloadEngineEnabled)) {
+  if (!profile ||
+      !profile->GetPrefs()->GetBoolean(prefs::kDownloadEngineEnabled)) {
     return false;
   }
   // Only plain web downloads. Never bypass Tor/private-window isolation by
@@ -100,10 +108,8 @@ bool MaybeInterceptDownload(Profile* profile,
     }
   }
 
-  base::FilePath download_dir;
-  if (auto* download_prefs = DownloadPrefs::FromBrowserContext(profile)) {
-    download_dir = download_prefs->DownloadPath();
-  }
+  const std::string filename = GuessFilename(url, disposition.filename());
+  const base::FilePath download_dir = TargetDirectory(profile, filename);
 
   auto* cookie_manager = profile->GetDefaultStoragePartition()
                              ->GetCookieManagerForBrowserProcess();
@@ -118,6 +124,23 @@ bool MaybeInterceptDownload(Profile* profile,
       base::BindOnce(&OnCookiesForDownload, url, referer, user_agent,
                      disposition.filename(), download_dir));
   VLOG(1) << "Falcon: intercepting download " << url.spec();
+  return true;
+}
+
+bool MaybeHandleMagnet(Profile* profile, const GURL& url) {
+  if (!profile || !url.SchemeIs(kMagnetScheme) ||
+      !profile->GetPrefs()->GetBoolean(prefs::kDownloadEngineEnabled) ||
+      !profile->GetPrefs()->GetBoolean(prefs::kDownloadMagnetEnabled) ||
+      profile->IsOffTheRecord()) {
+    return false;
+  }
+  base::DictValue options;
+  const base::FilePath dir = TargetDirectory(profile, "x.torrent");
+  if (!dir.empty()) {
+    options.Set("dir", dir.AsUTF8Unsafe());
+  }
+  VLOG(1) << "Falcon: magnet link to engine";
+  Aria2Service::Get()->AddUri(url, std::move(options));
   return true;
 }
 
