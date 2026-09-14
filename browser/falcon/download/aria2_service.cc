@@ -215,7 +215,9 @@ void Aria2Service::Launch() {
   cmd.AppendArg("--log-level=notice");
 
   base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+      FROM_HERE,
+      {base::MayBlock(), base::WithBaseSyncPrimitives(),
+       base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&LaunchAria2, cmd, dir),
       base::BindOnce(&Aria2Service::OnLaunched, weak_factory_.GetWeakPtr()));
 }
