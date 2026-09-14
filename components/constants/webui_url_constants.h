@@ -16,6 +16,7 @@ inline constexpr char kBraveAccountHost[] = "account";
 inline constexpr char kBraveAccountURL[] = "chrome://account/";
 inline constexpr char kAdblockHost[] = "adblock";
 inline constexpr char kAdblockInternalsHost[] = "adblock-internals";
+inline constexpr char kFalconDownloaderHost[] = "downloader";
 inline constexpr char kAdblockJS[] = "brave_adblock.js";
 inline constexpr char kSkusInternalsHost[] = "skus-internals";
 inline constexpr char kAdsInternalsHost[] = "ads-internals";

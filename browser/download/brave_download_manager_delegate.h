@@ -8,6 +8,8 @@
 
 #include <stdint.h>
 
+#include <string>
+
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 
@@ -44,6 +46,17 @@ class BraveDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
   virtual void OnImageMetadataStripped(uint32_t download_id, bool stripped);
 
  private:
+  // Falcon: hands eligible downloads to the aria2 engine.
+  bool InterceptDownloadIfApplicable(const GURL& url,
+                                     const std::string& user_agent,
+                                     const std::string& content_disposition,
+                                     const std::string& mime_type,
+                                     const std::string& request_origin,
+                                     int64_t content_length,
+                                     bool is_transient,
+                                     bool is_content_initiated,
+                                     content::WebContents* web_contents) override;
+
   // ChromeDownloadManagerDelegate override.
   bool IsDownloadReadyForCompletion(
       download::DownloadItem* item,

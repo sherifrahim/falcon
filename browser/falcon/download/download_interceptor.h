@@ -1,0 +1,50 @@
+// Copyright (c) 2026 Falcon. Personal fork of Brave.
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this file,
+// You can obtain one at https://mozilla.org/MPL/2.0/.
+
+#ifndef BRAVE_BROWSER_FALCON_DOWNLOAD_DOWNLOAD_INTERCEPTOR_H_
+#define BRAVE_BROWSER_FALCON_DOWNLOAD_DOWNLOAD_INTERCEPTOR_H_
+
+#include <cstdint>
+#include <string>
+
+class GURL;
+class Profile;
+class PrefRegistrySimple;
+
+namespace content {
+class WebContents;
+}  // namespace content
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}  // namespace user_prefs
+
+namespace falcon {
+
+namespace prefs {
+// Profile prefs.
+inline constexpr char kDownloadEngineEnabled[] = "falcon.download.engine_enabled";
+inline constexpr char kDownloadMinInterceptBytes[] =
+    "falcon.download.min_intercept_bytes";
+}  // namespace prefs
+
+void RegisterDownloadProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
+// Called from BraveDownloadManagerDelegate::InterceptDownloadIfApplicable.
+// Returns true when Falcon's engine takes the download; Chromium then drops
+// its own request. Cookie lookup and the aria2 hand-off happen asynchronously.
+bool MaybeInterceptDownload(Profile* profile,
+                            const GURL& url,
+                            const std::string& user_agent,
+                            const std::string& content_disposition,
+                            const std::string& mime_type,
+                            int64_t content_length,
+                            bool is_transient,
+                            bool is_content_initiated,
+                            content::WebContents* web_contents);
+
+}  // namespace falcon
+
+#endif  // BRAVE_BROWSER_FALCON_DOWNLOAD_DOWNLOAD_INTERCEPTOR_H_

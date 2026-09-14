@@ -9,7 +9,6 @@ import * as S from './style'
 import Button from '@brave/leo/react/button'
 import { P3APhase, WelcomeBrowserProxyImpl } from '../../api/welcome_browser_proxy'
 import { getLocale, formatLocale } from '$web-common/locale'
-import { loadTimeData } from '$web-common/loadTimeData'
 
 interface InputCheckboxProps {
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void

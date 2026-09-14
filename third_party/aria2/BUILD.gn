@@ -1,0 +1,15 @@
+# Copyright (c) 2026 Falcon. Personal fork of Brave.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this file,
+# You can obtain one at https://mozilla.org/MPL/2.0/.
+
+# aria2 (https://aria2.github.io, GPL-2.0-or-later) is Falcon's download
+# engine. It runs as a sidecar process next to the browser binary and is
+# driven over JSON-RPC; nothing links against it.
+
+if (is_win) {
+  copy("aria2c") {
+    sources = [ "win/aria2c.exe" ]
+    outputs = [ "$root_out_dir/aria2c.exe" ]
+  }
+}

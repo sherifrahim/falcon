@@ -15,6 +15,7 @@
 #include "base/path_service.h"
 #include "base/task/thread_pool.h"
 #include "brave/browser/brave_origin/brave_origin_service_factory.h"
+#include "brave/browser/falcon/download/aria2_service.h"
 #include "brave/browser/brave_referrals/referrals_service_delegate.h"
 #include "brave/browser/brave_shields/ad_block_subscription_download_manager_getter.h"
 #include "brave/browser/brave_stats/buildflags.h"
@@ -250,6 +251,7 @@ void BraveBrowserProcessImpl::PreMainMessageLoopRun() {
 
 #if !BUILDFLAG(IS_ANDROID)
 void BraveBrowserProcessImpl::StartTearDown() {
+  falcon::Aria2Service::Get()->Shutdown();
 #if BUILDFLAG(ENABLE_BRAVE_ADS)
   brave_stats_helper_.reset();
 #endif  // BUILDFLAG(ENABLE_BRAVE_ADS)

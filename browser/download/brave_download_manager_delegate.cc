@@ -15,6 +15,7 @@
 #include "base/location.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "brave/browser/falcon/download/download_interceptor.h"
 #include "brave/components/image_metadata_stripper/common/features.h"
 #include "brave/components/image_metadata_stripper/image_metadata_stripper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -34,6 +35,27 @@ BraveDownloadManagerDelegate::BraveDownloadManagerDelegate(Profile* profile)
     : ChromeDownloadManagerDelegate(profile) {}
 
 BraveDownloadManagerDelegate::~BraveDownloadManagerDelegate() = default;
+
+bool BraveDownloadManagerDelegate::InterceptDownloadIfApplicable(
+    const GURL& url,
+    const std::string& user_agent,
+    const std::string& content_disposition,
+    const std::string& mime_type,
+    const std::string& request_origin,
+    int64_t content_length,
+    bool is_transient,
+    bool is_content_initiated,
+    content::WebContents* web_contents) {
+  if (falcon::MaybeInterceptDownload(profile_, url, user_agent,
+                                     content_disposition, mime_type,
+                                     content_length, is_transient,
+                                     is_content_initiated, web_contents)) {
+    return true;
+  }
+  return ChromeDownloadManagerDelegate::InterceptDownloadIfApplicable(
+      url, user_agent, content_disposition, mime_type, request_origin,
+      content_length, is_transient, is_content_initiated, web_contents);
+}
 
 bool BraveDownloadManagerDelegate::IsDownloadReadyForCompletion(
     download::DownloadItem* item,

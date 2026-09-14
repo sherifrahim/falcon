@@ -1,0 +1,23 @@
+# Copyright (c) 2026 Falcon. Personal fork of Brave.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this file,
+# You can obtain one at https://mozilla.org/MPL/2.0/.
+
+import("//brave/components/common/typescript.gni")
+
+transpile_web_ui("falcon_downloader_ui") {
+  output_module = false
+  entry_points = [ [
+        "falcon_downloader",
+        rebase_path("falcon_downloader.tsx"),
+      ] ]
+
+  resource_name = "falcon_downloader"
+  imports_from = [ "//brave/components/falcon_downloader_ui/" ]
+}
+
+pack_web_resources("generated_resources") {
+  resource_name = "falcon_downloader"
+  output_dir = "$root_gen_dir/brave/components/falcon_downloader_ui/resources"
+  deps = [ ":falcon_downloader_ui" ]
+}

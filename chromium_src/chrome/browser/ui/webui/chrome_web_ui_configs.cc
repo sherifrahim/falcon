@@ -56,6 +56,7 @@
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 #include "brave/browser/ui/webui/brave_adblock_internals_ui.h"
+#include "brave/browser/ui/webui/falcon_downloader_ui.h"
 #include "brave/browser/ui/webui/brave_adblock_ui.h"
 
 #if BUILDFLAG(ENABLE_BRAVE_ADS)
@@ -152,6 +153,7 @@ void RegisterChromeWebUIConfigs() {
 #endif  // !BUILDFLAG(IS_ANDROID)
   map.AddWebUIConfig(std::make_unique<BraveAdblockUIConfig>());
   map.AddWebUIConfig(std::make_unique<BraveAdblockInternalsUIConfig>());
+  map.AddWebUIConfig(std::make_unique<FalconDownloaderUIConfig>());
 #if BUILDFLAG(ENABLE_BRAVE_ADS)
   map.AddWebUIConfig(std::make_unique<AdsInternalsUIConfig>());
 #endif
