@@ -25,6 +25,7 @@ export interface FalconSettings {
   quarantineFlagged: boolean
   sandboxNetworking: boolean
   clipboardMonitor: boolean
+  videoPill: boolean
   categoryRules: string
   skipHosts: string
   skipExtensions: string
@@ -197,6 +198,8 @@ export function SettingsDrawer(props: { onClose: () => void }) {
             {bool('showToolbarButton', 'Toolbar button', 'Show the Downloads button with progress ring')}
             {bool('clipboardMonitor', 'Watch the clipboard',
               'Offer to download file links and magnets copied anywhere on the PC')}
+            {bool('videoPill', 'Download button on videos',
+              'Hover a video on any page for a "Download with Falcon" pill (IDM-style)')}
             {bool('categoriesEnabled', 'Sort into category folders',
               'Video, Music, Images, Documents, Compressed, Programs, Apps, Torrents')}
             <div style={{ fontSize: 13, paddingTop: 10 }}>

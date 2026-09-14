@@ -6,6 +6,7 @@
 #ifndef BRAVE_BROWSER_FALCON_MEDIA_MEDIA_SNIFFER_TAB_HELPER_H_
 #define BRAVE_BROWSER_FALCON_MEDIA_MEDIA_SNIFFER_TAB_HELPER_H_
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -62,6 +63,13 @@ class MediaSnifferTabHelper
       const GURL& original_url,
       const blink::mojom::ResourceLoadInfo& resource_load_info) override;
   void TitleWasSet(content::NavigationEntry* entry) override;
+  void OnDidAddMessageToConsole(
+      content::RenderFrameHost* source_frame,
+      blink::mojom::ConsoleMessageLevel log_level,
+      const std::u16string& message,
+      int32_t line_no,
+      const std::u16string& source_id,
+      const std::optional<std::u16string>& untrusted_stack_trace) override;
 
  private:
   friend class content::WebContentsUserData<MediaSnifferTabHelper>;
@@ -69,9 +77,13 @@ class MediaSnifferTabHelper
 
   void Add(Candidate candidate);
   void Notify();
+  // IDM-style hover pill over <video> elements (falcon.download.video_pill).
+  void MaybeInjectPill();
+  void OnPillClicked(const std::string& target);
 
   std::vector<Candidate> candidates_;
   base::ObserverList<Observer> observers_;
+  std::string pill_nonce_;  // empty until injected for this document
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };

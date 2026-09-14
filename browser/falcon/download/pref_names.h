@@ -29,6 +29,8 @@ inline constexpr char kShowDownloadsToolbarButton[] =
     "falcon.download.show_toolbar_button";
 inline constexpr char kDownloadClipboardMonitor[] =
     "falcon.download.clipboard_monitor";
+// Hover pill over <video> elements offering a Falcon download.
+inline constexpr char kDownloadVideoPill[] = "falcon.download.video_pill";
 // "ext = Folder" lines; Folder is relative to the download dir or absolute.
 inline constexpr char kDownloadCategoryRules[] =
     "falcon.download.category_rules";

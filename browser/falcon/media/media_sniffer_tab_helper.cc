@@ -13,7 +13,19 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/functional/callback_helpers.h"
+#include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "brave/browser/falcon/download/download_categories.h"
+#include "brave/browser/falcon/download/download_interceptor.h"
+#include "brave/browser/falcon/download/pref_names.h"
+#include "brave/browser/falcon/media/media_service.h"
+#include "brave/browser/falcon/media/video_pill_script.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_isolated_world_ids.h"
+#include "components/prefs/pref_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -128,6 +140,7 @@ void MediaSnifferTabHelper::DidFinishNavigation(
     return;
   }
   candidates_.clear();
+  pill_nonce_.clear();
   const GURL& url = handle->GetURL();
   if (IsExtractorSite(url)) {
     Candidate page;
@@ -136,8 +149,75 @@ void MediaSnifferTabHelper::DidFinishNavigation(
     page.name = base::UTF16ToUTF8(web_contents()->GetTitle());
     if (page.name.empty()) page.name = url.host();
     candidates_.push_back(std::move(page));
+    MaybeInjectPill();
   }
   Notify();
+}
+
+void MediaSnifferTabHelper::MaybeInjectPill() {
+  if (!pill_nonce_.empty()) {
+    return;
+  }
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  if (!profile || profile->IsOffTheRecord() ||
+      !profile->GetPrefs()->GetBoolean(prefs::kDownloadVideoPill) ||
+      !profile->GetPrefs()->GetBoolean(prefs::kDownloadEngineEnabled)) {
+    return;
+  }
+  content::RenderFrameHost* rfh = web_contents()->GetPrimaryMainFrame();
+  if (!rfh || !rfh->IsRenderFrameLive() ||
+      !web_contents()->GetLastCommittedURL().SchemeIsHTTPOrHTTPS()) {
+    return;
+  }
+  pill_nonce_ = base::HexEncode(base::RandBytesAsVector(8));
+  std::string script(kVideoPillScript);
+  base::ReplaceFirstSubstringAfterOffset(&script, 0, "%NONCE%", pill_nonce_);
+  rfh->ExecuteJavaScriptInIsolatedWorld(base::UTF8ToUTF16(script),
+                                        base::NullCallback(),
+                                        ISOLATED_WORLD_ID_BRAVE_INTERNAL);
+}
+
+void MediaSnifferTabHelper::OnDidAddMessageToConsole(
+    content::RenderFrameHost* source_frame,
+    blink::mojom::ConsoleMessageLevel log_level,
+    const std::u16string& message,
+    int32_t line_no,
+    const std::u16string& source_id,
+    const std::optional<std::u16string>& untrusted_stack_trace) {
+  if (pill_nonce_.empty() || source_frame != web_contents()->GetPrimaryMainFrame()) {
+    return;
+  }
+  const std::string prefix = "FALCON_DL:" + pill_nonce_ + ":";
+  const std::string text = base::UTF16ToUTF8(message);
+  if (!base::StartsWith(text, prefix)) {
+    return;
+  }
+  OnPillClicked(text.substr(prefix.size()));
+}
+
+void MediaSnifferTabHelper::OnPillClicked(const std::string& target) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  const GURL page = web_contents()->GetLastCommittedURL();
+  if (!profile) {
+    return;
+  }
+  const GURL src(target);
+  bool is_media = false;
+  const Kind kind = src.is_valid()
+                        ? Classify(src, std::string(), &is_media)
+                        : Kind::kPage;
+  // A plain file source (mp4/webm...) goes to the engine; MSE/blob players
+  // and playlists go through yt-dlp using the page URL, which knows how to
+  // reassemble them.
+  if (src.SchemeIsHTTPOrHTTPS() && is_media && kind == Kind::kFile) {
+    StartEngineDownload(profile, src, page);
+    return;
+  }
+  const GURL stream_or_page =
+      (src.SchemeIsHTTPOrHTTPS() && is_media) ? src : page;
+  MediaService::Get()->Start(profile, stream_or_page, page, "best");
 }
 
 void MediaSnifferTabHelper::TitleWasSet(content::NavigationEntry* entry) {
@@ -210,6 +290,7 @@ void MediaSnifferTabHelper::Add(Candidate candidate) {
     return;
   }
   candidates_.push_back(std::move(candidate));
+  MaybeInjectPill();
   Notify();
 }
 

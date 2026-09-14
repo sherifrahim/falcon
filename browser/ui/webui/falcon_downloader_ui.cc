@@ -350,6 +350,7 @@ class FalconDownloaderMessageHandler : public content::WebUIMessageHandler {
           ls->GetBoolean(falcon::prefs::kSecuritySandboxNetworking));
     d.Set("clipboardMonitor",
           p->GetBoolean(falcon::prefs::kDownloadClipboardMonitor));
+    d.Set("videoPill", p->GetBoolean(falcon::prefs::kDownloadVideoPill));
     d.Set("categoryRules", p->GetString(falcon::prefs::kDownloadCategoryRules));
     d.Set("skipHosts", p->GetString(falcon::prefs::kDownloadSkipHosts));
     d.Set("skipExtensions",
@@ -419,6 +420,7 @@ class FalconDownloaderMessageHandler : public content::WebUIMessageHandler {
                     std::clamp(*v, 0.0, 100.0));
     }
     set_bool("clipboardMonitor", falcon::prefs::kDownloadClipboardMonitor, p);
+    set_bool("videoPill", falcon::prefs::kDownloadVideoPill, p);
     if (const std::string* v = in.FindString("categoryRules")) {
       p->SetString(falcon::prefs::kDownloadCategoryRules, v->substr(0, 8192));
     }
