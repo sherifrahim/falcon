@@ -6,6 +6,7 @@
 import * as React from 'react'
 import styled from 'styled-components'
 import { Background, DEFAULT_STATE, GRADIENTS, NtpState } from './state'
+import { geocode } from './widgets'
 
 const Panel = styled.div`
   position: fixed;
@@ -103,6 +104,24 @@ export function SettingsPanel(props: {
   )
   const [name, setName] = React.useState(state.name)
   const [imageUrl, setImageUrl] = React.useState(state.bg.imageUrl)
+  const [videoUrl, setVideoUrl] = React.useState(state.bg.videoUrl)
+  const [city, setCity] = React.useState(state.weather.city)
+  const [cityStatus, setCityStatus] = React.useState('')
+  const setWeather = (patch: Partial<NtpState['weather']>) => update({ weather: { ...state.weather, ...patch } })
+  const lookupCity = async () => {
+    const c = city.trim()
+    if (!c) { setWeather({ city: '', latitude: 0, longitude: 0 }); return }
+    setCityStatus('Looking up…')
+    try {
+      const hit = await geocode(c)
+      if (!hit) { setCityStatus('Not found'); return }
+      setCity(hit.name)
+      setWeather({ enabled: true, city: hit.name, latitude: hit.latitude, longitude: hit.longitude })
+      setCityStatus('')
+    } catch {
+      setCityStatus('Lookup failed')
+    }
+  }
 
   return (
     <>
@@ -115,9 +134,9 @@ export function SettingsPanel(props: {
 
         <h3>Background</h3>
         <Modes>
-          {(['gradient', 'solid', 'image', 'bing'] as const).map((m) => (
+          {(['gradient', 'solid', 'image', 'video', 'bing'] as const).map((m) => (
             <button key={m} className={state.bg.mode === m ? 'on' : ''} onClick={() => setBg({ mode: m })}>
-              {m === 'bing' ? 'Bing daily photo' : m[0].toUpperCase() + m.slice(1)}
+              {m === 'bing' ? 'Bing daily photo' : m === 'video' ? 'Live video' : m[0].toUpperCase() + m.slice(1)}
             </button>
           ))}
         </Modes>
@@ -147,6 +166,13 @@ export function SettingsPanel(props: {
               onBlur={() => setBg({ imageUrl: imageUrl.trim() })} onKeyDown={(e) => e.key === 'Enter' && setBg({ imageUrl: imageUrl.trim() })} />
           </Row>
         )}
+        {state.bg.mode === 'video' && (
+          <Row as="div">
+            <span>Video URL<span className="sub">mp4/webm, plays muted in a loop (Wallsflow-style live wallpaper)</span></span>
+            <input type="text" value={videoUrl} placeholder="https://…/loop.mp4" onChange={(e) => setVideoUrl(e.target.value)}
+              onBlur={() => setBg({ videoUrl: videoUrl.trim() })} onKeyDown={(e) => e.key === 'Enter' && setBg({ videoUrl: videoUrl.trim() })} />
+          </Row>
+        )}
         <Row>
           <span>Blur<span className="sub">{state.bg.blur}px</span></span>
           <input type="range" min={0} max={30} value={state.bg.blur} onChange={(e) => setBg({ blur: +e.target.value })} />
@@ -170,6 +196,21 @@ export function SettingsPanel(props: {
         {bool('showSearch', 'Search bar', 'Uses your default search engine; URLs open directly')}
         {bool('showLinks', 'Shortcuts', 'Right-click a tile to edit, hover for remove')}
         {bool('showQuote', 'Quote of the day')}
+        {bool('showFocus', 'Focus timer', 'Pomodoro-style, bottom-left')}
+
+        <h3>Weather</h3>
+        <Row>
+          <span>Show weather<span className="sub">Open-Meteo, no account needed</span></span>
+          <input type="checkbox" checked={state.weather.enabled} onChange={(e) => setWeather({ enabled: e.target.checked })} />
+        </Row>
+        <Row as="div">
+          <span>City<span className="sub">{cityStatus || (state.weather.city ? `Using ${state.weather.city}` : 'Type a city and press Enter')}</span></span>
+          <input type="text" value={city} placeholder="Dubai" onChange={(e) => setCity(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && lookupCity()} onBlur={lookupCity} />
+        </Row>
+        <Row>
+          <span>Fahrenheit</span>
+          <input type="checkbox" checked={state.weather.unit === 'f'} onChange={(e) => setWeather({ unit: e.target.checked ? 'f' : 'c' })} />
+        </Row>
 
         <h3>Reset</h3>
         <Row as="div">

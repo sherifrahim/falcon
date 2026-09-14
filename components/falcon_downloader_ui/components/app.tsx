@@ -16,6 +16,7 @@ import {
   Stat, fmtBytes, fmtSpeed, matchesFilter, nameOf,
 } from './common'
 import { DownloadRow, ScanResult } from './download_row'
+import { Grabber } from './grabber'
 import { MediaJob, MediaPicker, MediaRow } from './media_panel'
 import { SettingsDrawer } from './settings_drawer'
 
@@ -192,6 +193,7 @@ export function App() {
   const [opts, setOpts] = React.useState<AddOptions>(EMPTY_OPTIONS)
   const [mediaJobs, setMediaJobs] = React.useState<MediaJob[]>([])
   const [picker, setPicker] = React.useState<{ url: string; referer: string } | null>(() => pickerFromHash())
+  const [grabber, setGrabber] = React.useState<string | null>(null)
   const fileInput = React.useRef<HTMLInputElement>(null)
   const listInput = React.useRef<HTMLInputElement>(null)
   const order = React.useRef(new Map<string, number>())
@@ -413,6 +415,8 @@ export function App() {
           <Button type="button" onClick={() => setPicker({ url: url.trim(), referer: '' })}
             title="Grab video/audio from a page or stream (YouTube, Vimeo, HLS, DASH…) at a chosen quality">Video</Button>
         )}
+        <Button type="button" onClick={() => setGrabber(url.trim())} disabled={!connected}
+          title="Scan a page for files (site grabber)">Grab</Button>
         <Button type="button" onClick={() => setOptionsOpen((v) => !v)} disabled={!connected}
           title="Filename, folder, checksum, login, proxy, connections">{optionsOpen ? 'Options ▴' : 'Options ▾'}</Button>
         <Button type="button" onClick={() => setBatchOpen((v) => !v)} disabled={!connected}>Batch</Button>
@@ -425,6 +429,16 @@ export function App() {
           }}
         />
       </AddRow>
+      {grabber !== null && (
+        <Grabber
+          initialUrl={grabber}
+          onClose={() => setGrabber(null)}
+          onQueue={(urls, referer) => {
+            const options = { ...toAria2Options(opts, false), referer }
+            Promise.all(urls.map((u) => client.addUri([u], options).catch(() => null))).then(() => { refresh(); poke(); setUrl('') })
+          }}
+        />
+      )}
       {picker && (
         <MediaPicker
           initialUrl={picker.url}

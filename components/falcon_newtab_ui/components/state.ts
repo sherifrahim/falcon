@@ -11,13 +11,14 @@ export interface QuickLink {
   url: string
 }
 
-export type BackgroundMode = 'gradient' | 'solid' | 'image' | 'bing'
+export type BackgroundMode = 'gradient' | 'solid' | 'image' | 'bing' | 'video'
 
 export interface Background {
   mode: BackgroundMode
   gradient: number // index into GRADIENTS
   color: string
   imageUrl: string
+  videoUrl: string // mp4/webm, looped and muted
   blur: number // px
   dim: number // 0..80 (%)
   drift: boolean // slow animated gradient
@@ -34,8 +35,10 @@ export interface NtpState {
   showLinks: boolean
   showQuote: boolean
   linksSeededFromHistory: boolean
+  showFocus: boolean
   links: QuickLink[]
   bg: Background
+  weather: { enabled: boolean; city: string; latitude: number; longitude: number; unit: 'c' | 'f' }
 }
 
 export const GRADIENTS: Array<{ name: string; css: string }> = [
@@ -60,13 +63,16 @@ export const DEFAULT_STATE: NtpState = {
   showLinks: true,
   showQuote: true,
   linksSeededFromHistory: false,
+  showFocus: false,
   links: [],
-  bg: { mode: 'gradient', gradient: 0, color: '#0b1220', imageUrl: '', blur: 0, dim: 20, drift: true },
+  bg: { mode: 'gradient', gradient: 0, color: '#0b1220', imageUrl: '', videoUrl: '', blur: 0, dim: 20, drift: true },
+  weather: { enabled: false, city: '', latitude: 0, longitude: 0, unit: 'c' },
 }
 
 export function withDefaults(stored: Partial<NtpState> | null | undefined): NtpState {
   const s = { ...DEFAULT_STATE, ...(stored ?? {}) }
   s.bg = { ...DEFAULT_STATE.bg, ...((stored && stored.bg) || {}) }
+  s.weather = { ...DEFAULT_STATE.weather, ...((stored && stored.weather) || {}) }
   s.links = Array.isArray(s.links) ? s.links.filter((l) => l && typeof l.url === 'string') : []
   return s
 }

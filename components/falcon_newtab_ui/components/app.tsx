@@ -11,6 +11,7 @@ import {
   quoteOfTheDay, withDefaults,
 } from './state'
 import { SettingsPanel } from './settings'
+import { FocusTimer, Weather, resolveShortcut } from './widgets'
 
 const Global = createGlobalStyle`
   ::selection { background: rgba(56,189,248,0.35); }
@@ -37,6 +38,16 @@ const Backdrop = styled.div<{ $css: string; $blur: number; $drift: boolean; $ima
   filter: ${(p) => (p.$blur > 0 ? `blur(${p.$blur}px)` : 'none')};
   animation: ${(p) => (p.$drift && !p.$image ? drift : 'none')} 40s ease-in-out infinite;
   transition: background 0.6s ease;
+`
+
+const Video = styled.video<{ $blur: number }>`
+  position: fixed;
+  inset: ${(p) => (p.$blur > 0 ? `-${p.$blur * 2}px` : 0)};
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: ${(p) => (p.$blur > 0 ? `blur(${p.$blur}px)` : 'none')};
+  background: #0b1220;
 `
 
 const Dim = styled.div<{ $dim: number }>`
@@ -318,6 +329,8 @@ export function App() {
   if (bg.mode === 'solid') css = bg.color || '#0b1220'
   else if (bg.mode === 'image' && bg.imageUrl) { css = `url("${bg.imageUrl.replace(/"/g, '')}") center / cover no-repeat #0b1220`; isImage = true }
   else if (bg.mode === 'bing' && bing) { css = `url("${bing.url}") center / cover no-repeat #0b1220`; isImage = true }
+  const isVideo = bg.mode === 'video' && !!bg.videoUrl
+  if (isVideo) css = '#0b1220'
 
   // Clock/date ---------------------------------------------------------------
   const h = now.getHours()
@@ -330,7 +343,8 @@ export function App() {
     e.preventDefault()
     const q = query.trim()
     if (!q) return
-    const url = looksLikeUrl(q)
+    const shortcut = resolveShortcut(q)
+    const url = shortcut || looksLikeUrl(q)
     if (url) chrome.send('falcon_newtab.open', [url, false])
     else chrome.send('falcon_newtab.search', [q])
   }
@@ -359,7 +373,10 @@ export function App() {
     <>
       <Global />
       <Backdrop $css={css} $blur={bg.blur} $drift={bg.drift} $image={isImage} />
+      {isVideo && <Video $blur={bg.blur} src={bg.videoUrl} autoPlay muted loop playsInline />}
       <Dim $dim={bg.dim} />
+      {loaded && <Weather settings={state.weather} />}
+      {loaded && state.showFocus && <FocusTimer />}
       <Page>
         {loaded && (
           <Center>
@@ -374,7 +391,7 @@ export function App() {
             {state.showSearch && (
               <Search onSubmit={submit}>
                 <input ref={searchRef} value={query} onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search or type a URL  ·  press / to focus" spellCheck={false} autoComplete="off" />
+                  placeholder="Search or type a URL  ·  / to focus  ·  !y !w !gh !d for YouTube, Wikipedia, GitHub, DuckDuckGo" spellCheck={false} autoComplete="off" />
                 <button type="submit" title="Search">→</button>
               </Search>
             )}
