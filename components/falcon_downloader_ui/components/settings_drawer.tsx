@@ -32,6 +32,7 @@ export interface FalconSettings {
   scheduleStart: string
   scheduleStop: string
   historyKeepDays: number
+  mouseGestures: boolean
 }
 
 const Drawer = styled.div`
@@ -168,6 +169,10 @@ export function SettingsDrawer(props: { onClose: () => void }) {
           <div style={{ opacity: 0.6 }}>Loading…</div>
         ) : (
           <>
+            <Section>Browser</Section>
+            {bool('mouseGestures', 'Mouse gestures',
+              'Hold right button and drag: ← back · → forward · ↑ reload · ↓ new tab · ↓→ close tab · ↓← reopen closed · ↑← / ↑→ switch tabs')}
+
             <Section>Browser integration</Section>
             {bool('engineEnabled', 'Use Falcon for downloads',
               'Take over downloads from pages automatically')}

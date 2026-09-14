@@ -28,6 +28,7 @@
 #include "brave/browser/falcon/download/page_grabber.h"
 #include "brave/browser/falcon/media/media_service.h"
 #include "brave/browser/falcon/media/media_sniffer_tab_helper.h"
+#include "brave/browser/falcon/ux/mouse_gesture_tab_helper.h"
 #include "brave/browser/falcon/download/download_tracker.h"
 #include "brave/browser/falcon/download/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -357,6 +358,7 @@ class FalconDownloaderMessageHandler : public content::WebUIMessageHandler {
     d.Set("scheduleStart", ls->GetString(falcon::prefs::kScheduleStart));
     d.Set("scheduleStop", ls->GetString(falcon::prefs::kScheduleStop));
     d.Set("historyKeepDays", ls->GetInteger(falcon::prefs::kHistoryKeepDays));
+    d.Set("mouseGestures", p->GetBoolean(falcon::prefs::kMouseGesturesEnabled));
     return d;
   }
 
@@ -436,6 +438,7 @@ class FalconDownloaderMessageHandler : public content::WebUIMessageHandler {
       }
     }
     set_int("historyKeepDays", falcon::prefs::kHistoryKeepDays, ls, 0, 3650);
+    set_bool("mouseGestures", falcon::prefs::kMouseGesturesEnabled, p);
     // Engine prefs are pushed to aria2 by Aria2Service's pref observer.
   }
 

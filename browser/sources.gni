@@ -10,6 +10,7 @@ import("//brave/browser/brave_referrals/sources.gni")
 import("//brave/browser/brave_vpn/sources.gni")
 import("//brave/browser/falcon/download/sources.gni")
 import("//brave/browser/falcon/media/sources.gni")
+import("//brave/browser/falcon/ux/sources.gni")
 import("//brave/browser/browsing_data/sources.gni")
 import("//brave/browser/cosmetic_filters/sources.gni")
 import("//brave/browser/debounce/sources.gni")
@@ -812,6 +813,7 @@ brave_chrome_browser_sources += brave_browser_brave_referrals_sources
 brave_chrome_browser_sources += brave_browser_brave_vpn_sources
 brave_chrome_browser_sources += brave_browser_falcon_download_sources
 brave_chrome_browser_sources += brave_browser_falcon_media_sources
+brave_chrome_browser_sources += brave_browser_falcon_ux_sources
 brave_chrome_browser_sources += brave_browser_browsing_data_sources
 brave_chrome_browser_sources += brave_browser_cosmetic_filters_sources
 brave_chrome_browser_sources += brave_browser_debounce_sources
@@ -837,6 +839,7 @@ brave_chrome_browser_deps += brave_browser_brave_referrals_deps
 brave_chrome_browser_deps += brave_browser_brave_vpn_deps
 brave_chrome_browser_deps += brave_browser_falcon_download_deps
 brave_chrome_browser_deps += brave_browser_falcon_media_deps
+brave_chrome_browser_deps += brave_browser_falcon_ux_deps
 brave_chrome_browser_deps += brave_browser_browsing_data_deps
 brave_chrome_browser_deps += brave_browser_cosmetic_filters_deps
 brave_chrome_browser_deps += brave_browser_debounce_deps

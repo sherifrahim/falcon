@@ -1,0 +1,19 @@
+# Copyright (c) 2026 Falcon. Personal fork of Brave.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this file,
+# You can obtain one at https://mozilla.org/MPL/2.0/.
+
+brave_browser_falcon_ux_sources = [
+  "//brave/browser/falcon/ux/mouse_gesture_tab_helper.cc",
+  "//brave/browser/falcon/ux/mouse_gesture_tab_helper.h",
+]
+
+brave_browser_falcon_ux_deps = [
+  "//base",
+  "//chrome/app:command_ids",
+  "//components/pref_registry",
+  "//components/prefs",
+  "//components/tabs:public",
+  "//content/public/browser",
+  "//third_party/blink/public/common",
+]
