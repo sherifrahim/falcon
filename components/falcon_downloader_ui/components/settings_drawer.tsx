@@ -26,6 +26,8 @@ export interface FalconSettings {
   sandboxNetworking: boolean
   clipboardMonitor: boolean
   categoryRules: string
+  skipHosts: string
+  skipExtensions: string
   proxy: string
   btTrackers: string
   duplicateAction: 'rename' | 'overwrite'
@@ -178,6 +180,18 @@ export function SettingsDrawer(props: { onClose: () => void }) {
             {bool('engineEnabled', 'Use Falcon for downloads',
               'Take over downloads from pages automatically')}
             {num('minInterceptKb', 'Minimum size to take over', 'KB. Smaller files use the built-in downloader', 0, 1048576)}
+            <div style={{ fontSize: 13, paddingTop: 10 }}>
+              Never take over from these sites
+              <span style={{ display: 'block', fontSize: 12, opacity: 0.65 }}>One host per line (matches sub-domains too); those downloads use the built-in downloader</span>
+              <Rules value={s.skipHosts} spellCheck={false} placeholder={'drive.google.com'} style={{ minHeight: 56 }}
+                onChange={(e) => setS({ ...s, skipHosts: e.target.value })} onBlur={(e) => update({ skipHosts: e.target.value })} />
+            </div>
+            <div style={{ fontSize: 13, paddingTop: 6 }}>
+              Never take over these file types
+              <span style={{ display: 'block', fontSize: 12, opacity: 0.65 }}>Extensions, one per line</span>
+              <Rules value={s.skipExtensions} spellCheck={false} placeholder={'pdf'} style={{ minHeight: 56 }}
+                onChange={(e) => setS({ ...s, skipExtensions: e.target.value })} onBlur={(e) => update({ skipExtensions: e.target.value })} />
+            </div>
             {bool('magnetEnabled', 'Handle magnet links', 'Open magnet: links in the engine')}
             {bool('notificationsEnabled', 'Notifications', 'Toast when a download finishes or fails')}
             {bool('showToolbarButton', 'Toolbar button', 'Show the Downloads button with progress ring')}

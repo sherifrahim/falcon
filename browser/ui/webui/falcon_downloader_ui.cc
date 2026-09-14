@@ -351,6 +351,9 @@ class FalconDownloaderMessageHandler : public content::WebUIMessageHandler {
     d.Set("clipboardMonitor",
           p->GetBoolean(falcon::prefs::kDownloadClipboardMonitor));
     d.Set("categoryRules", p->GetString(falcon::prefs::kDownloadCategoryRules));
+    d.Set("skipHosts", p->GetString(falcon::prefs::kDownloadSkipHosts));
+    d.Set("skipExtensions",
+          p->GetString(falcon::prefs::kDownloadSkipExtensions));
     d.Set("proxy", ls->GetString(falcon::prefs::kEngineProxy));
     d.Set("btTrackers", ls->GetString(falcon::prefs::kEngineBtTrackers));
     d.Set("duplicateAction",
@@ -418,6 +421,12 @@ class FalconDownloaderMessageHandler : public content::WebUIMessageHandler {
     set_bool("clipboardMonitor", falcon::prefs::kDownloadClipboardMonitor, p);
     if (const std::string* v = in.FindString("categoryRules")) {
       p->SetString(falcon::prefs::kDownloadCategoryRules, v->substr(0, 8192));
+    }
+    if (const std::string* v = in.FindString("skipHosts")) {
+      p->SetString(falcon::prefs::kDownloadSkipHosts, v->substr(0, 8192));
+    }
+    if (const std::string* v = in.FindString("skipExtensions")) {
+      p->SetString(falcon::prefs::kDownloadSkipExtensions, v->substr(0, 8192));
     }
     if (const std::string* v = in.FindString("proxy")) {
       ls->SetString(falcon::prefs::kEngineProxy,

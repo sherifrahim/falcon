@@ -32,6 +32,11 @@ inline constexpr char kDownloadClipboardMonitor[] =
 // "ext = Folder" lines; Folder is relative to the download dir or absolute.
 inline constexpr char kDownloadCategoryRules[] =
     "falcon.download.category_rules";
+// IDM-style exceptions: hosts / extensions the engine must never take over
+// (one per line). Those downloads use Chromium's own downloader.
+inline constexpr char kDownloadSkipHosts[] = "falcon.download.skip_hosts";
+inline constexpr char kDownloadSkipExtensions[] =
+    "falcon.download.skip_extensions";
 
 // ---- Local-state prefs (engine, browser-wide) ----
 inline constexpr char kEngineMaxConnections[] = "falcon.engine.max_connections";

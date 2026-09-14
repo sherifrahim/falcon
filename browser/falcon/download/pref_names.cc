@@ -25,6 +25,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(kShowDownloadsToolbarButton, true);
   registry->RegisterBooleanPref(kDownloadClipboardMonitor, true);
   registry->RegisterStringPref(kDownloadCategoryRules, std::string());
+  registry->RegisterStringPref(kDownloadSkipHosts, std::string());
+  registry->RegisterStringPref(kDownloadSkipExtensions, std::string());
 }
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {

@@ -97,6 +97,38 @@ std::optional<base::FilePath> RuleFolder(Profile* profile,
   return std::nullopt;
 }
 
+bool MatchesLine(const std::string& list, std::string_view value,
+                 bool suffix) {
+  for (std::string_view line : base::SplitStringPiece(
+           list, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
+    if (line.front() == '.' || line.front() == '*') line.remove_prefix(1);
+    if (line.empty()) continue;
+    const std::string l = base::ToLowerASCII(line);
+    if (l == value) return true;
+    if (suffix && base::EndsWith(value, "." + l)) return true;
+  }
+  return false;
+}
+
+// True when the user excluded this host or file type from the engine.
+bool IsExcluded(Profile* profile, const GURL& url, const std::string& filename) {
+  PrefService* pref_service = profile->GetPrefs();
+  const std::string host = base::ToLowerASCII(url.host());
+  if (MatchesLine(pref_service->GetString(prefs::kDownloadSkipHosts), host,
+                  true)) {
+    return true;
+  }
+  const size_t dot = filename.find_last_of('.');
+  if (dot != std::string::npos) {
+    const std::string ext = base::ToLowerASCII(filename.substr(dot + 1));
+    if (MatchesLine(pref_service->GetString(prefs::kDownloadSkipExtensions),
+                    ext, false)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 base::FilePath TargetDirectory(Profile* profile, const std::string& filename) {
@@ -148,6 +180,9 @@ bool MaybeInterceptDownload(Profile* profile,
   const int64_t min_bytes =
       profile->GetPrefs()->GetInt64(prefs::kDownloadMinInterceptBytes);
   if (!is_torrent && content_length >= 0 && content_length < min_bytes) {
+    return false;
+  }
+  if (IsExcluded(profile, url, filename)) {
     return false;
   }
   // HTML served inline is a page, not a file, unless the site says attachment.
