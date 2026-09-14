@@ -33,7 +33,7 @@ namespace falcon {
 
 namespace {
 
-constexpr size_t kMaxHtmlBytes = 8 * 1024 * 1024;
+constexpr size_t kMaxHtmlBytes = 5 * 1024 * 1024;  // SimpleURLLoader cap
 constexpr size_t kMaxLinks = 2000;
 
 constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
