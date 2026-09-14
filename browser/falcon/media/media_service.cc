@@ -574,7 +574,7 @@ void MediaService::Cancel(int id) {
   job.speed.clear();
   job.eta.clear();
 #if BUILDFLAG(IS_WIN)
-  if (job.job_object.IsValid()) {
+  if (job.job_object.is_valid()) {
     ::TerminateJobObject(job.job_object.Get(), 1);
     job.job_object.Close();
   }
