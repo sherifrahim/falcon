@@ -7,90 +7,22 @@ import * as React from 'react'
 import styled from 'styled-components'
 import { loadTimeData } from '$web-common/loadTimeData'
 import {
-  Aria2Client,
-  Aria2Download,
-  Aria2GlobalStat,
-  Aria2Status,
+  Aria2Client, Aria2Download, Aria2GlobalStat, expandBatch, isDownloadable,
 } from '../aria2_client'
+import {
+  Button, Chip, ErrorText, Filter, Input, Meta, STATUS_ORDER, Select, SortKey,
+  Stat, fmtBytes, fmtSpeed, matchesFilter, nameOf,
+} from './common'
+import { DownloadRow } from './download_row'
+import { SettingsDrawer } from './settings_drawer'
 
-// ---------------------------------------------------------------- helpers
-
-function fmtBytes(n: number): string {
-  if (!isFinite(n) || n <= 0) return '0 B'
-  const units = ['B', 'KB', 'MB', 'GB', 'TB']
-  let i = 0
-  while (n >= 1024 && i < units.length - 1) {
-    n /= 1024
-    i++
-  }
-  return `${n < 10 && i > 0 ? n.toFixed(1) : Math.round(n)} ${units[i]}`
-}
-
-function fmtSpeed(n: number): string {
-  return n > 0 ? `${fmtBytes(n)}/s` : '—'
-}
-
-function fmtEta(remaining: number, speed: number): string {
-  if (speed <= 0 || remaining <= 0) return '—'
-  let s = Math.round(remaining / speed)
-  if (s < 60) return `${s}s`
-  const m = Math.floor(s / 60)
-  s %= 60
-  if (m < 60) return `${m}m ${s}s`
-  const h = Math.floor(m / 60)
-  return `${h}h ${m % 60}m`
-}
-
-function nameOf(d: Aria2Download): string {
-  const bt = d.bittorrent?.info?.name
-  if (bt) return bt
-  const p = d.files?.[0]?.path
-  if (p) {
-    const base = p.split(/[\\/]/).pop()
-    if (base) return base
-  }
-  const uri = d.files?.[0]?.uris?.[0]?.uri
-  if (uri) {
-    try {
-      const u = new URL(uri)
-      return decodeURIComponent(u.pathname.split('/').pop() || u.host)
-    } catch {
-      return uri
-    }
-  }
-  return d.gid
-}
-
-type Filter = 'all' | 'active' | 'done' | 'failed'
-
-function matchesFilter(d: Aria2Download, f: Filter): boolean {
-  switch (f) {
-    case 'active':
-      return d.status === 'active' || d.status === 'waiting' || d.status === 'paused'
-    case 'done':
-      return d.status === 'complete'
-    case 'failed':
-      return d.status === 'error' || d.status === 'removed'
-    default:
-      return true
-  }
-}
-
-const STATUS_LABEL: Record<Aria2Status, string> = {
-  active: 'Downloading',
-  waiting: 'Queued',
-  paused: 'Paused',
-  error: 'Failed',
-  complete: 'Done',
-  removed: 'Removed',
-}
-
-// ----------------------------------------------------------------- styles
-
-const Page = styled.div`
+const Page = styled.div<{ $drag: boolean }>`
   max-width: 1040px;
   margin: 0 auto;
   padding: 28px 24px 48px;
+  min-height: 100%;
+  outline: ${(p) => (p.$drag ? '2px dashed #38bdf8' : 'none')};
+  outline-offset: -12px;
 `
 
 const Header = styled.div`
@@ -108,12 +40,6 @@ const Title = styled.h1`
   flex: 1;
 `
 
-const Stat = styled.div`
-  font-size: 13px;
-  opacity: 0.8;
-  b { font-weight: 600; opacity: 1; }
-`
-
 const Dot = styled.span<{ $on: boolean }>`
   display: inline-block;
   width: 8px;
@@ -126,51 +52,29 @@ const Dot = styled.span<{ $on: boolean }>`
 const AddRow = styled.form`
   display: flex;
   gap: 8px;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 `
 
-const Input = styled.input`
-  flex: 1;
+const Batch = styled.textarea`
+  width: 100%;
+  min-height: 120px;
+  margin-bottom: 8px;
   padding: 10px 12px;
   border-radius: 10px;
   border: 1px solid var(--leo-color-divider-subtle, #334155);
   background: var(--leo-color-container-background, #1e293b);
   color: inherit;
-  font-size: 14px;
-  outline: none;
-  &:focus { border-color: #38bdf8; }
-`
-
-const Button = styled.button<{ $primary?: boolean; $danger?: boolean }>`
-  padding: 9px 14px;
-  border-radius: 10px;
-  border: 1px solid transparent;
-  background: ${(p) => (p.$primary ? '#0ea5e9' : p.$danger ? '#7f1d1d' : 'var(--leo-color-container-background, #1e293b)')};
-  color: ${(p) => (p.$primary ? '#fff' : 'inherit')};
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  &:hover { filter: brightness(1.15); }
-  &:disabled { opacity: 0.4; cursor: default; filter: none; }
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 12px;
+  resize: vertical;
 `
 
 const Toolbar = styled.div`
   display: flex;
   gap: 6px;
   align-items: center;
-  margin-bottom: 12px;
+  margin: 8px 0 12px;
   flex-wrap: wrap;
-`
-
-const Chip = styled.button<{ $active: boolean }>`
-  padding: 6px 12px;
-  border-radius: 999px;
-  border: 1px solid ${(p) => (p.$active ? '#38bdf8' : 'var(--leo-color-divider-subtle, #334155)')};
-  background: ${(p) => (p.$active ? 'rgba(56,189,248,0.15)' : 'transparent')};
-  color: inherit;
-  font-size: 12px;
-  cursor: pointer;
 `
 
 const Spacer = styled.div`
@@ -183,55 +87,6 @@ const List = styled.div`
   gap: 10px;
 `
 
-const Row = styled.div`
-  background: var(--leo-color-container-background, #1e293b);
-  border: 1px solid var(--leo-color-divider-subtle, #334155);
-  border-radius: 14px;
-  padding: 12px 14px;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 8px 14px;
-`
-
-const Name = styled.div`
-  font-size: 14px;
-  font-weight: 600;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-`
-
-const Meta = styled.div`
-  font-size: 12px;
-  opacity: 0.75;
-  display: flex;
-  gap: 14px;
-  flex-wrap: wrap;
-`
-
-const Bar = styled.div<{ $pct: number; $status: Aria2Status }>`
-  grid-column: 1 / -1;
-  height: 6px;
-  border-radius: 999px;
-  background: rgba(148, 163, 184, 0.2);
-  overflow: hidden;
-  &::after {
-    content: '';
-    display: block;
-    height: 100%;
-    width: ${(p) => Math.max(0, Math.min(100, p.$pct))}%;
-    background: ${(p) =>
-      p.$status === 'error' ? '#ef4444' : p.$status === 'complete' ? '#22c55e' : p.$status === 'paused' ? '#94a3b8' : '#38bdf8'};
-    transition: width 0.4s;
-  }
-`
-
-const Actions = styled.div`
-  display: flex;
-  gap: 6px;
-  align-items: start;
-`
-
 const Empty = styled.div`
   text-align: center;
   padding: 64px 0;
@@ -239,34 +94,51 @@ const Empty = styled.div`
   font-size: 14px;
 `
 
-const ErrorText = styled.span`
-  color: #f87171;
+const Footer = styled.div`
+  margin-top: 18px;
+  font-size: 12px;
+  opacity: 0.55;
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
 `
-
-// -------------------------------------------------------------------- app
 
 export function App() {
   const client = React.useMemo(
-    () =>
-      new Aria2Client(
-        loadTimeData.getString('rpcUrl'),
-        loadTimeData.getString('rpcSecret'),
-      ),
+    () => new Aria2Client(loadTimeData.getString('rpcUrl'), loadTimeData.getString('rpcSecret')),
     [],
   )
   const [connected, setConnected] = React.useState(false)
   const [downloads, setDownloads] = React.useState<Aria2Download[]>([])
   const [stat, setStat] = React.useState<Aria2GlobalStat | null>(null)
   const [filter, setFilter] = React.useState<Filter>('all')
+  const [sort, setSort] = React.useState<SortKey>('added')
+  const [query, setQuery] = React.useState('')
   const [url, setUrl] = React.useState('')
-  const [limit, setLimit] = React.useState('')
+  const [batchOpen, setBatchOpen] = React.useState(false)
+  const [batchText, setBatchText] = React.useState('')
   const [error, setError] = React.useState<string | null>(null)
+  const [openGid, setOpenGid] = React.useState<string | null>(null)
+  const [settingsOpen, setSettingsOpen] = React.useState(
+    () => location.hash === '#settings',
+  )
+  const [drag, setDrag] = React.useState(false)
   const fileInput = React.useRef<HTMLInputElement>(null)
+  const order = React.useRef(new Map<string, number>())
+  const sessionBytes = React.useRef(0)
+  const lastDone = React.useRef(new Map<string, number>())
 
   const refresh = React.useCallback(async () => {
     if (!client.connected) return
     try {
       const snap = await client.snapshot()
+      for (const d of snap.downloads) {
+        if (!order.current.has(d.gid)) order.current.set(d.gid, order.current.size)
+        const prev = lastDone.current.get(d.gid) ?? +d.completedLength
+        const now = +d.completedLength
+        if (now > prev) sessionBytes.current += now - prev
+        lastDone.current.set(d.gid, now)
+      }
       setDownloads(snap.downloads)
       setStat(snap.stat)
     } catch {
@@ -282,24 +154,38 @@ export function App() {
     client.onNotification = () => refresh()
     client.connect()
     const timer = window.setInterval(refresh, 1000)
+    const onHash = () => setSettingsOpen(location.hash === '#settings')
+    window.addEventListener('hashchange', onHash)
     return () => {
       window.clearInterval(timer)
+      window.removeEventListener('hashchange', onHash)
       client.close()
     }
   }, [client, refresh])
 
-  const add = async (e: React.FormEvent) => {
-    e.preventDefault()
-    const v = url.trim()
-    if (!v) return
+  const poke = () => chrome.send('falcon_downloader.poke')
+
+  const addUrls = async (urls: string[]) => {
+    const valid = urls.filter(isDownloadable)
+    if (valid.length === 0) {
+      setError('Nothing downloadable found (http, https, ftp, sftp or magnet links)')
+      return
+    }
     setError(null)
     try {
-      await client.addUri([v])
-      setUrl('')
+      for (const u of valid) await client.addUri([u])
       refresh()
+      poke()
     } catch (err: any) {
       setError(err?.message ?? 'Could not add download')
     }
+  }
+
+  const add = (e: React.FormEvent) => {
+    e.preventDefault()
+    const v = url.trim()
+    if (!v) return
+    addUrls(expandBatch(v)).then(() => setUrl(''))
   }
 
   const addTorrentFile = async (f: File) => {
@@ -310,24 +196,61 @@ export function App() {
     try {
       await client.addTorrent(btoa(bin))
       refresh()
+      poke()
     } catch (err: any) {
       setError(err?.message ?? 'Could not add torrent')
     }
   }
 
-  const applyLimit = async () => {
-    const kb = parseInt(limit, 10)
-    await client.setGlobalSpeedLimit(isFinite(kb) && kb > 0 ? kb * 1024 : 0)
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setDrag(false)
+    const files = Array.from(e.dataTransfer.files || [])
+    for (const f of files) if (f.name.endsWith('.torrent')) addTorrentFile(f)
+    const text = e.dataTransfer.getData('text/uri-list') || e.dataTransfer.getData('text/plain')
+    if (text) addUrls(expandBatch(text))
   }
 
-  const visible = downloads.filter((d) => matchesFilter(d, filter))
-  const order: Record<Aria2Status, number> = {
-    active: 0, waiting: 1, paused: 2, error: 3, complete: 4, removed: 5,
+  const onPaste = (e: React.ClipboardEvent) => {
+    const text = e.clipboardData.getData('text')
+    if (text.includes('\n') && text.split('\n').filter(isDownloadable).length > 1) {
+      e.preventDefault()
+      setBatchText(text)
+      setBatchOpen(true)
+    }
   }
-  visible.sort((a, b) => order[a.status] - order[b.status])
+
+  const q = query.trim().toLowerCase()
+  const visible = downloads
+    .filter((d) => matchesFilter(d, filter))
+    .filter((d) => !q || nameOf(d).toLowerCase().includes(q))
+  const cmp: Record<SortKey, (a: Aria2Download, b: Aria2Download) => number> = {
+    added: (a, b) => (order.current.get(b.gid) ?? 0) - (order.current.get(a.gid) ?? 0),
+    name: (a, b) => nameOf(a).localeCompare(nameOf(b)),
+    size: (a, b) => +b.totalLength - +a.totalLength,
+    progress: (a, b) => (+b.completedLength / (+b.totalLength || 1)) - (+a.completedLength / (+a.totalLength || 1)),
+    speed: (a, b) => +b.downloadSpeed - +a.downloadSpeed,
+  }
+  visible.sort((a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status] || cmp[sort](a, b))
+
+  const counts = {
+    active: downloads.filter((d) => matchesFilter(d, 'active')).length,
+    done: downloads.filter((d) => d.status === 'complete').length,
+    failed: downloads.filter((d) => d.status === 'error').length,
+  }
+  const anyActive = downloads.some((d) => d.status === 'active' || d.status === 'waiting')
+  const anyPaused = downloads.some((d) => d.status === 'paused')
 
   return (
-    <Page>
+    <Page
+      $drag={drag}
+      onDragOver={(e) => { e.preventDefault(); setDrag(true) }}
+      onDragLeave={() => setDrag(false)}
+      onDrop={onDrop}
+    >
+      {settingsOpen && (
+        <SettingsDrawer onClose={() => { setSettingsOpen(false); if (location.hash) history.replaceState(null, '', ' ') }} />
+      )}
       <Header>
         <Title>Downloads</Title>
         <Stat>
@@ -337,121 +260,97 @@ export function App() {
         {stat && (
           <Stat>
             ↓ <b>{fmtSpeed(+stat.downloadSpeed)}</b> &nbsp; ↑ <b>{fmtSpeed(+stat.uploadSpeed)}</b>
-            &nbsp; · {stat.numActive} active
+            &nbsp; · {stat.numActive} active{+stat.numWaiting > 0 ? ` · ${stat.numWaiting} queued` : ''}
           </Stat>
         )}
+        <Button onClick={() => setSettingsOpen(true)} title="Engine settings">⚙ Settings</Button>
       </Header>
 
       <AddRow onSubmit={add}>
         <Input
-          placeholder="Paste a URL, magnet link, or drop a .torrent file"
+          style={{ flex: 1 }}
+          placeholder="Paste a URL, magnet link, or a pattern like file[01-20].zip — or drop links / .torrent files anywhere"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
+          onPaste={onPaste}
           spellCheck={false}
         />
-        <Button $primary type="submit" disabled={!connected || !url.trim()}>
-          Download
-        </Button>
-        <Button type="button" onClick={() => fileInput.current?.click()} disabled={!connected}>
-          .torrent
-        </Button>
+        <Button $primary type="submit" disabled={!connected || !url.trim()}>Download</Button>
+        <Button type="button" onClick={() => setBatchOpen((v) => !v)} disabled={!connected}>Batch</Button>
+        <Button type="button" onClick={() => fileInput.current?.click()} disabled={!connected}>.torrent</Button>
         <input
-          ref={fileInput}
-          type="file"
-          accept=".torrent"
-          style={{ display: 'none' }}
+          ref={fileInput} type="file" accept=".torrent,.metalink,.meta4" multiple style={{ display: 'none' }}
           onChange={(e) => {
-            const f = e.target.files?.[0]
-            if (f) addTorrentFile(f)
+            for (const f of Array.from(e.target.files ?? [])) addTorrentFile(f)
             e.target.value = ''
           }}
         />
       </AddRow>
-      {error && <Meta><ErrorText>{error}</ErrorText></Meta>}
+      {batchOpen && (
+        <div>
+          <Batch
+            placeholder={'One link per line. Patterns expand: photo[001-120].jpg, disc[a-d].iso'}
+            value={batchText}
+            onChange={(e) => setBatchText(e.target.value)}
+          />
+          <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+            <Button $primary onClick={() => addUrls(expandBatch(batchText)).then(() => { setBatchText(''); setBatchOpen(false) })}>
+              Add {expandBatch(batchText).filter(isDownloadable).length || ''} downloads
+            </Button>
+            <Button onClick={() => setBatchOpen(false)}>Cancel</Button>
+          </div>
+        </div>
+      )}
+      {error && <Meta style={{ marginBottom: 8 }}><ErrorText>{error}</ErrorText></Meta>}
 
       <Toolbar>
-        {(['all', 'active', 'done', 'failed'] as Filter[]).map((f) => (
-          <Chip key={f} $active={filter === f} onClick={() => setFilter(f)}>
-            {f === 'all' ? 'All' : f === 'active' ? 'Active' : f === 'done' ? 'Completed' : 'Failed'}
-          </Chip>
+        {([['all', 'All'], ['active', `Active${counts.active ? ` ${counts.active}` : ''}`],
+           ['done', `Completed${counts.done ? ` ${counts.done}` : ''}`],
+           ['failed', `Failed${counts.failed ? ` ${counts.failed}` : ''}`],
+           ['torrents', 'Torrents']] as Array<[Filter, string]>).map(([f, label]) => (
+          <Chip key={f} $active={filter === f} onClick={() => setFilter(f)}>{label}</Chip>
         ))}
+        <Input style={{ padding: '6px 10px', width: 180 }} placeholder="Search" value={query}
+          onChange={(e) => setQuery(e.target.value)} />
+        <Select value={sort} onChange={(e) => setSort(e.target.value as SortKey)}>
+          <option value="added">Newest first</option>
+          <option value="name">Name</option>
+          <option value="size">Size</option>
+          <option value="progress">Progress</option>
+          <option value="speed">Speed</option>
+        </Select>
         <Spacer />
-        <Stat>Speed limit</Stat>
-        <Input
-          style={{ flex: '0 0 90px', padding: '6px 10px' }}
-          placeholder="KB/s"
-          value={limit}
-          onChange={(e) => setLimit(e.target.value)}
-          onBlur={applyLimit}
-          onKeyDown={(e) => e.key === 'Enter' && applyLimit()}
-        />
-        <Button type="button" onClick={() => client.purge().then(refresh)} disabled={!connected}>
-          Clear finished
-        </Button>
+        {anyActive && <Button $small onClick={() => client.pauseAll().then(refresh)}>Pause all</Button>}
+        {anyPaused && <Button $small $primary onClick={() => client.unpauseAll().then(refresh)}>Resume all</Button>}
+        <Button $small onClick={() => client.purge().then(refresh)} disabled={!connected}>Clear finished</Button>
       </Toolbar>
 
       {visible.length === 0 ? (
         <Empty>
-          {connected
-            ? 'No downloads yet. Paste a link above, or just download something — Falcon takes over automatically.'
-            : 'Starting the download engine…'}
+          {!connected
+            ? 'Starting the download engine…'
+            : downloads.length === 0
+              ? 'No downloads yet. Paste a link above, or just download something — Falcon takes over automatically.'
+              : 'Nothing matches this filter.'}
         </Empty>
       ) : (
         <List>
-          {visible.map((d) => {
-            const total = +d.totalLength
-            const done = +d.completedLength
-            const speed = +d.downloadSpeed
-            const pct = total > 0 ? (done / total) * 100 : 0
-            const path = d.files?.[0]?.path ?? ''
-            const canOpen = d.status === 'complete' && path
-            return (
-              <Row key={d.gid}>
-                <div style={{ minWidth: 0 }}>
-                  <Name title={path || nameOf(d)}>{nameOf(d)}</Name>
-                  <Meta>
-                    <span>{STATUS_LABEL[d.status]}</span>
-                    <span>
-                      {fmtBytes(done)}
-                      {total > 0 ? ` / ${fmtBytes(total)}` : ''}
-                      {total > 0 ? ` (${pct.toFixed(0)}%)` : ''}
-                    </span>
-                    {d.status === 'active' && (
-                      <>
-                        <span>{fmtSpeed(speed)}</span>
-                        <span>ETA {fmtEta(total - done, speed)}</span>
-                        <span>{d.connections} conn</span>
-                      </>
-                    )}
-                    {d.status === 'error' && d.errorMessage && (
-                      <ErrorText>{d.errorMessage}</ErrorText>
-                    )}
-                  </Meta>
-                </div>
-                <Actions>
-                  {d.status === 'active' || d.status === 'waiting' ? (
-                    <Button onClick={() => client.pause(d.gid).then(refresh)}>Pause</Button>
-                  ) : d.status === 'paused' ? (
-                    <Button $primary onClick={() => client.unpause(d.gid).then(refresh)}>Resume</Button>
-                  ) : null}
-                  {canOpen && (
-                    <>
-                      <Button onClick={() => chrome.send('falcon_downloader.openFile', [path])}>Open</Button>
-                      <Button onClick={() => chrome.send('falcon_downloader.openFolder', [path])}>Folder</Button>
-                    </>
-                  )}
-                  {d.status === 'active' || d.status === 'waiting' || d.status === 'paused' ? (
-                    <Button $danger onClick={() => client.remove(d.gid).then(refresh)}>Cancel</Button>
-                  ) : (
-                    <Button onClick={() => client.removeResult(d.gid).then(refresh)}>Remove</Button>
-                  )}
-                </Actions>
-                <Bar $pct={pct} $status={d.status} />
-              </Row>
-            )
-          })}
+          {visible.map((d) => (
+            <DownloadRow
+              key={d.gid} d={d} client={client}
+              open={openGid === d.gid}
+              onToggle={() => setOpenGid(openGid === d.gid ? null : d.gid)}
+              refresh={refresh} setError={setError}
+            />
+          ))}
         </List>
       )}
+
+      <Footer>
+        <span>{downloads.length} downloads listed</span>
+        <span>{fmtBytes(sessionBytes.current)} received this session</span>
+        <span>Saving to {loadTimeData.getString('downloadDir') || 'default folder'}{loadTimeData.getBoolean('categoriesEnabled') ? ' (sorted by category)' : ''}</span>
+      </Footer>
     </Page>
   )
 }

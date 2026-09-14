@@ -36,8 +36,10 @@ export interface Aria2Download {
   errorMessage?: string
   dir: string
   files: Aria2File[]
-  bittorrent?: { info?: { name?: string } }
+  bittorrent?: { info?: { name?: string }; announceList?: string[][] }
   infoHash?: string
+  verifiedLength?: string
+  verifyIntegrityPending?: string
 }
 
 export interface Aria2GlobalStat {
@@ -52,6 +54,13 @@ type Pending = {
   resolve: (v: any) => void
   reject: (e: Error) => void
 }
+
+export const STATUS_KEYS = [
+  'gid', 'status', 'totalLength', 'completedLength', 'uploadLength',
+  'downloadSpeed', 'uploadSpeed', 'connections', 'numSeeders', 'errorCode',
+  'errorMessage', 'dir', 'files', 'bittorrent', 'infoHash', 'verifiedLength',
+  'verifyIntegrityPending',
+]
 
 export class Aria2Client {
   private ws: WebSocket | null = null
@@ -177,6 +186,14 @@ export class Aria2Client {
     return this.call('aria2.unpause', gid)
   }
 
+  pauseAll() {
+    return this.call('aria2.pauseAll')
+  }
+
+  unpauseAll() {
+    return this.call('aria2.unpauseAll')
+  }
+
   remove(gid: string) {
     return this.call('aria2.forceRemove', gid)
   }
@@ -189,6 +206,22 @@ export class Aria2Client {
     return this.call('aria2.purgeDownloadResult')
   }
 
+  tellStatus(gid: string) {
+    return this.call<Aria2Download>('aria2.tellStatus', gid, STATUS_KEYS)
+  }
+
+  getFiles(gid: string) {
+    return this.call<Aria2File[]>('aria2.getFiles', gid)
+  }
+
+  getOption(gid: string) {
+    return this.call<Record<string, string>>('aria2.getOption', gid)
+  }
+
+  changeOption(gid: string, options: Record<string, string>) {
+    return this.call('aria2.changeOption', gid, options)
+  }
+
   setGlobalSpeedLimit(bytesPerSec: number) {
     return this.call('aria2.changeGlobalOption', {
       'max-overall-download-limit': String(bytesPerSec),
@@ -199,16 +232,11 @@ export class Aria2Client {
     downloads: Aria2Download[]
     stat: Aria2GlobalStat
   }> {
-    const keys = [
-      'gid', 'status', 'totalLength', 'completedLength', 'uploadLength',
-      'downloadSpeed', 'uploadSpeed', 'connections', 'numSeeders',
-      'errorCode', 'errorMessage', 'dir', 'files', 'bittorrent', 'infoHash',
-    ]
     const token = `token:${this.secret}`
     const results = await this.rawCall<any[]>('system.multicall', [[
-      { methodName: 'aria2.tellActive', params: [token, keys] },
-      { methodName: 'aria2.tellWaiting', params: [token, 0, 500, keys] },
-      { methodName: 'aria2.tellStopped', params: [token, 0, 500, keys] },
+      { methodName: 'aria2.tellActive', params: [token, STATUS_KEYS] },
+      { methodName: 'aria2.tellWaiting', params: [token, 0, 1000, STATUS_KEYS] },
+      { methodName: 'aria2.tellStopped', params: [token, 0, 1000, STATUS_KEYS] },
       { methodName: 'aria2.getGlobalStat', params: [token] },
     ]])
     const unwrap = (r: any) => (Array.isArray(r) ? r[0] : r)
@@ -219,4 +247,47 @@ export class Aria2Client {
     ] as Aria2Download[]
     return { downloads, stat: unwrap(results[3]) as Aria2GlobalStat }
   }
+}
+
+// ------------------------------------------------------------- helpers
+
+// Expand IDM-style batch patterns: "file[001-050].zip", "img[1-9].png",
+// "part[a-e].rar". Plain lines pass through. Returns unique, non-empty URLs.
+export function expandBatch(text: string): string[] {
+  const out: string[] = []
+  for (const rawLine of text.split(/\r?\n/)) {
+    const line = rawLine.trim()
+    if (!line) continue
+    const m = line.match(/^(.*)\[(\d+)-(\d+)\](.*)$/)
+    const a = line.match(/^(.*)\[([a-z])-([a-z])\](.*)$/i)
+    if (m) {
+      const [, pre, from, to, post] = m
+      const width = from.length
+      const lo = parseInt(from, 10)
+      const hi = parseInt(to, 10)
+      if (hi >= lo && hi - lo < 10000) {
+        for (let i = lo; i <= hi; i++) {
+          out.push(`${pre}${String(i).padStart(width, '0')}${post}`)
+        }
+        continue
+      }
+    } else if (a) {
+      const [, pre, from, to, post] = a
+      const lo = from.charCodeAt(0)
+      const hi = to.charCodeAt(0)
+      if (hi >= lo) {
+        for (let c = lo; c <= hi; c++) {
+          out.push(`${pre}${String.fromCharCode(c)}${post}`)
+        }
+        continue
+      }
+    }
+    out.push(line)
+  }
+  return Array.from(new Set(out))
+}
+
+export function isDownloadable(text: string): boolean {
+  const t = text.trim()
+  return /^(https?|ftp|sftp|magnet):/i.test(t)
 }
