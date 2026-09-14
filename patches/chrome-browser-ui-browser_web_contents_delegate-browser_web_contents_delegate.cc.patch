@@ -1,0 +1,12 @@
+diff --git a/chrome/browser/ui/browser_web_contents_delegate/browser_web_contents_delegate.cc b/chrome/browser/ui/browser_web_contents_delegate/browser_web_contents_delegate.cc
+index 92aca7476b3fae0e3302d71b71d12cff7450d89c..d2a03ebdf5cce185de6ce5f95960b85faeafc44c 100644
+--- a/chrome/browser/ui/browser_web_contents_delegate/browser_web_contents_delegate.cc
++++ b/chrome/browser/ui/browser_web_contents_delegate/browser_web_contents_delegate.cc
+@@ -539,6 +539,7 @@ content::WebContents* BrowserWebContentsDelegate::OpenURLFromTab(
+ #if DCHECK_IS_ON()
+   DCHECK(params.Valid());
+ #endif
++  FALCON_BROWSER_WEB_CONTENTS_DELEGATE_OPEN_URL_FROM_TAB
+ 
+   if ((browser_->GetType() == BrowserWindowInterface::Type::TYPE_DEVTOOLS)) {
+     DevToolsWindow* window = DevToolsWindow::AsDevToolsWindow(source);

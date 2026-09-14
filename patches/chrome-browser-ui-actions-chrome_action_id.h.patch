@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/actions/chrome_action_id.h b/chrome/browser/ui/actions/chrome_action_id.h
-index 637e84f591e0a459094c0e74a29894293bcdf986..2d17660b790dd1900d1c5e719b44ffcb3335eccb 100644
+index 637e84f591e0a459094c0e74a29894293bcdf986..51e7ca8d6a7e128fd5e9c6bb9460bb83e784d2ce 100644
 --- a/chrome/browser/ui/actions/chrome_action_id.h
 +++ b/chrome/browser/ui/actions/chrome_action_id.h
 @@ -476,6 +476,11 @@

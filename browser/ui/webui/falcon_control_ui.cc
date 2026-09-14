@@ -25,6 +25,7 @@
 #include "brave/browser/falcon/media/media_service.h"
 #include "brave/browser/falcon/ux/mouse_gesture_tab_helper.h"
 #include "brave/browser/ui/tabs/brave_tab_prefs.h"
+#include "brave/browser/ui/views/falcon/peek_window.h"
 #include "brave/browser/ui/webui/brave_webui_source.h"
 #include "brave/common/pref_names.h"
 #include "brave/components/constants/webui_url_constants.h"
@@ -101,6 +102,7 @@ class FalconControlMessageHandler : public content::WebUIMessageHandler {
     d.Set("sidebarShow", p->GetInteger(sidebar::kSidebarShowOption));
     d.Set("roundedCorners", p->GetBoolean(kWebViewRoundedCorners));
     d.Set("mouseGestures", p->GetBoolean(falcon::prefs::kMouseGesturesEnabled));
+    d.Set("peek", p->GetBoolean(falcon::prefs::kPeekEnabled));
     d.Set("videoPill", p->GetBoolean(falcon::prefs::kDownloadVideoPill));
     d.Set("clipboardMonitor",
           p->GetBoolean(falcon::prefs::kDownloadClipboardMonitor));
@@ -164,6 +166,9 @@ class FalconControlMessageHandler : public content::WebUIMessageHandler {
     }
     if (std::optional<bool> v = in.FindBool("mouseGestures")) {
       p->SetBoolean(falcon::prefs::kMouseGesturesEnabled, *v);
+    }
+    if (std::optional<bool> v = in.FindBool("peek")) {
+      p->SetBoolean(falcon::prefs::kPeekEnabled, *v);
     }
     if (std::optional<bool> v = in.FindBool("videoPill")) {
       p->SetBoolean(falcon::prefs::kDownloadVideoPill, *v);

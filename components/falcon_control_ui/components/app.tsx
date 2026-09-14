@@ -15,6 +15,7 @@ interface State {
   sidebarShow: 0 | 1 | 3 // always, on hover, never
   roundedCorners: boolean
   mouseGestures: boolean
+  peek: boolean
   videoPill: boolean
   clipboardMonitor: boolean
   engineEnabled: boolean
@@ -166,6 +167,7 @@ export function App() {
       <h2>Behaviour</h2>
       <Card>
         {bool('mouseGestures', 'Mouse gestures', 'Hold right button and drag: ← back · → forward · ↑ reload · ↓ new tab · ↓→ close · ↓← reopen · ↑←/↑→ switch tab')}
+        {bool('peek', 'Peek', 'Shift+click a link to preview it in a floating window (Arc-style); Esc closes, "Open in tab" keeps it')}
         {bool('videoPill', 'Download button on videos', 'Hover any video for "Download with Falcon"')}
         {bool('clipboardMonitor', 'Watch the clipboard', 'Offer to download copied file links and magnets')}
         {bool('engineEnabled', 'Falcon download engine', 'Take over downloads from pages (off = plain Chromium downloads)')}

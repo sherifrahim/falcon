@@ -142,6 +142,7 @@
 #include "brave/browser/ui/tabs/brave_tab_prefs.h"
 #include "brave/browser/ui/webui/brave_welcome_page/brave_welcome_page_prefs.h"
 #include "brave/browser/falcon/ux/mouse_gesture_tab_helper.h"
+#include "brave/browser/ui/views/falcon/peek_window.h"
 #include "brave/browser/ui/webui/falcon_newtab_ui.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "brave/components/brave_private_new_tab_ui/common/pref_names.h"
@@ -427,6 +428,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #if !BUILDFLAG(IS_ANDROID)
   falcon::prefs::RegisterNtpProfilePrefs(registry);
   falcon::prefs::RegisterGesturePrefs(registry);
+  falcon::prefs::RegisterPeekPrefs(registry);
 #endif
 
   brave_perf_predictor::PerfPredictorTabHelper::RegisterProfilePrefs(registry);
