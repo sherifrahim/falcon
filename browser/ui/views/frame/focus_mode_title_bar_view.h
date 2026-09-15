@@ -46,6 +46,7 @@ class FocusModeTitleBarView : public views::View {
   base::CallbackListSubscription tab_will_detach_subscription_;
   base::CallbackListSubscription tab_ui_updated_subscription_;
   raw_ptr<views::ImageView> favicon_image_ = nullptr;
+  raw_ptr<views::Label> title_label_ = nullptr;
   raw_ptr<views::Label> domain_label_ = nullptr;
   raw_ptr<tabs::TabInterface> tab_ = nullptr;
 };

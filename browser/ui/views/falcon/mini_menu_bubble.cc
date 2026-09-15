@@ -30,7 +30,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
-#include "ui/base/models/dialog_model.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/insets.h"
@@ -38,13 +37,11 @@
 #include "ui/gfx/text_constants.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
-#include "ui/views/bubble/bubble_border.h"
-#include "ui/views/bubble/bubble_dialog_delegate_view.h"
-#include "ui/views/bubble/bubble_dialog_model_host.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/box_layout_view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 #include "url/gurl.h"
 
 namespace falcon {
@@ -56,31 +53,31 @@ constexpr SkColor kSlate800 = SkColorSetRGB(0x1E, 0x29, 0x3B);
 constexpr SkColor kSlate100 = SkColorSetRGB(0xF1, 0xF5, 0xF9);
 constexpr SkColor kSlate950 = SkColorSetRGB(0x0B, 0x12, 0x20);
 
-// One live bubble per WebContents (closed by the tab helper, or replaced).
-// CLIENT_OWNS_WIDGET: the delegate must outlive the widget, so both live here.
+// One live pill per WebContents (closed by the tab helper, or replaced).
+// Plain frameless popup widget (no dialog chrome): CLIENT_OWNS_WIDGET with a
+// delegate we own, so both live in the map together.
+class PillDelegate : public views::WidgetDelegate {
+ public:
+  explicit PillDelegate(std::unique_ptr<views::View> contents)
+      : contents_(std::move(contents)) {
+    SetCanActivate(false);
+  }
+  ~PillDelegate() override = default;
+
+  views::View* GetContentsView() override { return contents_.get(); }
+
+ private:
+  std::unique_ptr<views::View> contents_;
+};
+
 struct Entry {
-  std::unique_ptr<views::BubbleDialogModelHost> host;
+  std::unique_ptr<PillDelegate> delegate;
   std::unique_ptr<views::Widget> widget;
 };
 
 std::map<content::WebContents*, Entry>& Bubbles() {
   static base::NoDestructor<std::map<content::WebContents*, Entry>> bubbles;
   return *bubbles;
-}
-
-void OnBubbleClosed(content::WebContents* web_contents,
-                    views::Widget::ClosedReason reason) {
-  auto it = Bubbles().find(web_contents);
-  if (it == Bubbles().end()) {
-    return;
-  }
-  Entry entry = std::move(it->second);
-  Bubbles().erase(it);
-  // Free after the close finishes (we may be inside the widget's close path).
-  base::SingleThreadTaskRunner::GetCurrentDefault()->DeleteSoon(
-      FROM_HERE, entry.widget.release());
-  base::SingleThreadTaskRunner::GetCurrentDefault()->DeleteSoon(
-      FROM_HERE, entry.host.release());
 }
 
 std::unique_ptr<views::LabelButton> MakeButton(
@@ -93,7 +90,7 @@ std::unique_ptr<views::LabelButton> MakeButton(
   button->SetBackground(views::CreateRoundedRectBackground(
       primary ? kSky400 : kSlate800, 8.0f));
   button->SetBorder(views::CreateEmptyBorder(gfx::Insets::VH(4, 10)));
-  button->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  button->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   button->SetFocusBehavior(views::View::FocusBehavior::NEVER);
   return button;
 }
@@ -143,9 +140,11 @@ void ShowMiniMenu(content::WebContents* web_contents,
                   const std::u16string& text) {
   CloseMiniMenu(web_contents);
 
+  // Vertical stack (Sherif's call): Copy on top, Search below.
   auto row = std::make_unique<views::BoxLayoutView>();
-  row->SetOrientation(views::BoxLayout::Orientation::kHorizontal);
-  row->SetBetweenChildSpacing(6);
+  row->SetOrientation(views::BoxLayout::Orientation::kVertical);
+  row->SetBetweenChildSpacing(4);
+  row->SetCrossAxisAlignment(views::BoxLayout::CrossAxisAlignment::kStretch);
   row->AddChildView(MakeButton(
       base::BindRepeating(&CopyText, base::Unretained(web_contents), text),
       u"Copy", /*primary=*/false));
@@ -153,32 +152,29 @@ void ShowMiniMenu(content::WebContents* web_contents,
       base::BindRepeating(&SearchText, base::Unretained(web_contents), text),
       SearchLabel(web_contents), /*primary=*/true));
 
-  auto model =
-      ui::DialogModel::Builder()
-          .OverrideShowCloseButton(false)
-          .AddCustomField(
-              std::make_unique<views::BubbleDialogModelHost::CustomView>(
-                  std::move(row),
-                  views::BubbleDialogModelHost::FieldType::kControl))
-          .Build();
-  auto bubble = std::make_unique<views::BubbleDialogModelHost>(
-      std::move(model), views::BubbleAnchor(), views::BubbleBorder::TOP_LEFT,
-      /*autosize=*/true, /*owned_by_widget=*/false);
-  // Sit just below-right of the cursor, never steal focus from the page.
-  bubble->SetAnchorRect(gfx::Rect(screen_point + gfx::Vector2d(8, 12),
-                                  gfx::Size(1, 1)));
-  bubble->set_parent_window(web_contents->GetNativeView());
-  bubble->SetCanActivate(false);
-  bubble->set_close_on_deactivate(false);
-  bubble->set_margins(gfx::Insets(6));
-  bubble->set_frame_margins(views::DialogDelegate::FrameMarginsParams{
-      .contents = gfx::Insets(0)});
+  auto pill = std::make_unique<views::BoxLayoutView>();
+  pill->SetOrientation(views::BoxLayout::Orientation::kHorizontal);
+  pill->SetInsideBorderInsets(gfx::Insets(6));
+  pill->SetBackground(views::CreateRoundedRectBackground(kSlate950, 12.0f));
+  pill->SetBorder(views::CreateRoundedRectBorder(1, 12.0f, kSlate800));
+  pill->AddChildView(std::move(row));
+  const gfx::Size size = pill->GetPreferredSize();
 
   Entry entry;
-  entry.widget = views::BubbleDialogDelegate::CreateBubble(
-      bubble.get(),
-      base::BindOnce(&OnBubbleClosed, base::Unretained(web_contents)));
-  entry.host = std::move(bubble);
+  entry.delegate = std::make_unique<PillDelegate>(std::move(pill));
+  views::Widget::InitParams params(
+      views::Widget::InitParams::CLIENT_OWNS_WIDGET,
+      views::Widget::InitParams::TYPE_POPUP);
+  params.delegate = entry.delegate.get();
+  params.parent = web_contents->GetNativeView();
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
+  params.shadow_type = views::Widget::InitParams::ShadowType::kDrop;
+  params.activatable = views::Widget::InitParams::Activatable::kNo;
+  params.accept_events = true;
+  params.bounds = gfx::Rect(screen_point + gfx::Vector2d(10, 14), size);
+  params.name = "FalconMiniMenu";
+  entry.widget = std::make_unique<views::Widget>();
+  entry.widget->Init(std::move(params));
   entry.widget->ShowInactive();
   Bubbles()[web_contents] = std::move(entry);
 }
@@ -188,8 +184,12 @@ void CloseMiniMenu(content::WebContents* web_contents) {
   if (it == Bubbles().end()) {
     return;
   }
-  // Close() runs OnBubbleClosed synchronously, which frees the entry.
-  it->second.widget->Close();
+  Entry entry = std::move(it->second);
+  Bubbles().erase(it);
+  entry.widget->CloseNow();
+  // The widget is gone; the delegate can follow once the stack unwinds.
+  base::SingleThreadTaskRunner::GetCurrentDefault()->DeleteSoon(
+      FROM_HERE, entry.delegate.release());
 }
 
 }  // namespace falcon

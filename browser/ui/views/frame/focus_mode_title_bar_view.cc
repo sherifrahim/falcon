@@ -27,10 +27,11 @@
 
 namespace {
 
-constexpr int kTitleBarHeight = 20;
-constexpr int kFaviconSize = 12;
-constexpr int kFaviconLabelSpacing = 4;
-constexpr int kLabelFontSize = 11;
+// Falcon "Mac-style" title bar: a little taller, page title + domain.
+constexpr int kTitleBarHeight = 28;
+constexpr int kFaviconSize = 14;
+constexpr int kFaviconLabelSpacing = 6;
+constexpr int kLabelFontSize = 12;
 
 gfx::FontList GetLabelFont() {
   const gfx::FontList base;
@@ -54,6 +55,13 @@ FocusModeTitleBarView::FocusModeTitleBarView() {
   favicon_image_ = AddChildView(std::make_unique<views::ImageView>());
   favicon_image_->SetImageSize(gfx::Size(kFaviconSize, kFaviconSize));
   favicon_image_->SetVisible(false);
+
+  title_label_ = AddChildView(std::make_unique<views::Label>(
+      u"", views::Label::CustomFont(GetLabelFont())));
+  title_label_->SetElideBehavior(gfx::ELIDE_TAIL);
+  title_label_->SetEnabledColor(nala::kColorTextPrimary);
+  title_label_->SetAutoColorReadabilityEnabled(false);
+  title_label_->SetMaximumWidthSingleLine(520);
 
   domain_label_ = AddChildView(std::make_unique<views::Label>(
       u"", views::Label::CustomFont(GetLabelFont())));
@@ -94,9 +102,11 @@ void FocusModeTitleBarView::Update() {
   if (!tab_ui_helper) {
     favicon_image_->SetImage(ui::ImageModel());
     favicon_image_->SetVisible(false);
+    title_label_->SetText(u"");
     domain_label_->SetText(u"");
     return;
   }
+  title_label_->SetText(tab_ui_helper->GetTitle());
 
   GURL domain_url = tab_ui_helper->GetVisibleURL();
   std::u16string domain;
@@ -112,7 +122,7 @@ void FocusModeTitleBarView::Update() {
     brave_utils::ReplaceChromeToBraveScheme(domain);
   }
 
-  domain_label_->SetText(domain);
+  domain_label_->SetText(domain.empty() ? u"" : u"·  " + domain);
 
   if (ui::ImageModel favicon = tab_ui_helper->GetFavicon();
       !favicon.IsEmpty() && !domain.empty()) {
