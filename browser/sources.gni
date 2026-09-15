@@ -992,6 +992,11 @@ if (is_android) {
     "//brave/browser/android/preferences",
     "//brave/browser/notifications",
   ]
+  # Falcon: upstream only pulls notifications in via enable_brave_ads, which
+  # Falcon turns off; Android needs it regardless.
+  if (!enable_brave_ads) {
+    brave_chrome_browser_deps += [ "//brave/browser/notifications" ]
+  }
 }
 
 # TODO(https://github.com/brave/brave-browser/issues/43310):
