@@ -38,7 +38,8 @@ function Ring({ pct, status }: { pct: number; status: Aria2Status }) {
   const frac = status === 'complete' ? 1 : Math.max(0, Math.min(1, pct / 100))
   const label = status === 'complete' ? '✓' : status === 'error' ? '!' : `${Math.round(pct)}`
   return (
-    <RingBox viewBox="0 0 34 34" title={`${Math.round(pct)}%`}>
+    <RingBox viewBox="0 0 34 34">
+      <title>{`${Math.round(pct)}%`}</title>
       <circle className="track" cx="17" cy="17" r={r} fill="none" strokeWidth="2.5" />
       <circle className="arc" cx="17" cy="17" r={r} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round"
         strokeDasharray={c} strokeDashoffset={c * (1 - frac)} transform="rotate(-90 17 17)"

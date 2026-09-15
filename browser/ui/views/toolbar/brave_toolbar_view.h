@@ -63,6 +63,9 @@ class BraveToolbarView : public ToolbarView,
 #endif
 
   void UpdateHorizontalPadding();
+  // Falcon cockpit: capsule shows only nav + omnibox + downloads + menu.
+  bool IsCockpitCapsule() const;
+  void UpdateCockpitTrim();
 
   void Init() override;
   void Layout(PassKey) override;

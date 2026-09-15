@@ -27,6 +27,7 @@
 #include "brave/browser/ui/views/location_bar/brave_location_bar_view.h"
 #include "brave/browser/ui/views/tabs/vertical_tab_utils.h"
 #include "brave/browser/ui/views/toolbar/bookmark_button.h"
+#include "brave/browser/ui/views/falcon/peek_window.h"
 #include "brave/browser/ui/views/toolbar/side_panel_button.h"
 #include "brave/browser/ui/views/workspaces/workspaces_bubble_controller.h"
 #include "brave/browser/workspaces/features.h"
@@ -577,13 +578,14 @@ void BraveToolbarView::UpdateBookmarkVisibility() {
   DCHECK_EQ(DisplayMode::kNormal, display_mode_);
   bookmark_->SetVisible(browser_defaults::bookmarks_enabled &&
                         edit_bookmarks_enabled_.GetValue() &&
-                        show_bookmarks_button_.GetValue());
+                        show_bookmarks_button_.GetValue() && !IsCockpitCapsule());
 }
 
 void BraveToolbarView::UpdateHorizontalPadding() {
   if (!brave_initialized_) {
     return;
   }
+  UpdateCockpitTrim();
 
   // In vertical tabs mode the toolbar rises into the row occupied by the OS
   // caption buttons, so a border insets the toolbar's contents by the caption
@@ -753,8 +755,10 @@ void BraveToolbarView::UpdateVerticalTabToggleVisibility() {
     return;
   }
 
-  vertical_tab_toggle_->SetVisible(VerticalTabController::FromBrowser(browser_)
-                                       ->ShouldShowVerticalTabToggleButton());
+  vertical_tab_toggle_->SetVisible(
+      VerticalTabController::FromBrowser(browser_)
+          ->ShouldShowVerticalTabToggleButton() &&
+      !IsCockpitCapsule());
 }
 
 void BraveToolbarView::UpdateVerticalTabTogglePlacement() {
@@ -873,7 +877,8 @@ void BraveToolbarView::UpdateWorkspaceButtonVisibility() {
     return;
   }
   workspaces_button_->SetVisible(VerticalTabController::FromBrowser(browser_)
-                                     ->ShouldShowBraveVerticalTabs());
+                                     ->ShouldShowBraveVerticalTabs() &&
+                                 !IsCockpitCapsule());
 }
 
 void BraveToolbarView::UpdateWorkspaceButtonPlacement() {
@@ -909,7 +914,28 @@ void BraveToolbarView::UpdateComboButtonState() {
   }
 
   auto* vtc = VerticalTabController::FromBrowser(browser_);
-  combo_button_->SetVisible(vtc && vtc->ShouldShowBraveVerticalTabs());
+  combo_button_->SetVisible(vtc && vtc->ShouldShowBraveVerticalTabs() &&
+                            !IsCockpitCapsule());
+}
+
+bool BraveToolbarView::IsCockpitCapsule() const {
+  if (!IsFocusModeOverlayActive() || !browser_) {
+    return false;
+  }
+  return browser_->GetProfile()->GetPrefs()->GetInteger(
+             falcon::prefs::kShellMode) == falcon::prefs::kShellCockpit;
+}
+
+void BraveToolbarView::UpdateCockpitTrim() {
+  // The capsule (mock v2) carries only navigation, the omnibox, the download
+  // ring and the menu; tab-strip controls and the star live elsewhere.
+  UpdateBookmarkVisibility();
+  UpdateVerticalTabToggleVisibility();
+  UpdateWorkspaceButtonVisibility();
+  UpdateComboButtonState();
+  if (side_panel_) {
+    side_panel_->SetVisible(!IsCockpitCapsule());
+  }
 }
 
 bool BraveToolbarView::IsFocusModeOverlayActive() const {

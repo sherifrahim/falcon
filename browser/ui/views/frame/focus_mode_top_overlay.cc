@@ -28,11 +28,11 @@ constexpr base::TimeDelta kRevealAnimationDuration = base::Milliseconds(200);
 
 // Falcon "capsule": the revealed toolbar floats as a centred rounded bar
 // instead of a full-width strip, leaving room for the window controls.
-constexpr int kCapsuleMaxWidth = 1120;
+constexpr int kCapsuleMaxWidth = 980;
 constexpr int kCapsuleSideInset = 24;
 constexpr int kCapsuleTopInset = 8;
 constexpr int kCapsuleControlsReserve = 150;  // caption buttons on the right
-constexpr float kCapsuleRadius = 14.0f;
+constexpr float kCapsuleRadius = 20.0f;  // pill for the 40 px toolbar
 
 constexpr ViewShadow::ShadowParameters kShadow{
     .offset_x = 0,
