@@ -990,12 +990,13 @@ if (is_android) {
     "//brave/browser/android:android_browser_process",
     "//brave/browser/android:tabs_impl",
     "//brave/browser/android/preferences",
-    "//brave/browser/notifications",
   ]
-  # Falcon: upstream only pulls notifications in via enable_brave_ads, which
-  # Falcon turns off; Android needs it regardless.
-  if (!enable_brave_ads) {
-    brave_chrome_browser_deps += [ "//brave/browser/notifications" ]
+  # Falcon: //brave/browser/notifications is ads-only (asserts
+  # enable_brave_ads), so it is neither a dep nor a circular include without
+  # ads.
+  if (enable_brave_ads) {
+    brave_chrome_browser_allow_circular_includes_from +=
+        [ "//brave/browser/notifications" ]
   }
 }
 
