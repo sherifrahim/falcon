@@ -264,6 +264,20 @@ void FocusModeTopOverlay::UpdateRevealState() {
   }
 }
 
+// static
+int FocusModeTopOverlay::CapsuleWidth(int parent_width) {
+  const int available =
+      parent_width - 2 * kCapsuleSideInset - kCapsuleControlsReserve;
+  return std::clamp(available, 480, kCapsuleMaxWidth);
+}
+
+// static
+int FocusModeTopOverlay::CapsuleX(int parent_width) {
+  return std::max(kCapsuleSideInset,
+                  (parent_width - kCapsuleControlsReserve -
+                   CapsuleWidth(parent_width)) / 2);
+}
+
 void FocusModeTopOverlay::UpdateBounds() {
   auto* top_container = top_container_observation_.GetSource();
   if (!top_container || !parent()) {
@@ -275,11 +289,8 @@ void FocusModeTopOverlay::UpdateBounds() {
   const int hidden_offset = height + kCapsuleTopInset + 24;
   int y_offset = kCapsuleTopInset -
                  static_cast<int>((1.0 - reveal_fraction) * hidden_offset);
-  const int available =
-      parent()->width() - 2 * kCapsuleSideInset - kCapsuleControlsReserve;
-  const int width = std::clamp(available, 480, kCapsuleMaxWidth);
-  const int x = std::max(kCapsuleSideInset,
-                         (parent()->width() - kCapsuleControlsReserve - width) / 2);
+  const int width = CapsuleWidth(parent()->width());
+  const int x = CapsuleX(parent()->width());
   SetBoundsRect(gfx::Rect(x, y_offset, width, height));
   shadow_.SetVisible(reveal_fraction > 0.0);
 }

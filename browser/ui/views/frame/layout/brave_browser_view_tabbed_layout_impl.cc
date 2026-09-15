@@ -13,6 +13,7 @@
 #include "base/check_is_test.h"
 #include "base/i18n/rtl.h"
 #include "brave/browser/ui/views/frame/brave_browser_view.h"
+#include "brave/browser/ui/views/frame/focus_mode_top_overlay.h"
 #include "brave/browser/ui/views/sidebar/sidebar_container_view.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser_window/public/browser_window_features.h"
@@ -260,6 +261,18 @@ gfx::Rect BraveBrowserViewTabbedLayoutImpl::CalculateTopContainerLayout(
     ProposedLayout& layout,
     BrowserLayoutParams params,
     bool needs_exclusion) const {
+  // Falcon cockpit: while the top container lives in the floating capsule,
+  // lay it out for the capsule's width with no frame-control exclusions.
+  if (views().top_container &&
+      views::IsViewClass<FocusModeTopOverlay>(views().top_container->parent())) {
+    params.visual_client_area =
+        gfx::Rect(0, 0,
+                  FocusModeTopOverlay::CapsuleWidth(views().browser_view->width()),
+                  params.visual_client_area.height());
+    params.leading_exclusion = {};
+    params.trailing_exclusion = {};
+  }
+
   gfx::Rect bounds = BrowserViewTabbedLayoutImpl::CalculateTopContainerLayout(
       layout, params, needs_exclusion);
 

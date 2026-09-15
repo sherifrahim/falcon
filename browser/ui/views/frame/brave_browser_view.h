@@ -77,6 +77,9 @@ class BraveMultiContentsView;
 class BrowserWindowInterface;
 class FocusModeTitleBarView;
 class FocusModeTopOverlay;
+namespace falcon {
+class TelemetryEdgeView;
+}  // namespace falcon
 class SidebarContainerView;
 class SidePanelEntry;
 class TabStripPlacementCoordinator;
@@ -364,6 +367,8 @@ class BraveBrowserView : public BrowserView,
       vertical_tab_strip_container_view_ = nullptr;
   raw_ptr<FocusModeTitleBarView> focus_mode_title_bar_view_ = nullptr;
   raw_ptr<FocusModeTopOverlay> focus_mode_top_overlay_ = nullptr;
+  // Falcon cockpit: download beam on the right edge.
+  raw_ptr<falcon::TelemetryEdgeView> telemetry_edge_ = nullptr;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Caches the PWA Shields toolbar button for this window. Note that this

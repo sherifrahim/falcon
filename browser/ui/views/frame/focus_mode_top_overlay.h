@@ -76,6 +76,11 @@ class FocusModeTopOverlay : public views::View,
   // Forces a full reveal for `duration`, then resumes state-driven behavior.
   void RevealTemporarily(base::TimeDelta duration);
 
+  // Falcon capsule geometry: width of the floating toolbar for a browser view
+  // of `parent_width` (shared with the layout so the toolbar fits inside).
+  static int CapsuleWidth(int parent_width);
+  static int CapsuleX(int parent_width);
+
   // Returns a value in [0, 1], where 1 indicates fully revealed.
   double GetRevealFraction() const;
 

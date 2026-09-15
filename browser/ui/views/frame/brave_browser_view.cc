@@ -27,6 +27,7 @@
 #include "brave/browser/ui/focus_mode/focus_mode_features.h"
 #include "brave/browser/ui/focus_mode/focus_mode_utils.h"
 #include "brave/browser/ui/views/falcon/peek_window.h"
+#include "brave/browser/ui/views/falcon/telemetry_edge_view.h"
 #include "brave/browser/ui/page_info/features.h"
 #include "brave/browser/ui/sidebar/sidebar_controller.h"
 #include "brave/browser/ui/sidebar/sidebar_utils.h"
@@ -871,6 +872,10 @@ void BraveBrowserView::AddedToWidget() {
 
   // Falcon: start in cockpit mode when the profile says so.
   OnCockpitPrefChanged();
+  if (browser_->GetType() == BrowserWindowInterface::TYPE_NORMAL) {
+    telemetry_edge_ =
+        AddChildView(std::make_unique<falcon::TelemetryEdgeView>(browser_));
+  }
 
   UpdateFocusModeState();
   EnsureFindBarHostViewIsLastChild();
