@@ -5,6 +5,7 @@
 
 #include "base/containers/extend.h"
 #include "brave/app/brave_command_ids.h"
+#include "brave/browser/falcon/falcon_command_ids.h"
 #include "brave/components/commander/common/buildflags/buildflags.h"
 #include "build/build_config.h"
 
@@ -22,6 +23,9 @@ constexpr AcceleratorMapping kBraveAcceleratorMap[] = {
     // Falcon: Ctrl+Shift+F toggles cockpit (focus) mode.
     {ui::VKEY_F, ui::EF_PLATFORM_ACCELERATOR | ui::EF_SHIFT_DOWN,
      IDC_TOGGLE_FOCUS_MODE},
+    // Falcon: Ctrl+J opens Falcon Downloads (upstream's mapping is removed
+    // below).
+    {ui::VKEY_J, ui::EF_PLATFORM_ACCELERATOR, IDC_FALCON_SHOW_DOWNLOADS},
     // Ctrl+Alt+T (Cmd+Alt+T on Mac)
     {ui::VKEY_T, ui::EF_PLATFORM_ACCELERATOR | ui::EF_ALT_DOWN,
      IDC_NEW_SPLIT_TAB},
@@ -60,6 +64,13 @@ std::vector<AcceleratorMapping> GetAcceleratorList() {
            m.command_id == IDC_NEW_SPLIT_TAB;
   });
 #endif
+
+  // Falcon: Ctrl+J belongs to the Falcon downloader.
+  std::erase_if(accelerator_list, [](const AcceleratorMapping& m) {
+    return m.keycode == ui::VKEY_J &&
+           m.modifiers == ui::EF_PLATFORM_ACCELERATOR &&
+           m.command_id == IDC_SHOW_DOWNLOADS;
+  });
 
   base::Extend(accelerator_list, base::span(kBraveAcceleratorMap));
 
