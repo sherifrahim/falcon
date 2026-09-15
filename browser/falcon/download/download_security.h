@@ -7,6 +7,7 @@
 #define BRAVE_BROWSER_FALCON_DOWNLOAD_DOWNLOAD_SECURITY_H_
 
 #include <map>
+#include <set>
 #include <memory>
 #include <optional>
 #include <string>
@@ -78,6 +79,13 @@ class DownloadSecurity : public DownloadTracker::Observer {
   base::DictValue ResultsAsDict() const;
   void Rescan(const std::string& gid);
 
+  // "Open when finished": the file is launched once its scan comes back
+  // clean (never when AV removed it or VirusTotal flagged it).
+  void SetOpenWhenDone(const std::string& gid, bool open);
+  bool IsOpenWhenDone(const std::string& gid) const {
+    return open_when_done_.count(gid) > 0;
+  }
+
   // Windows Sandbox: launches a throwaway VM with the file's folder mapped
   // read-only. Available only when the optional Windows feature is on.
   static bool IsSandboxAvailable();
@@ -103,8 +111,11 @@ class DownloadSecurity : public DownloadTracker::Observer {
   void MaybeFinish(const std::string& gid);
   void Notify(const std::string& title, const std::string& message);
 
+  void MaybeOpen(const Result& result);
+
   std::map<std::string, Result> results_;
   std::map<std::string, DownloadTracker::Finished> pending_;
+  std::set<std::string> open_when_done_;
   std::vector<std::unique_ptr<network::SimpleURLLoader>> loaders_;
   base::ScopedObservation<DownloadTracker, DownloadTracker::Observer>
       observation_{this};

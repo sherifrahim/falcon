@@ -15,6 +15,7 @@ export interface GrabbedLink {
   url: string
   name: string
   category: string // Video, Music, Images, Documents, Compressed, Programs, Apps, Torrents, Other
+  from?: string // sub-page the link was found on (depth-2 crawls)
 }
 
 const Panel = styled(Card)`
@@ -44,15 +45,18 @@ export function Grabber(props: { initialUrl: string; onClose: () => void; onQueu
   const [cat, setCat] = React.useState('All')
   const [pattern, setPattern] = React.useState('')
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
+  const [deep, setDeep] = React.useState(false)
+  const [pagesScanned, setPagesScanned] = React.useState(0)
 
   const grab = async () => {
     const target = url.trim()
     if (!/^https?:/i.test(target)) { setError('Enter a page URL (https://…)'); return }
     setBusy(true); setError(null); setLinks([]); setSelected(new Set())
     try {
-      const r: { links?: GrabbedLink[]; error?: string } = await sendWithPromise('falcon_downloader.grabPage', target)
+      const r: { links?: GrabbedLink[]; error?: string; pagesScanned?: number } = await sendWithPromise('falcon_downloader.grabPage', target, deep ? 2 : 1)
       if (r.error) setError(r.error)
       setLinks(r.links ?? [])
+      setPagesScanned(r.pagesScanned ?? 1)
     } catch (e: any) {
       setError(e?.message ?? 'Could not read the page')
     } finally {
@@ -77,6 +81,10 @@ export function Grabber(props: { initialUrl: string; onClose: () => void; onQueu
         <Button $primary onClick={grab} disabled={busy}>{busy ? 'Scanning…' : 'Scan page'}</Button>
         <Button onClick={props.onClose}>Close</Button>
       </div>
+      <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, opacity: 0.8, cursor: 'pointer' }}>
+        <input type="checkbox" checked={deep} onChange={(e) => setDeep(e.target.checked)} />
+        Also scan pages linked from this one (same site, up to 40 pages){pagesScanned > 1 ? ` · scanned ${pagesScanned} pages` : ''}
+      </label>
       {error && <Meta><ErrorText>{error}</ErrorText></Meta>}
       {links.length > 0 && (
         <>

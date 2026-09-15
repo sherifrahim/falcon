@@ -12,6 +12,9 @@
 
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
+#include "base/no_destructor.h"
+#include "base/time/time.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_split.h"
@@ -25,6 +28,8 @@
 #include "brave/components/constants/url_constants.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/navigator/browser_navigator.h"
+#include "chrome/browser/ui/navigator/browser_navigator_params.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -40,13 +45,7 @@ namespace falcon {
 
 namespace {
 
-void OnCookiesForDownload(const GURL& url,
-                          const std::string& referer,
-                          const std::string& user_agent,
-                          const std::string& out_filename,
-                          const base::FilePath& download_dir,
-                          const net::CookieAccessResultList& cookies,
-                          const net::CookieAccessResultList& excluded) {
+std::string CookieHeader(const net::CookieAccessResultList& cookies) {
   std::string cookie_header;
   for (const auto& cookie_with_access_result : cookies) {
     const net::CanonicalCookie& cookie = cookie_with_access_result.cookie;
@@ -55,9 +54,91 @@ void OnCookiesForDownload(const GURL& url,
     }
     cookie_header += cookie.Name() + "=" + cookie.Value();
   }
+  return cookie_header;
+}
+
+void OnCookiesForDownload(const GURL& url,
+                          const std::string& referer,
+                          const std::string& user_agent,
+                          const std::string& out_filename,
+                          const base::FilePath& download_dir,
+                          const net::CookieAccessResultList& cookies,
+                          const net::CookieAccessResultList& excluded) {
   Aria2Service::Get()->AddUri(
-      url, Aria2Service::BuildOptions(referer, user_agent, cookie_header,
+      url, Aria2Service::BuildOptions(referer, user_agent, CookieHeader(cookies),
                                       out_filename, download_dir));
+}
+
+// One-shot "Refresh URL" capture (see ArmUrlRefresh).
+struct PendingRefresh {
+  std::string gid;
+  std::string filename;  // lower-case
+  base::FilePath dir;
+  base::TimeTicks armed;
+};
+
+std::optional<PendingRefresh>& GetPendingRefresh() {
+  static base::NoDestructor<std::optional<PendingRefresh>> pending;
+  return *pending;
+}
+
+void OnCookiesForRefresh(PendingRefresh pending,
+                         const GURL& url,
+                         const std::string& referer,
+                         const std::string& user_agent,
+                         const net::CookieAccessResultList& cookies,
+                         const net::CookieAccessResultList& excluded) {
+  base::DictValue options = Aria2Service::BuildOptions(
+      referer, user_agent, CookieHeader(cookies), pending.filename,
+      pending.dir);
+  // Land on the same file and resume whatever aria2 already has of it.
+  options.Set("continue", "true");
+  options.Set("auto-file-renaming", "false");
+  options.Set("allow-overwrite", "true");
+  Aria2Service::Get()->AddUri(url, std::move(options));
+  base::ListValue params;
+  params.Append(pending.gid);
+  Aria2Service::Get()->Call("aria2.removeDownloadResult", std::move(params),
+                            base::DoNothing());
+  VLOG(1) << "Falcon: refreshed URL for " << pending.filename;
+}
+
+// True (and consumes the pending capture) when |filename| is the file the
+// user asked to refresh.
+bool MaybeCaptureRefresh(Profile* profile,
+                         const GURL& url,
+                         const std::string& user_agent,
+                         const std::string& filename,
+                         content::WebContents* web_contents) {
+  auto& pending = GetPendingRefresh();
+  if (!pending) {
+    return false;
+  }
+  if (base::TimeTicks::Now() - pending->armed > base::Minutes(10)) {
+    pending.reset();
+    return false;
+  }
+  if (base::ToLowerASCII(filename) != pending->filename) {
+    return false;
+  }
+  PendingRefresh captured = std::move(*pending);
+  pending.reset();
+  std::string referer;
+  if (web_contents && web_contents->GetLastCommittedURL().SchemeIsHTTPOrHTTPS()) {
+    referer = web_contents->GetLastCommittedURL().spec();
+  }
+  auto* cookie_manager = profile->GetDefaultStoragePartition()
+                             ->GetCookieManagerForBrowserProcess();
+  if (!cookie_manager) {
+    OnCookiesForRefresh(std::move(captured), url, referer, user_agent, {}, {});
+    return true;
+  }
+  cookie_manager->GetCookieList(
+      url, net::CookieOptions::MakeAllInclusive(),
+      net::CookiePartitionKeyCollection::ContainsAll(),
+      base::BindOnce(&OnCookiesForRefresh, std::move(captured), url, referer,
+                     user_agent));
+  return true;
 }
 
 }  // namespace
@@ -182,6 +263,9 @@ bool MaybeInterceptDownload(Profile* profile,
   if (!is_torrent && content_length >= 0 && content_length < min_bytes) {
     return false;
   }
+  if (MaybeCaptureRefresh(profile, url, user_agent, filename, web_contents)) {
+    return true;
+  }
   if (IsExcluded(profile, url, filename)) {
     return false;
   }
@@ -296,6 +380,31 @@ void DownloadAllFromPage(Profile* profile,
       base::UTF8ToUTF16(script),
       base::BindOnce(&OnPageUrlsCollected, web_contents->GetWeakPtr(), images),
       ISOLATED_WORLD_ID_BRAVE_INTERNAL);
+}
+
+bool ArmUrlRefresh(Profile* profile,
+                   const std::string& gid,
+                   const GURL& referer,
+                   const std::string& old_path) {
+  if (!profile || gid.empty() || old_path.empty()) {
+    return false;
+  }
+  const base::FilePath path = base::FilePath::FromUTF8Unsafe(old_path);
+  PendingRefresh pending;
+  pending.gid = gid;
+  pending.filename = base::ToLowerASCII(path.BaseName().AsUTF8Unsafe());
+  pending.dir = path.DirName();
+  pending.armed = base::TimeTicks::Now();
+  GetPendingRefresh() = std::move(pending);
+  if (!referer.SchemeIsHTTPOrHTTPS()) {
+    // Nothing to re-open; the capture still fires if the user re-clicks the
+    // link themselves.
+    return false;
+  }
+  NavigateParams params(profile, referer, ui::PAGE_TRANSITION_LINK);
+  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  Navigate(&params);
+  return true;
 }
 
 bool MaybeHandleMagnet(Profile* profile, const GURL& url) {

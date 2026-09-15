@@ -41,6 +41,16 @@ bool MaybeInterceptDownload(Profile* profile,
 // when a magnet: link was routed to the engine.
 bool MaybeHandleMagnet(Profile* profile, const GURL& url);
 
+// "Refresh URL" for an expired/forbidden link (IDM-style): re-opens |referer|
+// in a tab and arms a one-shot capture; the next intercepted download whose
+// name matches |old_path|'s file name is re-added on top of the partial file
+// (aria2 `continue`), and the old errored entry |gid| is dropped. Returns
+// false when there is nothing to open.
+bool ArmUrlRefresh(Profile* profile,
+                   const std::string& gid,
+                   const GURL& referer,
+                   const std::string& old_path);
+
 // Explicit "Download with Falcon": fetches the profile's cookies for |url|
 // and hands it to the engine with |referrer| and the category folder.
 void StartEngineDownload(Profile* profile,

@@ -7,6 +7,7 @@
 #define BRAVE_BROWSER_FALCON_DOWNLOAD_PAGE_GRABBER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/functional/callback.h"
 #include "base/values.h"
@@ -21,10 +22,18 @@ namespace falcon {
 // markup as [{url, name, category}], deduplicated, capped. Reports
 // {error} on failure.
 using GrabCallback = base::OnceCallback<void(base::DictValue)>;
-void GrabPageLinks(Profile* profile, const GURL& page, GrabCallback callback);
+// Scans |page| for file links. With |depth| == 2 it also follows same-site
+// HTML links found on the page (bounded: 40 pages, 4 in flight) and merges
+// the files found there, each tagged with the page it came from.
+void GrabPageLinks(Profile* profile,
+                   const GURL& page,
+                   int depth,
+                   GrabCallback callback);
 
 // Exposed for tests: extracts candidate URLs from |html| relative to |base|.
 base::ListValue ExtractLinks(const std::string& html, const GURL& base);
+// Same-site links that look like HTML pages (for depth-2 crawls).
+std::vector<GURL> ExtractPageLinks(const std::string& html, const GURL& base);
 
 }  // namespace falcon
 

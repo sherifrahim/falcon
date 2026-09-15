@@ -28,6 +28,7 @@
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/notification_handler.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
@@ -372,6 +373,41 @@ void DownloadSecurity::MaybeFinish(const std::string& gid) {
     }
   }
   it->second.done = true;
+  MaybeOpen(it->second);
+}
+
+void DownloadSecurity::SetOpenWhenDone(const std::string& gid, bool open) {
+  if (open) {
+    open_when_done_.insert(gid);
+    // Already finished and scanned: open right away.
+    auto it = results_.find(gid);
+    if (it != results_.end() && it->second.done) {
+      MaybeOpen(it->second);
+    }
+  } else {
+    open_when_done_.erase(gid);
+  }
+}
+
+void DownloadSecurity::MaybeOpen(const Result& result) {
+  if (!open_when_done_.erase(result.gid)) {
+    return;
+  }
+  Profile* profile = ProfileManager::GetLastUsedProfileIfLoaded();
+  if (!profile) {
+    return;
+  }
+  for (const FileResult& f : result.files) {
+    if (f.av == "infected" || f.vt == "flagged" || !f.quarantined_to.empty() ||
+        f.path.empty()) {
+      continue;
+    }
+    platform_util::OpenItem(profile, base::FilePath::FromUTF8Unsafe(f.path),
+                            platform_util::OPEN_FILE,
+                            platform_util::OpenOperationCallback());
+    // One launch per download is plenty (torrents may hold many files).
+    break;
+  }
 }
 
 base::DictValue DownloadSecurity::ResultsAsDict() const {

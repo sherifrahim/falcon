@@ -4,6 +4,7 @@
 // you can obtain one at https://mozilla.org/MPL/2.0/.
 
 import * as React from 'react'
+import { sendWithPromise } from 'chrome://resources/js/cr.js'
 import styled from 'styled-components'
 import { loadTimeData } from '$web-common/loadTimeData'
 import { Aria2Client, Aria2Download, Aria2File, Aria2Status } from '../aria2_client'
@@ -175,6 +176,9 @@ export function DownloadRow({ d, scan, client, open, onToggle, refresh, setError
   const live = d.status === 'active' || d.status === 'waiting' || d.status === 'paused'
   const [files, setFiles] = React.useState<Aria2File[] | null>(null)
   const [limit, setLimit] = React.useState('')
+  const [referer, setReferer] = React.useState('')
+  const [openWhenDone, setOpenWhenDone] = React.useState(false)
+  const [refreshing, setRefreshing] = React.useState(false)
   const [bitfield, setBitfield] = React.useState<string>('')
   const [renaming, setRenaming] = React.useState(false)
   const [newName, setNewName] = React.useState('')
@@ -192,7 +196,10 @@ export function DownloadRow({ d, scan, client, open, onToggle, refresh, setError
     if (!open || fromHistory) return
     if (torrent) client.getFiles(d.gid).then(setFiles).catch(() => {})
     client.getOption(d.gid)
-      .then((o) => setLimit(o['max-download-limit'] ? String(Math.round(+o['max-download-limit'] / 1024) || '') : ''))
+      .then((o) => {
+        setLimit(o['max-download-limit'] ? String(Math.round(+o['max-download-limit'] / 1024) || '') : '')
+        setReferer(o.referer || '')
+      })
       .catch(() => {})
     if (d.status === 'active') {
       client.call('aria2.tellStatus', d.gid, ['bitfield']).then((s: any) => setBitfield(s?.bitfield ?? '')).catch(() => {})
@@ -235,6 +242,23 @@ export function DownloadRow({ d, scan, client, open, onToggle, refresh, setError
       ? Promise.resolve(chrome.send('falcon_downloader.removeHistory', [d.gid]))
       : client.removeResult(d.gid).catch(() => {})
     act(drop.then(() => client.addUri([uri], opts)))
+  }
+
+  // Expired link: re-open the source page and capture the fresh URL for this
+  // file (see ArmUrlRefresh in download_interceptor.cc).
+  const refreshUrl = async () => {
+    setRefreshing(true)
+    try {
+      const ok: boolean = await sendWithPromise('falcon_downloader.refreshUrl', d.gid, referer, path || '')
+      setError(ok ? 'Source page opened — click the download link there; the file resumes here.' : 'No source page known — click the link again yourself; the next matching download resumes this file.')
+    } catch { setError('Refresh failed') }
+    finally { setRefreshing(false) }
+  }
+
+  const toggleOpenWhenDone = () => {
+    const next = !openWhenDone
+    setOpenWhenDone(next)
+    chrome.send('falcon_downloader.setOpenWhenDone', [d.gid, next])
   }
 
   const deleteWithFile = () => {
@@ -333,6 +357,9 @@ export function DownloadRow({ d, scan, client, open, onToggle, refresh, setError
           <Button $small $primary onClick={() => act(client.unpause(d.gid))}>Resume</Button>
         ) : null}
         {d.status === 'error' && uri && <Button $small $primary onClick={retry}>Retry</Button>}
+        {d.status === 'error' && !torrent && !fromHistory && /status=(40[13]|410)|forbidden|expired/i.test(d.errorMessage || '') && (
+          <Button $small onClick={refreshUrl} disabled={refreshing} title="Re-open the page this came from and pick up a fresh link">Refresh link</Button>
+        )}
         {canOpen && (
           <>
             <Button $small onClick={() => chrome.send('falcon_downloader.openFile', [path])}>Open</Button>
@@ -402,6 +429,26 @@ export function DownloadRow({ d, scan, client, open, onToggle, refresh, setError
             </span></>
           )}
           {d.errorCode && d.errorCode !== '0' && <><span className="k">Error</span><span className="v">#{d.errorCode} {d.errorMessage}</span></>}
+          {!fromHistory && (d.status === 'active' || d.status === 'waiting' || d.status === 'paused') && (
+            <>
+              <span className="k">When finished</span>
+              <span className="v">
+                <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+                  <input type="checkbox" checked={openWhenDone} onChange={toggleOpenWhenDone} />
+                  Open the file (after the security scan passes)
+                </label>
+              </span>
+            </>
+          )}
+          {!fromHistory && d.status === 'error' && (
+            <>
+              <span className="k">Link expired?</span>
+              <span className="v">
+                <Button $small onClick={refreshUrl} disabled={refreshing}>Refresh link</Button>{' '}
+                <span style={{ opacity: 0.6 }}>{referer ? `re-opens ${referer.slice(0, 60)}` : 'no source page recorded; re-click the link yourself'}</span>
+              </span>
+            </>
+          )}
           {!fromHistory && <span className="k">Speed limit</span>}
           {!fromHistory && <span className="v" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <Input style={{ width: 100, padding: '5px 8px' }} placeholder="KB/s" value={limit}

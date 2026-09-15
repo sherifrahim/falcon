@@ -115,11 +115,12 @@ interface AddOptions {
   split: string
   pause: boolean
   streamFirst: boolean
+  openWhenDone: boolean
 }
 
 const EMPTY_OPTIONS: AddOptions = {
   out: '', dir: '', checksumAlgo: 'sha-256', checksum: '', user: '', pass: '',
-  proxy: '', split: '', pause: false, streamFirst: false,
+  proxy: '', split: '', pause: false, streamFirst: false, openWhenDone: false,
 }
 
 function toAria2Options(o: AddOptions, single: boolean): Record<string, string> {
@@ -296,7 +297,10 @@ export function App() {
     setError(fresh.length < valid.length ? `${valid.length - fresh.length} already in the list, skipped` : null)
     try {
       const options = toAria2Options(opts, fresh.length === 1)
-      for (const u of fresh) await client.addUri([u], options)
+      for (const u of fresh) {
+        const gid = await client.addUri([u], options)
+        if (opts.openWhenDone && typeof gid === 'string') chrome.send('falcon_downloader.setOpenWhenDone', [gid, true])
+      }
       if (fresh.length > 0) setOpts((o) => ({ ...o, out: '', checksum: '' }))
       refresh()
       poke()
@@ -496,6 +500,10 @@ export function App() {
           <label className="row">
             <input type="checkbox" checked={opts.streamFirst} onChange={(e) => setOpts({ ...opts, streamFirst: e.target.checked })} />
             Torrent: download the beginning first (stream-friendly)
+          </label>
+          <label className="row">
+            <input type="checkbox" checked={opts.openWhenDone} onChange={(e) => setOpts({ ...opts, openWhenDone: e.target.checked })} />
+            Open the file when finished (after the security scan)
           </label>
           <label className="row" style={{ justifyContent: 'flex-end' }}>
             <Button $small type="button" onClick={() => setOpts(EMPTY_OPTIONS)}>Reset</Button>

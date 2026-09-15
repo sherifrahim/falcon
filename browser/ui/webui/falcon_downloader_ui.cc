@@ -24,6 +24,7 @@
 #include "base/task/thread_pool.h"
 #include "brave/browser/falcon/download/aria2_service.h"
 #include "brave/browser/falcon/download/download_history.h"
+#include "brave/browser/falcon/download/download_interceptor.h"
 #include "brave/browser/falcon/download/download_scheduler.h"
 #include "brave/browser/falcon/download/download_security.h"
 #include "brave/browser/falcon/download/page_grabber.h"
@@ -97,6 +98,14 @@ class FalconDownloaderMessageHandler : public content::WebUIMessageHandler {
         base::BindRepeating(&FalconDownloaderMessageHandler::OpenInSandbox,
                             base::Unretained(this)));
     web_ui()->RegisterMessageCallback(
+        "falcon_downloader.setOpenWhenDone",
+        base::BindRepeating(&FalconDownloaderMessageHandler::SetOpenWhenDone,
+                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "falcon_downloader.refreshUrl",
+        base::BindRepeating(&FalconDownloaderMessageHandler::RefreshUrl,
+                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
         "falcon_downloader.getHistory",
         base::BindRepeating(&FalconDownloaderMessageHandler::GetHistory,
                             base::Unretained(this)));
@@ -142,12 +151,13 @@ class FalconDownloaderMessageHandler : public content::WebUIMessageHandler {
                             base::Unretained(this)));
   }
 
-  // args: [callbackId, pageUrl] -> {links: [...]} | {error}
+  // args: [callbackId, pageUrl, depth?] -> {links: [...], pagesScanned} | {error}
   void GrabPage(const base::ListValue& args) {
-    CHECK_EQ(2U, args.size());
+    CHECK_GE(args.size(), 2U);
     AllowJavascript();
+    const int depth = args.size() > 2 && args[2].is_int() ? args[2].GetInt() : 1;
     falcon::GrabPageLinks(
-        profile(), GURL(args[1].GetString()),
+        profile(), GURL(args[1].GetString()), depth,
         base::BindOnce(&FalconDownloaderMessageHandler::OnGrabbed,
                        weak_factory_.GetWeakPtr(), args[0].Clone()));
   }
@@ -243,6 +253,30 @@ class FalconDownloaderMessageHandler : public content::WebUIMessageHandler {
   void RemoveMedia(const base::ListValue& args) {
     CHECK_EQ(1U, args.size());
     falcon::MediaService::Get()->Remove(args[0].GetInt());
+  }
+
+  // args: [gid, open]
+  void SetOpenWhenDone(const base::ListValue& args) {
+    CHECK_EQ(2U, args.size());
+    if (args[0].is_string() && args[1].is_bool()) {
+      falcon::Aria2Service::Get()->security()->SetOpenWhenDone(
+          args[0].GetString(), args[1].GetBool());
+    }
+  }
+
+  // args: [callbackId, gid, referer, filename] -> bool. Re-opens the page the
+  // file came from; the next download of the same name is captured and its
+  // fresh URL is swapped into the existing (expired) download.
+  void RefreshUrl(const base::ListValue& args) {
+    CHECK_EQ(4U, args.size());
+    AllowJavascript();
+    bool ok = false;
+    if (args[1].is_string() && args[2].is_string() && args[3].is_string()) {
+      ok = falcon::ArmUrlRefresh(profile(), args[1].GetString(),
+                                 GURL(args[2].GetString()),
+                                 args[3].GetString());
+    }
+    ResolveJavascriptCallback(args[0], base::Value(ok));
   }
 
   // args: [callbackId] -> {entries: [...], stats: {...}}

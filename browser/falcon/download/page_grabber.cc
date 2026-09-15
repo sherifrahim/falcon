@@ -8,9 +8,12 @@
 #include <memory>
 #include <optional>
 #include <set>
+#include <string>
+#include <vector>
 #include <utility>
 
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -128,38 +131,62 @@ base::ListValue ExtractLinks(const std::string& html, const GURL& page) {
   return out;
 }
 
-namespace {
-
-void OnPageFetched(GrabCallback callback,
-                   GURL page,
-                   std::unique_ptr<network::SimpleURLLoader> loader,
-                   std::optional<std::string> body) {
-  base::DictValue result;
-  if (!body) {
-    std::string error = "The page could not be fetched";
-    if (loader->ResponseInfo() && loader->ResponseInfo()->headers) {
-      error += " (HTTP " +
-               base::NumberToString(
-                   loader->ResponseInfo()->headers->response_code()) +
-               ")";
-    }
-    result.Set("error", error);
-    std::move(callback).Run(std::move(result));
-    return;
+std::vector<GURL> ExtractPageLinks(const std::string& html, const GURL& page) {
+  std::vector<GURL> out;
+  std::set<std::string> seen;
+  GURL base = page;
+  std::string base_href;
+  if (RE2::PartialMatch(html, BaseRe(), &base_href)) {
+    const GURL resolved = page.Resolve(base_href);
+    if (resolved.is_valid()) base = resolved;
   }
-  result.Set("links", ExtractLinks(*body, page));
-  std::move(callback).Run(std::move(result));
+  re2::StringPiece input(html);
+  std::string value;
+  while (out.size() < 200 && RE2::FindAndConsume(&input, AttrRe(), &value)) {
+    const std::string raw = Unescape(value);
+    if (raw.empty() || base::StartsWith(raw, "#") ||
+        base::StartsWith(raw, "javascript:",
+                         base::CompareCase::INSENSITIVE_ASCII) ||
+        base::StartsWith(raw, "data:", base::CompareCase::INSENSITIVE_ASCII) ||
+        base::StartsWith(raw, "mailto:",
+                         base::CompareCase::INSENSITIVE_ASCII)) {
+      continue;
+    }
+    const GURL url = base.Resolve(raw);
+    if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS() ||
+        url.host() != page.host()) {
+      continue;
+    }
+    // Pages only: nothing that already looks like a file.
+    const std::string name = GuessFilename(url, std::string());
+    if (!CategoryForFilename(name).empty()) {
+      continue;
+    }
+    const std::string lower = base::ToLowerASCII(url.path());
+    if (base::EndsWith(lower, ".css") || base::EndsWith(lower, ".js") ||
+        base::EndsWith(lower, ".json") || base::EndsWith(lower, ".xml") ||
+        base::EndsWith(lower, ".svg") || base::EndsWith(lower, ".ico") ||
+        base::EndsWith(lower, ".png") || base::EndsWith(lower, ".jpg") ||
+        base::EndsWith(lower, ".webp") || base::EndsWith(lower, ".woff2")) {
+      continue;
+    }
+    GURL::Replacements strip_ref;
+    strip_ref.ClearRef();
+    const GURL key = url.ReplaceComponents(strip_ref);
+    if (key == page || !seen.insert(key.spec()).second) {
+      continue;
+    }
+    out.push_back(key);
+  }
+  return out;
 }
 
-}  // namespace
+namespace {
 
-void GrabPageLinks(Profile* profile, const GURL& page, GrabCallback callback) {
-  base::DictValue err;
-  if (!profile || !page.SchemeIsHTTPOrHTTPS()) {
-    err.Set("error", "Enter an http(s) page URL");
-    std::move(callback).Run(std::move(err));
-    return;
-  }
+constexpr size_t kMaxSubPages = 40;
+constexpr int kMaxInFlight = 4;
+
+std::unique_ptr<network::SimpleURLLoader> MakePageLoader(const GURL& page) {
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = page;
   request->site_for_cookies = net::SiteForCookies::FromUrl(page);
@@ -169,14 +196,129 @@ void GrabPageLinks(Profile* profile, const GURL& page, GrabCallback callback) {
   auto loader =
       network::SimpleURLLoader::Create(std::move(request), kTrafficAnnotation);
   loader->SetAllowHttpErrorResults(true);
-  auto* raw = loader.get();
-  raw->DownloadToString(
-      profile->GetDefaultStoragePartition()
-          ->GetURLLoaderFactoryForBrowserProcess()
-          .get(),
-      base::BindOnce(&OnPageFetched, std::move(callback), page,
-                     std::move(loader)),
-      kMaxHtmlBytes);
+  return loader;
+}
+
+// One grab: the root page, then (depth 2) a bounded crawl of same-site pages.
+// Owns itself until the callback has run.
+class Crawl {
+ public:
+  Crawl(Profile* profile, const GURL& root, int depth, GrabCallback callback)
+      : profile_(profile),
+        root_(root),
+        depth_(depth),
+        callback_(std::move(callback)) {}
+
+  void Start() {
+    Fetch(root_, /*is_root=*/true);
+  }
+
+ private:
+  void Fetch(const GURL& page, bool is_root) {
+    auto loader = MakePageLoader(page);
+    auto* raw = loader.get();
+    ++in_flight_;
+    raw->DownloadToString(
+        profile_->GetDefaultStoragePartition()
+            ->GetURLLoaderFactoryForBrowserProcess()
+            .get(),
+        base::BindOnce(&Crawl::OnFetched, base::Unretained(this), page,
+                       is_root, std::move(loader)),
+        kMaxHtmlBytes);
+  }
+
+  void OnFetched(GURL page,
+                 bool is_root,
+                 std::unique_ptr<network::SimpleURLLoader> loader,
+                 std::optional<std::string> body) {
+    --in_flight_;
+    if (is_root && !body) {
+      std::string error = "The page could not be fetched";
+      if (loader->ResponseInfo() && loader->ResponseInfo()->headers) {
+        error += " (HTTP " +
+                 base::NumberToString(
+                     loader->ResponseInfo()->headers->response_code()) +
+                 ")";
+      }
+      base::DictValue result;
+      result.Set("error", error);
+      Finish(std::move(result));
+      return;
+    }
+    if (body) {
+      for (base::Value& v : ExtractLinks(*body, page)) {
+        base::DictValue* d = v.GetIfDict();
+        const std::string* url = d ? d->FindString("url") : nullptr;
+        if (!url || !seen_files_.insert(*url).second) {
+          continue;
+        }
+        if (!is_root) {
+          d->Set("from", page.spec());
+        }
+        links_.Append(std::move(v));
+      }
+      if (is_root && depth_ >= 2) {
+        for (const GURL& sub : ExtractPageLinks(*body, page)) {
+          if (queue_.size() >= kMaxSubPages) {
+            break;
+          }
+          if (seen_pages_.insert(sub.spec()).second) {
+            queue_.push_back(sub);
+          }
+        }
+      }
+    }
+    if (!is_root) {
+      ++pages_scanned_;
+    }
+    Pump();
+  }
+
+  void Pump() {
+    while (in_flight_ < kMaxInFlight && !queue_.empty()) {
+      GURL next = queue_.front();
+      queue_.erase(queue_.begin());
+      Fetch(next, /*is_root=*/false);
+    }
+    if (in_flight_ == 0 && queue_.empty()) {
+      base::DictValue result;
+      result.Set("links", std::move(links_));
+      result.Set("pagesScanned", pages_scanned_ + 1);
+      Finish(std::move(result));
+    }
+  }
+
+  void Finish(base::DictValue result) {
+    std::move(callback_).Run(std::move(result));
+    delete this;
+  }
+
+  raw_ptr<Profile> profile_;
+  const GURL root_;
+  const int depth_;
+  GrabCallback callback_;
+  int in_flight_ = 0;
+  int pages_scanned_ = 0;
+  std::vector<GURL> queue_;
+  std::set<std::string> seen_pages_;
+  std::set<std::string> seen_files_;
+  base::ListValue links_;
+};
+
+}  // namespace
+
+void GrabPageLinks(Profile* profile,
+                   const GURL& page,
+                   int depth,
+                   GrabCallback callback) {
+  base::DictValue err;
+  if (!profile || !page.SchemeIsHTTPOrHTTPS()) {
+    err.Set("error", "Enter an http(s) page URL");
+    std::move(callback).Run(std::move(err));
+    return;
+  }
+  // Self-deleting once the callback has run.
+  (new Crawl(profile, page, depth, std::move(callback)))->Start();
 }
 
 }  // namespace falcon
