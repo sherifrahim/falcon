@@ -6,6 +6,7 @@
 #include "brave/browser/ui/webui/falcon_newtab_ui.h"
 
 #include "brave/browser/falcon/download/pref_names.h"
+#include "brave/browser/ui/views/falcon/peek_window.h"
 
 #include <memory>
 #include <optional>
@@ -310,6 +311,8 @@ FalconNewTabUI::FalconNewTabUI(content::WebUI* web_ui)
       IDR_FALCON_NEWTAB_HTML);
   source->AddBoolean("blackTheme", g_browser_process->local_state()->GetBoolean(
                                        falcon::prefs::kThemeBlack));
+  source->AddInteger("shellMode",
+                     profile->GetPrefs()->GetInteger(falcon::prefs::kShellMode));
   // Wallpapers come from the web (Bing / user URLs); favicons for quick links
   // from chrome://favicon2.
   source->OverrideContentSecurityPolicy(

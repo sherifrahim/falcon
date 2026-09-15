@@ -16,7 +16,6 @@
 #include "base/no_destructor.h"
 #include "base/strings/escape.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/single_thread_task_runner.h"
 #include "base/strings/strcat.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -54,8 +53,10 @@ constexpr SkColor kSlate100 = SkColorSetRGB(0xF1, 0xF5, 0xF9);
 constexpr SkColor kSlate950 = SkColorSetRGB(0x0B, 0x12, 0x20);
 
 // One live pill per WebContents (closed by the tab helper, or replaced).
-// Plain frameless popup widget (no dialog chrome): CLIENT_OWNS_WIDGET with a
-// delegate we own, so both live in the map together.
+// Frameless popup widget, CLIENT_OWNS_WIDGET; the delegate owns itself and
+// the widget and frees both in WidgetIsZombie() (same shape as PeekWindow /
+// BraveOriginStartupView: delete the delegate first so its contents view
+// leaves the RootView, then the widget).
 class PillDelegate : public views::WidgetDelegate {
  public:
   explicit PillDelegate(std::unique_ptr<views::View> contents)
@@ -64,19 +65,33 @@ class PillDelegate : public views::WidgetDelegate {
   }
   ~PillDelegate() override = default;
 
+  void set_widget(views::Widget* widget) { widget_ = widget; }
+  views::Widget* widget() { return widget_; }
+
+  void Close() {
+    if (closing_ || !widget_) {
+      return;
+    }
+    closing_ = true;
+    widget_->Close();  // async; ends in WidgetIsZombie()
+  }
+
+  // views::WidgetDelegate:
   views::View* GetContentsView() override { return contents_.get(); }
+  void WidgetIsZombie(views::Widget* widget) override {
+    delete this;
+    delete widget;
+  }
 
  private:
   std::unique_ptr<views::View> contents_;
+  raw_ptr<views::Widget> widget_ = nullptr;
+  bool closing_ = false;
 };
 
-struct Entry {
-  std::unique_ptr<PillDelegate> delegate;
-  std::unique_ptr<views::Widget> widget;
-};
-
-std::map<content::WebContents*, Entry>& Bubbles() {
-  static base::NoDestructor<std::map<content::WebContents*, Entry>> bubbles;
+std::map<content::WebContents*, PillDelegate*>& Bubbles() {
+  static base::NoDestructor<std::map<content::WebContents*, PillDelegate*>>
+      bubbles;
   return *bubbles;
 }
 
@@ -160,12 +175,11 @@ void ShowMiniMenu(content::WebContents* web_contents,
   pill->AddChildView(std::move(row));
   const gfx::Size size = pill->GetPreferredSize();
 
-  Entry entry;
-  entry.delegate = std::make_unique<PillDelegate>(std::move(pill));
+  auto* delegate = new PillDelegate(std::move(pill));
   views::Widget::InitParams params(
       views::Widget::InitParams::CLIENT_OWNS_WIDGET,
       views::Widget::InitParams::TYPE_POPUP);
-  params.delegate = entry.delegate.get();
+  params.delegate = delegate;
   params.parent = web_contents->GetNativeView();
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.shadow_type = views::Widget::InitParams::ShadowType::kDrop;
@@ -173,10 +187,11 @@ void ShowMiniMenu(content::WebContents* web_contents,
   params.accept_events = true;
   params.bounds = gfx::Rect(screen_point + gfx::Vector2d(10, 14), size);
   params.name = "FalconMiniMenu";
-  entry.widget = std::make_unique<views::Widget>();
-  entry.widget->Init(std::move(params));
-  entry.widget->ShowInactive();
-  Bubbles()[web_contents] = std::move(entry);
+  auto* widget = new views::Widget();
+  widget->Init(std::move(params));
+  delegate->set_widget(widget);
+  widget->ShowInactive();
+  Bubbles()[web_contents] = delegate;
 }
 
 void CloseMiniMenu(content::WebContents* web_contents) {
@@ -184,12 +199,9 @@ void CloseMiniMenu(content::WebContents* web_contents) {
   if (it == Bubbles().end()) {
     return;
   }
-  Entry entry = std::move(it->second);
+  PillDelegate* delegate = it->second;
   Bubbles().erase(it);
-  entry.widget->CloseNow();
-  // The widget is gone; the delegate can follow once the stack unwinds.
-  base::SingleThreadTaskRunner::GetCurrentDefault()->DeleteSoon(
-      FROM_HERE, entry.delegate.release());
+  delegate->Close();
 }
 
 }  // namespace falcon

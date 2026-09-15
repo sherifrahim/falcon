@@ -6,6 +6,7 @@
 import * as React from 'react'
 import styled, { createGlobalStyle, keyframes } from 'styled-components'
 import { sendWithPromise } from 'chrome://resources/js/cr.js'
+import { loadTimeData } from '$web-common/loadTimeData'
 import {
   DEFAULT_STATE, GRADIENTS, NtpState, QuickLink, faviconUrl, greeting, looksLikeUrl,
   quoteOfTheDay, withDefaults,
@@ -55,6 +56,17 @@ const Dim = styled.div<{ $dim: number }>`
   inset: 0;
   background: rgba(2, 6, 23, ${(p) => p.$dim / 100});
   pointer-events: none;
+`
+
+const Hint = styled.div`
+  position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 6;
+  display: flex; align-items: center; gap: 12px; padding: 8px 12px 8px 14px;
+  border-radius: 999px; font-size: 12px; color: #e2e8f0;
+  background: rgba(11, 18, 32, 0.72); border: 1px solid rgba(56, 189, 248, 0.35);
+  backdrop-filter: blur(10px); box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  kbd { font: inherit; padding: 1px 5px; border-radius: 5px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); }
+  button { border: none; background: transparent; color: inherit; cursor: pointer; font-size: 13px; opacity: 0.7; }
+  button:hover { opacity: 1; }
 `
 
 const Page = styled.div`
@@ -278,6 +290,11 @@ export function App() {
   const [state, setState] = React.useState<NtpState>(DEFAULT_STATE)
   const [loaded, setLoaded] = React.useState(false)
   const [settingsOpen, setSettingsOpen] = React.useState(false)
+  // Cockpit hint: the chrome is hidden, so say how to summon it (until dismissed).
+  const [hint, setHint] = React.useState(() => {
+    try { return loadTimeData.getInteger('shellMode') === 2 && !localStorage.getItem('falcon.hint.cockpit') } catch { return false }
+  })
+  const dismissHint = () => { setHint(false); try { localStorage.setItem('falcon.hint.cockpit', '1') } catch {} }
   const [bing, setBing] = React.useState<{ url: string; title?: string; copyright?: string; link?: string } | null>(null)
   const [editing, setEditing] = React.useState<{ index: number; link: QuickLink } | null>(null)
   const [dragFrom, setDragFrom] = React.useState<number | null>(null)
@@ -388,6 +405,12 @@ export function App() {
       <Backdrop $css={css} $blur={bg.blur} $drift={bg.drift} $image={isImage} />
       {isVideo && <Video $blur={bg.blur} src={bg.videoUrl} autoPlay muted loop playsInline />}
       <Dim $dim={bg.dim} />
+      {hint && (
+        <Hint>
+          <span><b>Cockpit mode</b> · move the mouse to the top edge or press <kbd>Ctrl</kbd>+<kbd>L</kbd> for the address bar · <kbd>Ctrl</kbd>+<kbd>Space</kbd> quick commands · <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd> shows the toolbar</span>
+          <button onClick={dismissHint} title="Got it">✕</button>
+        </Hint>
+      )}
       {loaded && <Weather settings={state.weather} />}
       {loaded && state.showFocus && <FocusTimer />}
       {loaded && state.showSounds && <FocusSounds />}
