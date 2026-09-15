@@ -10,6 +10,7 @@ namespace features {
 // Allows saving open tabs and windows as a named workspace for later restore.
 // NOTE: Being implemented in phases.
 // See https://github.com/brave/brave-browser/issues/54738
-BASE_FEATURE(kWorkspaces, base::FEATURE_DISABLED_BY_DEFAULT);
+// Falcon: on by default (session manager).
+BASE_FEATURE(kWorkspaces, base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace features

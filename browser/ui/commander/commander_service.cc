@@ -25,6 +25,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "brave/browser/ui/commander/bookmark_command_source.h"
 #include "brave/browser/ui/commander/command_source.h"
+#include "brave/browser/ui/commander/falcon_command_source.h"
 #include "brave/browser/ui/commander/ranker.h"
 #include "brave/browser/ui/commander/simple_command_source.h"
 #include "brave/browser/ui/commander/tab_command_source.h"
@@ -62,6 +63,7 @@ CommanderService::CommanderService(Profile* profile)
   command_sources_.push_back(std::make_unique<BookmarkCommandSource>());
   command_sources_.push_back(std::make_unique<WindowCommandSource>());
   command_sources_.push_back(std::make_unique<TabCommandSource>());
+  command_sources_.push_back(std::make_unique<FalconCommandSource>());
 }
 
 CommanderService::~CommanderService() = default;

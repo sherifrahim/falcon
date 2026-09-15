@@ -23,10 +23,14 @@
 #include "base/version_info/version_info.h"
 #include "brave/browser/falcon/download/pref_names.h"
 #include "brave/browser/falcon/media/media_service.h"
+#include "brave/browser/falcon/ux/boost_tab_helper.h"
 #include "brave/browser/falcon/ux/mouse_gesture_tab_helper.h"
 #include "brave/browser/ui/tabs/brave_tab_prefs.h"
 #include "brave/browser/ui/views/falcon/peek_window.h"
 #include "brave/browser/ui/webui/brave_webui_source.h"
+#include "brave/browser/workspaces/workspace_metadata.h"
+#include "brave/browser/workspaces/workspace_service.h"
+#include "brave/browser/workspaces/workspace_service_factory.h"
 #include "brave/common/pref_names.h"
 #include "brave/components/constants/webui_url_constants.h"
 #include "brave/components/falcon_control_ui/resources/grit/falcon_control_generated_map.h"
@@ -88,6 +92,112 @@ class FalconControlMessageHandler : public content::WebUIMessageHandler {
         "falcon_control.updateYtDlp",
         base::BindRepeating(&FalconControlMessageHandler::UpdateYtDlp,
                             base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "falcon_control.setBoosts",
+        base::BindRepeating(&FalconControlMessageHandler::SetBoosts,
+                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "falcon_control.getSessions",
+        base::BindRepeating(&FalconControlMessageHandler::GetSessions,
+                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "falcon_control.saveSession",
+        base::BindRepeating(&FalconControlMessageHandler::SaveSession,
+                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "falcon_control.restoreSession",
+        base::BindRepeating(&FalconControlMessageHandler::RestoreSession,
+                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "falcon_control.deleteSession",
+        base::BindRepeating(&FalconControlMessageHandler::DeleteSession,
+                            base::Unretained(this)));
+  }
+
+  // args: [list of {id, host, name, css, js, enabled}] — replaces the list.
+  void SetBoosts(const base::ListValue& args) {
+    CHECK_EQ(1U, args.size());
+    if (!args[0].is_list()) {
+      return;
+    }
+    base::ListValue clean;
+    for (const base::Value& v : args[0].GetList()) {
+      const base::DictValue* d = v.GetIfDict();
+      if (!d) {
+        continue;
+      }
+      const std::string* host = d->FindString("host");
+      if (!host || host->empty()) {
+        continue;
+      }
+      base::DictValue out;
+      out.Set("id", d->FindString("id") ? *d->FindString("id") : *host);
+      out.Set("host", base::ToLowerASCII(
+                          base::TrimWhitespaceASCII(*host, base::TRIM_ALL)));
+      out.Set("name", d->FindString("name") ? *d->FindString("name") : "");
+      out.Set("css", d->FindString("css") ? *d->FindString("css") : "");
+      out.Set("js", d->FindString("js") ? *d->FindString("js") : "");
+      out.Set("enabled", d->FindBool("enabled").value_or(true));
+      clean.Append(std::move(out));
+    }
+    profile()->GetPrefs()->SetList(falcon::prefs::kBoosts, std::move(clean));
+  }
+
+  base::ListValue SessionList() {
+    base::ListValue list;
+    auto* service = WorkspaceServiceFactory::GetForProfile(profile());
+    if (!service) {
+      return list;
+    }
+    for (const WorkspaceMetadata& m : service->ListWorkspaces()) {
+      base::DictValue d;
+      d.Set("name", m.name);
+      d.Set("modified", m.modified_at.InMillisecondsFSinceUnixEpoch());
+      d.Set("windows", m.number_of_windows);
+      d.Set("tabs", m.number_of_tabs);
+      list.Append(std::move(d));
+    }
+    return list;
+  }
+
+  // args: [callbackId] -> [{name, modified, windows, tabs}]
+  void GetSessions(const base::ListValue& args) {
+    CHECK_EQ(1U, args.size());
+    AllowJavascript();
+    ResolveJavascriptCallback(args[0], SessionList());
+  }
+
+  // args: [callbackId, name]
+  void SaveSession(const base::ListValue& args) {
+    CHECK_EQ(2U, args.size());
+    AllowJavascript();
+    if (auto* service = WorkspaceServiceFactory::GetForProfile(profile());
+        service && args[1].is_string() && !args[1].GetString().empty()) {
+      service->SaveWorkspace(args[1].GetString());
+    }
+    ResolveJavascriptCallback(args[0], SessionList());
+  }
+
+  // args: [callbackId, name]
+  void RestoreSession(const base::ListValue& args) {
+    CHECK_EQ(2U, args.size());
+    AllowJavascript();
+    if (auto* service = WorkspaceServiceFactory::GetForProfile(profile());
+        service && args[1].is_string()) {
+      service->RestoreWorkspace(args[1].GetString());
+    }
+    ResolveJavascriptCallback(args[0], true);
+  }
+
+  // args: [callbackId, name]
+  void DeleteSession(const base::ListValue& args) {
+    CHECK_EQ(2U, args.size());
+    AllowJavascript();
+    if (auto* service = WorkspaceServiceFactory::GetForProfile(profile());
+        service && args[1].is_string()) {
+      service->DeleteWorkspace(args[1].GetString());
+    }
+    ResolveJavascriptCallback(args[0], SessionList());
   }
 
   Profile* profile() { return Profile::FromWebUI(web_ui()); }
@@ -107,6 +217,9 @@ class FalconControlMessageHandler : public content::WebUIMessageHandler {
     d.Set("clipboardMonitor",
           p->GetBoolean(falcon::prefs::kDownloadClipboardMonitor));
     d.Set("engineEnabled", p->GetBoolean(falcon::prefs::kDownloadEngineEnabled));
+    d.Set("boosts", p->GetList(falcon::prefs::kBoosts).Clone());
+    d.Set("sessionsAvailable",
+          !!WorkspaceServiceFactory::GetForProfile(profile()));
     d.Set("chromiumVersion", std::string(version_info::GetVersionNumber()));
     d.Set("braveVersion", version_info::GetBraveVersionNumberForDisplay());
     d.Set("ytDlpVersion", yt_dlp_version_);

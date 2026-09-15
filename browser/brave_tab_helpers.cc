@@ -6,6 +6,8 @@
 #include "brave/browser/brave_tab_helpers.h"
 
 #include "brave/browser/falcon/media/media_sniffer_tab_helper.h"
+#include "brave/browser/falcon/ux/auto_reload_tab_helper.h"
+#include "brave/browser/falcon/ux/boost_tab_helper.h"
 #include "brave/browser/falcon/ux/mouse_gesture_tab_helper.h"
 
 #include <memory>
@@ -150,6 +152,8 @@ void AttachTabHelpers(content::WebContents* web_contents) {
   BraveGeolocationPermissionTabHelper::CreateForWebContents(web_contents);
   falcon::MediaSnifferTabHelper::CreateForWebContents(web_contents);
   falcon::MouseGestureTabHelper::CreateForWebContents(web_contents);
+  falcon::BoostTabHelper::CreateForWebContents(web_contents);
+  falcon::AutoReloadTabHelper::CreateForWebContents(web_contents);
 #endif
 
 #if BUILDFLAG(IS_WIN)

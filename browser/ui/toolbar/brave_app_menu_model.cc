@@ -187,6 +187,12 @@ void BraveAppMenuModel::BuildBraveProductsSection() {
                u"Falcon Downloads");
   InsertItemAt(GetNextIndexOfBraveProductsSection(), IDC_FALCON_SHOW_CONTROL,
                u"Falcon control panel");
+#if BUILDFLAG(ENABLE_COMMANDER)
+  if (commander::IsEnabled()) {
+    InsertItemAt(GetNextIndexOfBraveProductsSection(), IDC_COMMANDER,
+                 u"Quick commands (Ctrl+Space)");
+  }
+#endif
   need_separator = true;
 
 #if BUILDFLAG(ENABLE_AI_CHAT)

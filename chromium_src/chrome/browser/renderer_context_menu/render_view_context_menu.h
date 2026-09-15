@@ -10,6 +10,7 @@
 #include "brave/components/containers/buildflags/buildflags.h"
 #include "brave/components/email_aliases/buildflags/buildflags.h"
 #include "brave/components/text_recognition/common/buildflags/buildflags.h"
+#include "ui/menus/simple_menu_model.h"
 
 #if BUILDFLAG(ENABLE_AI_CHAT)
 #include "brave/components/ai_chat/core/browser/engine/engine_consumer.h"
@@ -63,6 +64,7 @@ class RenderViewContextMenu : public RenderViewContextMenu_Chromium
   ~RenderViewContextMenu() override;
   // RenderViewContextMenuBase:
   bool IsCommandIdEnabled(int command_id) const override;
+  bool IsCommandIdChecked(int command_id) const override;
   void ExecuteCommand(int id, int event_flags) override;
   void AddSpellCheckServiceItem(bool is_checked) override;
   // Hide base class implementation.
@@ -126,6 +128,8 @@ class RenderViewContextMenu : public RenderViewContextMenu_Chromium
 #if BUILDFLAG(ENABLE_CONTAINERS)
   std::unique_ptr<containers::ContainersMenuModel> containers_submenu_model_;
 #endif  // BUILDFLAG(ENABLE_CONTAINERS)
+  // Falcon: "Reload every…" radio submenu.
+  std::unique_ptr<ui::SimpleMenuModel> falcon_reload_submenu_model_;
 };
 
 #endif  // BRAVE_CHROMIUM_SRC_CHROME_BROWSER_RENDERER_CONTEXT_MENU_RENDER_VIEW_CONTEXT_MENU_H_

@@ -167,6 +167,12 @@ class FalconNewTabMessageHandler : public content::WebUIMessageHandler {
     base::ListValue list;
     for (const history::MostVisitedURL& mv : urls) {
       if (!mv.url.SchemeIsHTTPOrHTTPS()) continue;
+      // Skip error pages that got into history ("429 Too Many Requests").
+      if (mv.title.size() > 4 && base::IsAsciiDigit(mv.title[0]) &&
+          base::IsAsciiDigit(mv.title[1]) && base::IsAsciiDigit(mv.title[2]) &&
+          mv.title[3] == u' ') {
+        continue;
+      }
       base::DictValue d;
       d.Set("title", mv.title.empty() ? base::UTF8ToUTF16(mv.url.host())
                                       : mv.title);

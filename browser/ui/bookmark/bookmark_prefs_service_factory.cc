@@ -53,6 +53,7 @@ bool BookmarkPrefsServiceFactory::ServiceIsCreatedWithBrowserContext() const {
 
 void BookmarkPrefsServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+  // Falcon: keep the NTP clean; the bar is one setting away.
   registry->RegisterBooleanPref(bookmarks::prefs::kAlwaysShowBookmarkBarOnNTP,
-                                true);
+                                false);
 }

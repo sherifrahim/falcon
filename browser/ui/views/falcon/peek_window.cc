@@ -16,11 +16,13 @@
 #include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/input/native_web_keyboard_event.h"
 #include "components/tabs/public/tab_interface.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/common/referrer.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/base_window.h"
 #include "ui/base/mojom/ui_base_types.mojom-shared.h"
@@ -244,6 +246,13 @@ content::WebContents* PeekWindow::OpenURLFromTab(
 bool PeekWindow::HandleKeyboardEvent(
     content::WebContents* source,
     const input::NativeWebKeyboardEvent& event) {
+  // Esc anywhere in the page closes the peek, even when the event has no
+  // native os_event (synthesized input) and skips the focus manager.
+  if (event.GetType() == blink::WebInputEvent::Type::kRawKeyDown &&
+      event.windows_key_code == ui::VKEY_ESCAPE) {
+    Close();
+    return true;
+  }
   views::Widget* widget = GetWidget();
   if (!widget) {
     return false;

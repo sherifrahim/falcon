@@ -113,11 +113,12 @@ interface AddOptions {
   proxy: string
   split: string
   pause: boolean
+  streamFirst: boolean
 }
 
 const EMPTY_OPTIONS: AddOptions = {
   out: '', dir: '', checksumAlgo: 'sha-256', checksum: '', user: '', pass: '',
-  proxy: '', split: '', pause: false,
+  proxy: '', split: '', pause: false, streamFirst: false,
 }
 
 function toAria2Options(o: AddOptions, single: boolean): Record<string, string> {
@@ -132,6 +133,8 @@ function toAria2Options(o: AddOptions, single: boolean): Record<string, string> 
   const n = parseInt(o.split, 10)
   if (isFinite(n) && n > 0) { r.split = String(n); r['max-connection-per-server'] = String(Math.min(n, 16)) }
   if (o.pause) r.pause = 'true'
+  // Torrents: fetch the head/tail pieces first so video files can be previewed while downloading.
+  if (o.streamFirst) r['bt-prioritize-piece'] = 'head=8M,tail=8M'
   return r
 }
 
@@ -488,6 +491,10 @@ export function App() {
           <label className="row">
             <input type="checkbox" checked={opts.pause} onChange={(e) => setOpts({ ...opts, pause: e.target.checked })} />
             Add paused (start later)
+          </label>
+          <label className="row">
+            <input type="checkbox" checked={opts.streamFirst} onChange={(e) => setOpts({ ...opts, streamFirst: e.target.checked })} />
+            Torrent: download the beginning first (stream-friendly)
           </label>
           <label className="row" style={{ justifyContent: 'flex-end' }}>
             <Button $small type="button" onClick={() => setOpts(EMPTY_OPTIONS)}>Reset</Button>

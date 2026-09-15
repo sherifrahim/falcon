@@ -9,7 +9,25 @@ import * as React from 'react'
 import styled from 'styled-components'
 import { sendWithPromise } from 'chrome://resources/js/cr.js'
 
+export interface Boost {
+  id: string
+  host: string
+  name: string
+  css: string
+  js: string
+  enabled: boolean
+}
+
+interface Session {
+  name: string
+  modified: number
+  windows: number
+  tabs: number
+}
+
 interface State {
+  boosts: Boost[]
+  sessionsAvailable: boolean
   colorScheme: 0 | 1 | 2 // system, light, dark
   verticalTabs: boolean
   sidebarShow: 0 | 1 | 3 // always, on hover, never
@@ -79,6 +97,21 @@ const Btn = styled.button<{ $primary?: boolean }>`
   &:disabled { opacity: 0.5; cursor: default; }
 `
 
+const Editor = styled.div`
+  padding: 10px 0 14px;
+  display: grid;
+  gap: 8px;
+  input[type='text'], textarea {
+    width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 10px;
+    border: 1px solid #334155; background: #0f172a; color: inherit; font-size: 13px;
+  }
+  textarea { min-height: 90px; font-family: Consolas, "Cascadia Mono", monospace; font-size: 12px; resize: vertical; }
+  .row { display: flex; gap: 8px; align-items: center; }
+  .row label { font-size: 12px; opacity: 0.7; display: flex; align-items: center; gap: 6px; }
+  .grow { flex: 1; }
+  .muted { font-size: 12px; opacity: 0.6; }
+`
+
 const Links = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -113,6 +146,56 @@ export function App() {
       <input type="checkbox" checked={!!s?.[key]} onChange={(e) => update({ [key]: e.target.checked } as Partial<State>)} />
     </Row>
   )
+
+  // Boosts ------------------------------------------------------------------
+  const [openBoost, setOpenBoost] = React.useState<string | null>(null)
+  const saveBoosts = (boosts: Boost[]) => {
+    if (!s) return
+    setS({ ...s, boosts })
+    chrome.send('falcon_control.setBoosts', [boosts])
+  }
+  const addBoost = (host = '') => {
+    if (!s) return
+    const id = 'b' + Date.now().toString(36)
+    const boost: Boost = { id, host, name: '', css: '', js: '', enabled: true }
+    saveBoosts([...s.boosts, boost])
+    setOpenBoost(id)
+  }
+  const patchBoost = (id: string, patch: Partial<Boost>) => {
+    if (!s) return
+    saveBoosts(s.boosts.map((b) => (b.id === id ? { ...b, ...patch } : b)))
+  }
+  const removeBoost = (id: string) => {
+    if (!s) return
+    saveBoosts(s.boosts.filter((b) => b.id !== id))
+  }
+  // Context menu "Boost this site…" lands here with #boost=<host>.
+  React.useEffect(() => {
+    if (!s) return
+    const m = /boost=([^&]+)/.exec(location.hash)
+    if (!m) return
+    const host = decodeURIComponent(m[1])
+    history.replaceState(null, '', location.pathname)
+    const existing = s.boosts.find((b) => b.host === host)
+    if (existing) setOpenBoost(existing.id)
+    else addBoost(host)
+    setTimeout(() => document.getElementById('boosts')?.scrollIntoView({ behavior: 'smooth' }), 50)
+  }, [!!s])
+
+  // Sessions ----------------------------------------------------------------
+  const [sessions, setSessions] = React.useState<Session[] | null>(null)
+  const [sessionName, setSessionName] = React.useState('')
+  React.useEffect(() => {
+    if (s?.sessionsAvailable) sendWithPromise('falcon_control.getSessions').then(setSessions).catch(() => {})
+  }, [s?.sessionsAvailable])
+  const saveSession = async () => {
+    const name = sessionName.trim()
+    if (!name) return
+    setSessions(await sendWithPromise('falcon_control.saveSession', name))
+    setSessionName('')
+  }
+  const restoreSession = (name: string) => sendWithPromise('falcon_control.restoreSession', name).catch(() => {})
+  const deleteSession = async (name: string) => setSessions(await sendWithPromise('falcon_control.deleteSession', name))
 
   const updateYtDlp = async () => {
     setUpdating(true)
@@ -166,12 +249,68 @@ export function App() {
 
       <h2>Behaviour</h2>
       <Card>
+        <Row as="div">
+          <span>Quick commands<span className="sub">Ctrl+Space (or type <code>:&gt;</code> in the address bar): switch tabs, run any command, open bookmarks, save/restore sessions, Falcon pages</span></span>
+        </Row>
         {bool('mouseGestures', 'Mouse gestures', 'Hold right button and drag: ← back · → forward · ↑ reload · ↓ new tab · ↓→ close · ↓← reopen · ↑←/↑→ switch tab')}
         {bool('peek', 'Peek', 'Shift+click a link to preview it in a floating window (Arc-style); Esc closes, "Open in tab" keeps it')}
         {bool('videoPill', 'Download button on videos', 'Hover any video for "Download with Falcon"')}
         {bool('clipboardMonitor', 'Watch the clipboard', 'Offer to download copied file links and magnets')}
         {bool('engineEnabled', 'Falcon download engine', 'Take over downloads from pages (off = plain Chromium downloads)')}
       </Card>
+
+      <h2 id="boosts">Boosts</h2>
+      <p className="hint">Arc-style per-site tweaks: your own CSS and JavaScript, applied to every page on a host (subdomains included; <code>*</code> = all sites). Right-click a page → "Boost this site…" to jump here. JS runs in an isolated world after DOMContentLoaded.</p>
+      <Card>
+        {s.boosts.length === 0 && <Row as="div"><span className="muted" style={{ opacity: 0.6 }}>No boosts yet.</span></Row>}
+        {s.boosts.map((b) => (
+          <div key={b.id}>
+            <Row as="div">
+              <span style={{ cursor: 'pointer', flex: 1 }} onClick={() => setOpenBoost(openBoost === b.id ? null : b.id)}>
+                <b>{b.name || b.host || 'New boost'}</b>
+                <span className="sub">{b.host || 'no host yet'}{b.css && ' · CSS'}{b.js && ' · JS'}</span>
+              </span>
+              <input type="checkbox" checked={b.enabled} onChange={(e) => patchBoost(b.id, { enabled: e.target.checked })} title="Enabled" />
+              <Btn onClick={() => setOpenBoost(openBoost === b.id ? null : b.id)}>{openBoost === b.id ? 'Close' : 'Edit'}</Btn>
+              <Btn onClick={() => removeBoost(b.id)}>Delete</Btn>
+            </Row>
+            {openBoost === b.id && (
+              <Editor>
+                <div className="row">
+                  <input type="text" className="grow" placeholder="host, e.g. reddit.com (or * for all sites)" value={b.host} onChange={(e) => patchBoost(b.id, { host: e.target.value })} />
+                  <input type="text" className="grow" placeholder="name (optional)" value={b.name} onChange={(e) => patchBoost(b.id, { name: e.target.value })} />
+                </div>
+                <textarea placeholder="/* CSS — e.g. .sidebar { display: none } */" value={b.css} onChange={(e) => patchBoost(b.id, { css: e.target.value })} spellCheck={false} />
+                <textarea placeholder="// JavaScript — runs after the DOM is ready, in an isolated world (DOM access, no page globals)" value={b.js} onChange={(e) => patchBoost(b.id, { js: e.target.value })} spellCheck={false} />
+                <span className="muted">Changes apply on the next page load.</span>
+              </Editor>
+            )}
+          </div>
+        ))}
+        <Row as="div"><span className="sub">Add a boost for a site</span><Btn $primary onClick={() => addBoost('')}>New boost</Btn></Row>
+      </Card>
+
+      {s.sessionsAvailable && (
+        <>
+          <h2>Sessions</h2>
+          <p className="hint">Save every open window and tab under a name; restore it later (opens in new windows). Also in Quick commands (Ctrl+Space).</p>
+          <Card>
+            <Row as="div">
+              <input type="text" placeholder="session name, e.g. Work" value={sessionName} onChange={(e) => setSessionName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && saveSession()}
+                style={{ flex: 1, padding: '8px 10px', borderRadius: 10, border: '1px solid #334155', background: '#0f172a', color: 'inherit', fontSize: 13 }} />
+              <Btn $primary onClick={saveSession} disabled={!sessionName.trim()}>Save current session</Btn>
+            </Row>
+            {(sessions ?? []).map((ss) => (
+              <Row as="div" key={ss.name}>
+                <span><b>{ss.name}</b><span className="sub">{ss.windows} window{ss.windows === 1 ? '' : 's'} · {ss.tabs} tab{ss.tabs === 1 ? '' : 's'} · {new Date(ss.modified).toLocaleString()}</span></span>
+                <Btn onClick={() => restoreSession(ss.name)}>Restore</Btn>
+                <Btn onClick={() => deleteSession(ss.name)}>Delete</Btn>
+              </Row>
+            ))}
+            {sessions && sessions.length === 0 && <Row as="div"><span style={{ opacity: 0.6, fontSize: 12 }}>No saved sessions.</span></Row>}
+          </Card>
+        </>
+      )}
 
       <h2>Engines</h2>
       <Card>

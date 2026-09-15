@@ -23,6 +23,8 @@
 #include "brave/browser/falcon/falcon_command_ids.h"
 #include "brave/browser/falcon/media/media_service.h"
 #include "brave/browser/falcon/media/media_sniffer_tab_helper.h"
+#include "brave/browser/falcon/ux/auto_reload_tab_helper.h"
+#include "brave/components/constants/falcon_url_constants.h"
 #include "brave/browser/brave_shields/brave_shields_tab_helper.h"
 #include "brave/browser/cosmetic_filters/cosmetic_filters_tab_helper.h"
 #include "brave/browser/misc_metrics/process_misc_metrics.h"
@@ -379,6 +381,14 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_FALCON_DOWNLOAD_ALL_LINKS:
     case IDC_FALCON_DOWNLOAD_ALL_IMAGES:
     case IDC_FALCON_DOWNLOAD_MEDIA:
+    case IDC_FALCON_BOOST_SITE:
+    case IDC_FALCON_RELOAD_OFF:
+    case IDC_FALCON_RELOAD_30S:
+    case IDC_FALCON_RELOAD_1M:
+    case IDC_FALCON_RELOAD_5M:
+    case IDC_FALCON_RELOAD_15M:
+    case IDC_FALCON_RELOAD_30M:
+    case IDC_FALCON_RELOAD_MENU:
       return true;
     case IDC_CONTENT_CONTEXT_FORCE_PASTE:
       // only enable if there is plain text data to paste - this is what
@@ -431,8 +441,59 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
   }
 }
 
-void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
+namespace {
+
+base::TimeDelta FalconReloadInterval(int id) {
   switch (id) {
+    case IDC_FALCON_RELOAD_30S:
+      return base::Seconds(30);
+    case IDC_FALCON_RELOAD_1M:
+      return base::Minutes(1);
+    case IDC_FALCON_RELOAD_5M:
+      return base::Minutes(5);
+    case IDC_FALCON_RELOAD_15M:
+      return base::Minutes(15);
+    case IDC_FALCON_RELOAD_30M:
+      return base::Minutes(30);
+    default:
+      return base::TimeDelta();
+  }
+}
+
+}  // namespace
+
+bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
+  if (id >= IDC_FALCON_RELOAD_OFF && id <= IDC_FALCON_RELOAD_30M) {
+    auto* helper = source_web_contents_
+                       ? falcon::AutoReloadTabHelper::FromWebContents(
+                             source_web_contents_)
+                       : nullptr;
+    const base::TimeDelta current =
+        helper ? helper->interval() : base::TimeDelta();
+    return current == FalconReloadInterval(id);
+  }
+  return RenderViewContextMenu_Chromium::IsCommandIdChecked(id);
+}
+
+void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
+  if (id >= IDC_FALCON_RELOAD_OFF && id <= IDC_FALCON_RELOAD_30M) {
+    if (source_web_contents_) {
+      falcon::AutoReloadTabHelper::CreateForWebContents(source_web_contents_);
+      falcon::AutoReloadTabHelper::FromWebContents(source_web_contents_)
+          ->SetInterval(FalconReloadInterval(id));
+    }
+    return;
+  }
+  switch (id) {
+    case IDC_FALCON_BOOST_SITE: {
+      // falcon://falcon#boost=<host> opens the Boosts editor on that site.
+      const std::string host(params_.page_url.host());
+      OpenURL(GURL(base::StrCat({"chrome://", falcon::kFalconControlHost,
+                                 "/#boost=", host})),
+              GURL(), url::Origin(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+              ui::PAGE_TRANSITION_LINK);
+      return;
+    }
     case IDC_FALCON_DOWNLOAD_LINK: {
       const GURL& url =
           params_.link_url.is_valid() ? params_.link_url : params_.src_url;
@@ -1000,6 +1061,24 @@ void RenderViewContextMenu::InitMenu() {
       menu_model_.AddItem(IDC_FALCON_DOWNLOAD_ALL_IMAGES,
                           u"Download all images with Falcon");
     }
+  }
+
+  // Falcon page tools: periodic reload + per-site Boost (CSS/JS).
+  if (GetProfile() && content_type_->SupportsGroup(
+                          ContextMenuContentType::ITEM_GROUP_PAGE) &&
+      params_.page_url.SchemeIsHTTPOrHTTPS()) {
+    falcon_reload_submenu_model_ = std::make_unique<ui::SimpleMenuModel>(this);
+    auto* m = falcon_reload_submenu_model_.get();
+    m->AddRadioItem(IDC_FALCON_RELOAD_OFF, u"Off", 0);
+    m->AddRadioItem(IDC_FALCON_RELOAD_30S, u"30 seconds", 0);
+    m->AddRadioItem(IDC_FALCON_RELOAD_1M, u"1 minute", 0);
+    m->AddRadioItem(IDC_FALCON_RELOAD_5M, u"5 minutes", 0);
+    m->AddRadioItem(IDC_FALCON_RELOAD_15M, u"15 minutes", 0);
+    m->AddRadioItem(IDC_FALCON_RELOAD_30M, u"30 minutes", 0);
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+    menu_model_.AddSubMenu(IDC_FALCON_RELOAD_MENU, u"Reload every\u2026", m);
+    menu_model_.AddItem(IDC_FALCON_BOOST_SITE,
+                        u"Boost this site (custom CSS/JS)\u2026");
   }
 
 #if BUILDFLAG(ENABLE_AI_CHAT)

@@ -624,6 +624,8 @@ source_set("ui") {
       "commander/commander_service_factory.h",
       "commander/entity_match.cc",
       "commander/entity_match.h",
+      "commander/falcon_command_source.cc",
+      "commander/falcon_command_source.h",
       "commander/open_url_command_source.cc",
       "commander/open_url_command_source.h",
       "commander/ranker.cc",

@@ -405,7 +405,7 @@ export function App() {
             {state.showSearch && (
               <Search onSubmit={submit}>
                 <input ref={searchRef} value={query} onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search or type a URL  ·  press / to focus  ·  !y !w !gh for YouTube, Wikipedia, GitHub" spellCheck={false} autoComplete="off" />
+                  placeholder="Search or type a URL  ·  / to focus  ·  !y !w !gh shortcuts" spellCheck={false} autoComplete="off" />
                 <button type="submit" title="Search">→</button>
               </Search>
             )}
