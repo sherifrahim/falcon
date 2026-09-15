@@ -50,6 +50,7 @@ namespace prefs {
 
 void RegisterPeekPrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(kPeekEnabled, true);
+  registry->RegisterBooleanPref(kCockpitMode, true);
 }
 
 }  // namespace prefs

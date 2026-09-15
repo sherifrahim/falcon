@@ -19,6 +19,9 @@ constexpr AcceleratorMapping kBraveAcceleratorMap[] = {
     {ui::VKEY_M, ui::EF_CONTROL_DOWN, IDC_TOGGLE_TAB_MUTE},
     // Ctrl+B(or Cmd+B)
     {ui::VKEY_B, ui::EF_PLATFORM_ACCELERATOR, IDC_TOGGLE_SIDEBAR},
+    // Falcon: Ctrl+Shift+F toggles cockpit (focus) mode.
+    {ui::VKEY_F, ui::EF_PLATFORM_ACCELERATOR | ui::EF_SHIFT_DOWN,
+     IDC_TOGGLE_FOCUS_MODE},
     // Ctrl+Alt+T (Cmd+Alt+T on Mac)
     {ui::VKEY_T, ui::EF_PLATFORM_ACCELERATOR | ui::EF_ALT_DOWN,
      IDC_NEW_SPLIT_TAB},

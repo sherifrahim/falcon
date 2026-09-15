@@ -179,6 +179,9 @@ class BraveBrowserView : public BrowserView,
   // FocusModeController::Observer:
   void OnFocusModeToggled(bool enabled) override;
 
+  // Falcon: falcon.shell.cockpit changed (or window just created).
+  void OnCockpitPrefChanged();
+
   // True when the active content area should always display its domain in the
   // mini toolbar.
   bool show_active_contents_domain_in_mini_toolbar() const {

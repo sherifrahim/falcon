@@ -26,6 +26,7 @@
 #include "brave/browser/ui/commands/accelerator_service_factory.h"
 #include "brave/browser/ui/focus_mode/focus_mode_features.h"
 #include "brave/browser/ui/focus_mode/focus_mode_utils.h"
+#include "brave/browser/ui/views/falcon/peek_window.h"
 #include "brave/browser/ui/page_info/features.h"
 #include "brave/browser/ui/sidebar/sidebar_controller.h"
 #include "brave/browser/ui/sidebar/sidebar_utils.h"
@@ -378,6 +379,12 @@ BraveBrowserView::BraveBrowserView(Browser* browser) : BrowserView(browser) {
   pref_change_registrar_.Add(
       brave_tabs::kVerticalTabsEnabled,
       base::BindRepeating(&BraveBrowserView::OnPreferenceChanged,
+                          base::Unretained(this)));
+
+  // Falcon cockpit mode follows one profile pref across all windows.
+  pref_change_registrar_.Add(
+      falcon::prefs::kCockpitMode,
+      base::BindRepeating(&BraveBrowserView::OnCockpitPrefChanged,
                           base::Unretained(this)));
 
 #if BUILDFLAG(ENABLE_BRAVE_VPN)
@@ -813,6 +820,11 @@ void BraveBrowserView::OnAcceleratorsChanged(
 
 void BraveBrowserView::OnFocusModeToggled(bool enabled) {
   UpdateFocusModeState();
+  // Persist so new windows and the control panel agree (no-op when equal).
+  PrefService* prefs = GetProfile()->GetPrefs();
+  if (prefs->GetBoolean(falcon::prefs::kCockpitMode) != enabled) {
+    prefs->SetBoolean(falcon::prefs::kCockpitMode, enabled);
+  }
 }
 
 #if BUILDFLAG(ENABLE_BRAVE_WALLET)
@@ -857,8 +869,21 @@ void BraveBrowserView::AddedToWidget() {
         focus_mode_title_bar_view_);
   }
 
+  // Falcon: start in cockpit mode when the profile says so.
+  OnCockpitPrefChanged();
+
   UpdateFocusModeState();
   EnsureFindBarHostViewIsLastChild();
+}
+
+void BraveBrowserView::OnCockpitPrefChanged() {
+  if (!BrowserSupportsFocusMode(browser_)) {
+    return;
+  }
+  if (auto* controller = browser_->GetFeatures().focus_mode_controller()) {
+    controller->SetEnabled(
+        GetProfile()->GetPrefs()->GetBoolean(falcon::prefs::kCockpitMode));
+  }
 }
 
 void BraveBrowserView::RemovedFromWidget() {

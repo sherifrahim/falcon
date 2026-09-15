@@ -6,6 +6,7 @@
 #include "brave/browser/ui/toolbar/brave_app_menu_model.h"
 
 #include "brave/browser/falcon/falcon_command_ids.h"
+#include "brave/browser/ui/views/falcon/peek_window.h"
 
 #include <memory>
 #include <optional>
@@ -193,6 +194,11 @@ void BraveAppMenuModel::BuildBraveProductsSection() {
                  u"Quick commands (Ctrl+Space)");
   }
 #endif
+  if (IsCommandIdEnabled(IDC_TOGGLE_FOCUS_MODE)) {
+    InsertCheckItemAt(GetNextIndexOfBraveProductsSection(),
+                      IDC_TOGGLE_FOCUS_MODE,
+                      u"Cockpit mode \u2014 hide toolbar (Ctrl+Shift+F)");
+  }
   need_separator = true;
 
 #if BUILDFLAG(ENABLE_AI_CHAT)
@@ -495,6 +501,14 @@ void BraveAppMenuModel::ExecuteCommand(int id, int event_flags) {
 #endif  // defined(TOOLKIT_VIEWS)
 
   return AppMenuModel::ExecuteCommand(id, event_flags);
+}
+
+bool BraveAppMenuModel::IsCommandIdChecked(int id) const {
+  if (id == IDC_TOGGLE_FOCUS_MODE) {
+    return browser()->GetProfile()->GetPrefs()->GetBoolean(
+        falcon::prefs::kCockpitMode);
+  }
+  return AppMenuModel::IsCommandIdChecked(id);
 }
 
 bool BraveAppMenuModel::IsCommandIdEnabled(int id) const {

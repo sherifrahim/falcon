@@ -654,6 +654,9 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #if !BUILDFLAG(IS_ANDROID)
   registry->SetDefaultPrefValue(brave_tabs::kVerticalTabsEnabled,
                                 base::Value(true));
+  // Dock: icon rail that expands on hover (floating is Brave's default).
+  registry->SetDefaultPrefValue(brave_tabs::kVerticalTabsCollapsed,
+                                base::Value(true));
   registry->SetDefaultPrefValue(kWebViewRoundedCorners, base::Value(true));
   // Dark-first. Brave migrated its old local-state dark-mode pref to
   // Chromium's per-profile colour scheme, so this is the one that counts.

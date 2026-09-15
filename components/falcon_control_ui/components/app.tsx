@@ -34,6 +34,8 @@ interface State {
   roundedCorners: boolean
   mouseGestures: boolean
   peek: boolean
+  cockpit: boolean
+  verticalTabsCollapsed: boolean
   videoPill: boolean
   clipboardMonitor: boolean
   engineEnabled: boolean
@@ -235,7 +237,9 @@ export function App() {
             ))}
           </Seg>
         </Row>
+        {bool('cockpit', 'Cockpit mode', 'No toolbar: the page fills the window. Move the mouse to the top edge or press Ctrl+L to reveal the address bar; Ctrl+Shift+F toggles')}
         {bool('verticalTabs', 'Vertical tabs', 'Tab strip on the side (Zen / Arc style)')}
+        {bool('verticalTabsCollapsed', 'Dock (collapsed tabs)', 'Icon-only tab rail that expands on hover')}
         <Row as="div">
           <span>Sidebar<span className="sub">Bookmarks, reading list, downloads, panels</span></span>
           <Seg>

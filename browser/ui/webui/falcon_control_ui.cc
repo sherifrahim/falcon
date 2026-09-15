@@ -213,6 +213,9 @@ class FalconControlMessageHandler : public content::WebUIMessageHandler {
     d.Set("roundedCorners", p->GetBoolean(kWebViewRoundedCorners));
     d.Set("mouseGestures", p->GetBoolean(falcon::prefs::kMouseGesturesEnabled));
     d.Set("peek", p->GetBoolean(falcon::prefs::kPeekEnabled));
+    d.Set("cockpit", p->GetBoolean(falcon::prefs::kCockpitMode));
+    d.Set("verticalTabsCollapsed",
+          p->GetBoolean(brave_tabs::kVerticalTabsCollapsed));
     d.Set("videoPill", p->GetBoolean(falcon::prefs::kDownloadVideoPill));
     d.Set("clipboardMonitor",
           p->GetBoolean(falcon::prefs::kDownloadClipboardMonitor));
@@ -282,6 +285,12 @@ class FalconControlMessageHandler : public content::WebUIMessageHandler {
     }
     if (std::optional<bool> v = in.FindBool("peek")) {
       p->SetBoolean(falcon::prefs::kPeekEnabled, *v);
+    }
+    if (std::optional<bool> v = in.FindBool("cockpit")) {
+      p->SetBoolean(falcon::prefs::kCockpitMode, *v);
+    }
+    if (std::optional<bool> v = in.FindBool("verticalTabsCollapsed")) {
+      p->SetBoolean(brave_tabs::kVerticalTabsCollapsed, *v);
     }
     if (std::optional<bool> v = in.FindBool("videoPill")) {
       p->SetBoolean(falcon::prefs::kDownloadVideoPill, *v);

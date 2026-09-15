@@ -51,6 +51,7 @@ class BraveAppMenuModel : public AppMenuModel {
   void Build() override;
   void ExecuteCommand(int id, int event_flags) override;
   bool IsCommandIdEnabled(int id) const override;
+  bool IsCommandIdChecked(int id) const override;
 
   std::optional<size_t> GetProperItemIndex(std::vector<int> commands_to_check,
                                            bool insert_next) const;

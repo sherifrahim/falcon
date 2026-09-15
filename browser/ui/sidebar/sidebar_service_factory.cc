@@ -108,10 +108,10 @@ content::BrowserContext* SidebarServiceFactory::GetBrowserContextToUse(
 
 void SidebarServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  // Falcon: the sidebar is part of the layout (Zen/Arc style), not a
-  // mouse-over flyout. Still user-configurable in settings.
+  // Falcon cockpit: the sidebar stays out of the way and slides in from the
+  // edge on mouse-over. Still user-configurable (falcon://falcon, settings).
   SidebarService::RegisterProfilePrefs(
-      registry, SidebarService::ShowSidebarOption::kShowAlways);
+      registry, SidebarService::ShowSidebarOption::kShowOnMouseOver);
 }
 
 }  // namespace sidebar
