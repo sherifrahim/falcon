@@ -547,13 +547,13 @@ are declared in tools/grit/grit_args.gni.
         Browse across devices
       </message>
       <message name="IDS_RECENT_TABS_SYNC_HISTORY_PROMO_BODY_SIGNED_OUT" desc="Body of the sync hystory promo for signed out users. Tells users to sign in and sync hystory to see synced tabs, passwords, and other data from other devices.">
-        To get your tabs from your other devices, sign in and sync history. You’ll also get your passwords and more on all your devices. You can stop syncing anytime in settings. Brave may personalize Search and other services based on your history.
+        To get your tabs from your other devices, sign in and sync history. You’ll also get your passwords and more on all your devices. You can stop syncing anytime in settings. Falcon may personalize Search and other services based on your history.
       </message>
       <message name="IDS_RECENT_TABS_SYNC_HISTORY_PROMO_BODY_PENDING_SIGN_IN" desc="Body of the sync hystory promo for users with pending sign in, who have history sync off.">
-        To get your tabs from your other devices, verify it’s you and sync your history and tabs. You can stop syncing anytime in settings. Brave may personalize Search and other services based on your history.
+        To get your tabs from your other devices, verify it’s you and sync your history and tabs. You can stop syncing anytime in settings. Falcon may personalize Search and other services based on your history.
       </message>
       <message name="IDS_RECENT_TABS_SYNC_HISTORY_PROMO_BODY_PENDING_SIGN_IN_SYNC_HISTORY_ON" desc="Body of the sync hystory promo for users with pending sign in, who have history sync on.">
-        To get your tabs from your other devices, verify it’s you. You can stop syncing anytime in settings. Brave may personalize Search and other services based on your history.
+        To get your tabs from your other devices, verify it’s you. You can stop syncing anytime in settings. Falcon may personalize Search and other services based on your history.
       </message>
       <message name="IDS_RECENT_TABS_SYNC_HISTORY_PROMO_BODY_SIGNED_IN_SYNC_OFF" desc="Body of the sync hystory promo for signed in users with sync turned off.">
         To get your tabs from your other devices, sync your history and tabs to <ph name="ACCOUNT_EMAIL">$1<ex>john@google.com</ex></ph>. You can stop syncing anytime in settings. Brave may personalize Search and other services based on your history.
@@ -644,7 +644,7 @@ are declared in tools/grit/grit_args.gni.
           Save to Memory
         </message>
         <message name="IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_DIALOG_TITLE" desc="The title of a dialog that asks whether to integrate the accessibility image labeling service of Brave to Brave.">
-          Get image descriptions from Brave?
+          Get image descriptions from Falcon?
         </message>
         <message name="IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_BUBBLE_ENABLE" desc="The button text that allows integrating the accessibility labels service of Brave. This should use the same verb as IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_SEND.">
           Yes, I'm in
@@ -914,7 +914,7 @@ are declared in tools/grit/grit_args.gni.
             </message>
           </if>
           <message name="IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_MENU_OPTION" desc="The context-menu item that asks whether to integrate the accessibility image labeling service of Brave to Brave.">
-            Get image descriptions from Brave
+            Get image descriptions from Falcon
           </message>
           <message name="IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_SEND" desc="The context-menu sub-item that asks whether to integrate the accessibility image labeling service of Brave to Brave always.">
             Always
@@ -941,7 +941,7 @@ are declared in tools/grit/grit_args.gni.
             Loading suggestion
           </message>
           <message name="IDS_CONTENT_CONTEXT_SPELLING_NO_SUGGESTIONS_FROM_GOOGLE" desc="The message shown when we cannot get any more suggestions from the Spelling service">
-            No more suggestions from Brave
+            No more suggestions from Falcon
           </message>
           <message name="IDS_CONTENT_CONTEXT_SELECTALL" desc="The name of the Select All command in the content area context menu">
             Select &amp;all
@@ -1279,7 +1279,7 @@ are declared in tools/grit/grit_args.gni.
             </message>
           </if>
           <message name="IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_MENU_OPTION" desc="The context-menu item that asks whether to integrate the accessibility image labeling service of Brave to Brave.">
-            Get Image Descriptions from Brave
+            Get Image Descriptions from Falcon
           </message>
           <message name="IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_SEND" desc="The context-menu sub-item that asks whether to integrate the accessibility image labeling service of Brave to Brave always.">
             Always
@@ -1309,7 +1309,7 @@ are declared in tools/grit/grit_args.gni.
             Loading suggestion
           </message>
           <message name="IDS_CONTENT_CONTEXT_SPELLING_NO_SUGGESTIONS_FROM_GOOGLE" desc="The message shown when we cannot get any more suggestions from the Spelling service">
-            No more suggestions from Brave
+            No more suggestions from Falcon
           </message>
           <message name="IDS_CONTENT_CONTEXT_SELECTALL" desc="In Title Case: The name of the Select All command in the content area context menu">
             Select &amp;All
@@ -1791,7 +1791,7 @@ are declared in tools/grit/grit_args.gni.
           Name &amp;window...
         </message>
         <message name="IDS_CHROMELABS" desc="The text label of the Brave Labs menu item">
-          Brave &amp;Labs...
+          Falcon &amp;Labs...
         </message>
       </if>
       <if expr="use_titlecase">
@@ -1847,7 +1847,7 @@ are declared in tools/grit/grit_args.gni.
           Name &amp;Window...
         </message>
         <message name="IDS_CHROMELABS" desc="In Title Case: The text label of the Brave Labs menu item">
-          Brave &amp;Labs...
+          Falcon &amp;Labs...
         </message>
       </if>
 
@@ -1944,7 +1944,7 @@ are declared in tools/grit/grit_args.gni.
           Performance
         </message>
         <message name="IDS_SHOW_SEARCH_COMPANION" desc="The text label of the Brave Search Companion menu item">
-          Sear&amp;ch this page with Brave...
+          Sear&amp;ch this page with Falcon...
         </message>
         <message name="IDS_SHOW_TRANSLATE" desc="The text label of the Translate menu item">
           T&amp;ranslate...
@@ -2003,7 +2003,7 @@ are declared in tools/grit/grit_args.gni.
           Performance
         </message>
         <message name="IDS_SHOW_SEARCH_COMPANION" desc="In Title Case: The text label of the Brave Search Companion menu item">
-          Sear&amp;ch This Page with Brave...
+          Sear&amp;ch This Page with Falcon...
         </message>
         <message name="IDS_SHOW_TRANSLATE" desc="In Title Case: The text label of the Translate menu item">
           T&amp;ranslate...
@@ -2358,13 +2358,13 @@ are declared in tools/grit/grit_args.gni.
         This file was blocked by Advanced Protection.
       </message>
       <message name="IDS_BLOCK_REASON_DEEP_SCANNING_UPDATED" desc="Message shown on chrome://downloads when a download is being scanned">
-        This file might be a virus or malware. You can send it to Brave to check if it's unsafe.
+        This file might be a virus or malware. You can send it to Falcon to check if it's unsafe.
       </message>
       <message name="IDS_BLOCK_REASON_DEEP_SCANNING_SECOND_UPDATED" desc="Second line of the message shown on chrome://downloads when a download is being scanned. Follows IDS_BLOCK_REASON_DEEP_SCANNING_UPDATED">
         Scanning for malware...
       </message>
       <message name="IDS_BLOCK_REASON_PROMPT_FOR_SCANNING_UPDATED" desc="Message shown to the user on chrome://downloads page to explain that this download is recommended to be scanned.">
-        This file might be a virus or malware. You can send it to Brave to check if it's unsafe.
+        This file might be a virus or malware. You can send it to Falcon to check if it's unsafe.
       </message>
       <message name="IDS_BLOCK_REASON_PROMPT_FOR_LOCAL_PASSWORD_SCANNING" desc="Message shown to the user on chrome://downloads page to explain that this download is recommended to be scanned.">
         This file may be dangerous
@@ -2848,7 +2848,7 @@ are declared in tools/grit/grit_args.gni.
         Show full download history in a new tab
       </message>
       <message name="IDS_DOWNLOAD_BUBBLE_ESB_PROMO" desc="Text for the in-product-help bubble shown for the esb promo download bubble.">
-        Brave just blocked a dangerous file from downloading. Get even stronger security with enhanced protection.
+        Falcon just blocked a dangerous file from downloading. Get even stronger security with enhanced protection.
       </message>
       <message name="IDS_DOWNLOAD_BUBBLE_ESB_PROMO_CUSTOM_ACTION" desc="Text for the custom action within the in-product-help bubble shown for the esb promo download bubble.">
         Settings
@@ -3161,7 +3161,7 @@ are declared in tools/grit/grit_args.gni.
       </message>
       <if expr="_google_chrome">
         <message name="IDS_DOWNLOAD_ROW_ESB_PROMOTION" desc="Link button text that teaches the user about Enhanced Protection.">
-          Discover enhanced protection to get Brave's highest level of security for downloads
+          Discover enhanced protection to get Falcon's highest level of security for downloads
         </message>
         <message name="IDS_DOWNLOAD_ROW_ESB_PROMO_A11Y" desc="ARIA (accessibility) label describing a link which opens in a new tab.">
           Opens security settings page in a new tab
@@ -3956,7 +3956,7 @@ are declared in tools/grit/grit_args.gni.
         Notifications from this site may be disruptive
       </message>
       <message name="IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_PREDICTION_SERVICE_DESCRIPTION" desc="Text used as notification message when requesting permission for Web Notifications via a notification. Used when the prediction service has decided that the user will be very unlikely to grant this permission.">
-        Brave thinks you don't want notifications from this site. So, requests are hidden to reduce interruptions.
+        Falcon thinks you don't want notifications from this site. So, requests are hidden to reduce interruptions.
       </message>
       <message name="IDS_GEOLOCATION_OFF_EXPLANATORY_TEXT" desc="Explanatory animated text that appears (and then disappears) in the address bar as part of the less-prominent UX, when a website requests the geolocation permission.">
         Location blocked
@@ -3965,7 +3965,7 @@ are declared in tools/grit/grit_args.gni.
         Location blocked
       </message>
       <message name="IDS_GEOLOCATION_QUIET_PERMISSION_BUBBLE_PREDICTION_SERVICE_DESCRIPTION" desc="Text used as notification message when requesting permission for Geolocation. Used when the prediction service has decided that the user will be very unlikely to grant this permission.">
-        Brave thinks you don't want to use your location on this site. So, requests are hidden to reduce interruptions.
+        Falcon thinks you don't want to use your location on this site. So, requests are hidden to reduce interruptions.
       </message>
       <message name="IDS_GEOLOCATION_QUIET_PERMISSION_BUBBLE_ALLOW_BUTTON" desc="Text displayed on the button that enables geolocation for a site. This button is part of the geolocation status bubble, which is triggered when a user clicks on the blocked geolocation icon in the omnibox.">
         Allow for this site
@@ -4482,7 +4482,7 @@ are declared in tools/grit/grit_args.gni.
         Allow remote debugging?
       </message>
       <message name="IDS_DEV_TOOLS_CONNECTION_DIALOG_MESSAGE_PART_1" desc="Message displayed in the dialog asking user to confirm allowing a debugging connection to this browser instance.">
-        An external app wants full control over this Brave session to debug it. This includes access to your saved data, cookies and site data, and the ability to navigate to any URL.
+        An external app wants full control over this Falcon session to debug it. This includes access to your saved data, cookies and site data, and the ability to navigate to any URL.
       </message>
       <message name="IDS_DEV_TOOLS_CONNECTION_DIALOG_MESSAGE_PART_2" desc="Message displayed in the dialog asking user to confirm allowing a debugging connection to this browser instance.">
         Only web developers should turn on this feature, and only use it with trusted apps.
@@ -5922,13 +5922,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         "<ph name="EXTENSION_NAME">$1<ex>Babylon Toolbar</ex></ph>" added
       </message>
       <message name="IDS_EXTENSION_EXTERNAL_INSTALL_ALERT_BUBBLE_HEADING_APP" desc="The heading text (below the title) for the bubble that alerts the user that a new external app was installed.">
-        Another program on your computer added an app that may change the way Brave works.
+        Another program on your computer added an app that may change the way Falcon works.
       </message>
       <message name="IDS_EXTENSION_EXTERNAL_INSTALL_ALERT_BUBBLE_HEADING_EXTENSION" desc="The heading text (below the title) for the bubble that alerts the user that a new external extension was installed.">
-        Another program on your computer added an extension that may change the way Brave works.
+        Another program on your computer added an extension that may change the way Falcon works.
       </message>
       <message name="IDS_EXTENSION_EXTERNAL_INSTALL_ALERT_BUBBLE_HEADING_THEME" desc="The heading text (below the title) for the bubble that alerts the user that a new external theme was installed.">
-        Another program on your computer added a theme that may change the way Brave works.
+        Another program on your computer added a theme that may change the way Falcon works.
       </message>
 
       <message name="IDS_EXTENSIONS_ADDED_WITHOUT_KNOWLEDGE" desc="Text shown in the extensions settings for items that might have been forcefully added to Brave without the user's knowledge">
@@ -5950,7 +5950,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Did you mean to change this page?
       </message>
       <message name="IDS_EXTENSION_NTP_OVERRIDDEN_DIALOG_TITLE_BACK_TO_GOOGLE" desc="The title of the dialog informing the user that the new tab page has been overridden by an extension, and asking if they want to change back to Brave.">
-        Change back to Brave?
+        Change back to Falcon?
       </message>
       <message name="IDS_EXTENSION_NTP_OVERRIDDEN_DIALOG_BODY_GENERIC" desc="The body of the dialog informing the user that the new tab page has been overridden by an extension, indicating which extension now controls it.">
         This page was changed by the "<ph name="EXTENSION_NAME">$1<ex>Brave Arts and Culture</ex></ph>" extension
@@ -6032,29 +6032,29 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <if expr="is_macosx">
         <message name="IDS_DEPRECATED_APPS_MONITOR_RENDERER" desc="Dialog content that educates users that Brave Apps will soon no longer launch.">
-          Old versions of Brave apps won't open on Mac devices after December 2022. You can check if there's a new version available.
+          Old versions of Falcon apps won't open on Mac devices after December 2022. You can check if there's a new version available.
         </message>
       </if>
       <if expr="is_win">
         <message name="IDS_DEPRECATED_APPS_MONITOR_RENDERER" desc="Dialog content that educates users that Brave Apps will soon no longer launch.">
-          Old versions of Brave apps won't open on Windows devices after December 2022. You can check if there's a new version available.
+          Old versions of Falcon apps won't open on Windows devices after December 2022. You can check if there's a new version available.
         </message>
       </if>
       <if expr="is_linux">
         <message name="IDS_DEPRECATED_APPS_MONITOR_RENDERER" desc="Dialog content that educates users that Brave Apps will soon no longer launch.">
-          Old versions of Brave apps won't open on Linux devices after December 2022. You can check if there's a new version available.
+          Old versions of Falcon apps won't open on Linux devices after December 2022. You can check if there's a new version available.
         </message>
       </if>
       <if expr="is_fuchsia">
         <message name="IDS_DEPRECATED_APPS_MONITOR_RENDERER" desc="Dialog content that educates users that Brave Apps will soon no longer launch.">
-          Old versions of Brave apps won't open after December 2022. You can check if there's a new version available.
+          Old versions of Falcon apps won't open after December 2022. You can check if there's a new version available.
         </message>
       </if>
       <message name="IDS_DEPRECATED_APPS_LEARN_MORE" desc="Redirects to a link with more information on chrome apps deprecation">
         Learn more
       </message>
       <message name="IDS_DEPRECATED_APPS_LEARN_MORE_AX_LABEL" desc="Accessibility label text for IDS_DEPRECATED_APPS_LEARN_MORE link">
-        Learn more about unsupported Brave apps
+        Learn more about unsupported Falcon apps
       </message>
       <message name="IDS_DEPRECATED_APPS_DELETION_LINK" desc="Contains link to trigger the deprecated apps deletion dialog from chrome://apps">
         {NUM_APPS, plural,
@@ -6451,7 +6451,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <message name="IDS_APP_HOME_REMOVE_APP" desc="Menu entry label for removing an app from context menu on App Home that isn't locally installed">
-        Remove from Brave
+        Remove from Falcon
       </message>
 
       <message name="IDS_APP_HOME_APP_SETTINGS" desc="Menu entry label for navigation to App Settings page for an app from context menu on App Home">
@@ -6605,7 +6605,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Add Username
       </message>
       <message name="IDS_ADD_USERNAME_BODY" desc="Body text in the add username bubble.">
-        To help Brave Password Manager save your sign-in info, add your username for this site
+        To help Falcon Password Manager save your sign-in info, add your username for this site
       </message>
       <message name="IDS_UPDATE_PASSWORD" desc="The title of the save password bubble when a password can be updated.">
         Update password?
@@ -6637,7 +6637,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Passwords are saved in your Brave sync chain so you can use them on any device
       </message>
       <message name="IDS_PASSWORD_BUBBLES_PASSWORD_MANAGER_LINK_TEXT_SYNCED_TO_ACCOUNT" desc="The text of the Brave Password Manager links displayed on Password Manager bubbles footer when the credentials are synced to the Brave account.">
-        Brave Password Manager
+        Falcon Password Manager
       </message>
       <message name="IDS_PASSWORD_BUBBLES_FOOTER_SYNCED_TO_ACCOUNT" desc="The footer text of the bubbles that offers users to save, update or manage stored passwords in Brave and synced to their Brave account.">
         You can use saved passwords on any device. They're saved to <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Brave Password Manager</ex></ph> for <ph name="EMAIL">$2<ex>user@gmail.com</ex></ph>.
@@ -6661,7 +6661,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Passwords are saved to <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Brave Password Manager</ex></ph>.
       </message>
       <message name="IDS_PASSWORD_SAVED_CONFIRMATION_MESSAGE_DESCRIPTION" desc="The description in the Brave Password Manager's message that appears after saving a password. This message might be shown after saving a generated password or after the user fixed an error that then allowed for the password to be saved.">
-        You can view and manage saved passwords in Brave Password Manager
+        You can view and manage saved passwords in Falcon Password Manager
       </message>
       <message name="IDS_PASSWORD_MANAGER_SAVE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION" desc="The description of the Brave Password Manager's save password message when the user is signed in.">
         To Brave Password Manager for <ph name="ACCOUNT">$1<ex>user@gmail.com</ex></ph>
@@ -6858,7 +6858,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <message name="IDS_BAD_FLAGS_FROM_FILE_WARNING_MESSAGE" desc="Message shown when command-line flags are loaded from a file. [Keep it short so it fits in the infobar.]">
-        Brave is loading flags from a command-line file. Stability and security may be affected.
+        Falcon is loading flags from a command-line file. Stability and security may be affected.
       </message>
 
       <!-- Bad Environment Variables Infobar-->
@@ -7173,10 +7173,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Ask <ph name="SEARCH_ENGINE_NAME">$1<ex>Brave</ex></ph> or type a URL
       </message>
       <message name="IDS_WEBUI_OMNIBOX_COMPOSE_ASK_ABOUT_THIS_PAGE" desc="Label for a button that allows the user to ask a question about the content of their current page.">
-        Ask Brave about this page
+        Ask Falcon about this page
       </message>
       <message name="IDS_WEBUI_OMNIBOX_COMPOSE_ASK_ABOUT_THIS_PAGE_ARIA_LABEL" desc="The aria-label for the button that allows the user to ask a question about the content of their current page. The $1 is a placeholder for the page title.">
-        Ask Brave about this page: <ph name="PAGE_TITLE">$1</ph>
+        Ask Falcon about this page: <ph name="PAGE_TITLE">$1</ph>
       </message>
       <message name="IDS_WEBUI_OMNIBOX_COMPOSE_ASK_ABOUT_YOUR_TABS" desc="Label for a button that guides the user to composebox's context menu using a suggestion like label.">
         Ask about your tabs
@@ -7221,10 +7221,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Try again
       </message>
       <message name="IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_MD" desc="The text displayed in the fakebox (on the New Tab page) when it is empty, Brave is the default search engine, and the Material Design UI is enabled.">
-        Search Brave or type a URL
+        Search Falcon or type a URL
       </message>
       <message name="IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_SHORT" desc="The text displayed in the fakebox (on the New Tab page) when it is empty, Brave is the default search engine, and short hint text is enabled.">
-        Search Brave
+        Search Falcon
       </message>
       <message name="IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_MULTIMODAL" desc="The text displayed in the multimodal searchbox when it is empty. It is meant to invite the user to add a text query to the existing image query in order to issue a 'multimodal' (image + text) query.">
         Add to your search
@@ -7260,10 +7260,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Search
       </message>
       <message name="IDS_NTP_SEARCH_BOX_PLACEHOLDER_ASK_OR_TYPE" desc="A steady state placeholder text for the NTP searchbox">
-        Ask Brave or type a URL
+        Ask Falcon or type a URL
       </message>
       <message name="IDS_NTP_SEARCH_BOX_DYNAMIC_PLACEHOLDER_ASK_GOOGLE" desc="One of the dynamically changing placeholder texts for the NTP searchbox">
-        Ask Brave
+        Ask Falcon
       </message>
       <message name="IDS_NTP_SEARCH_BOX_DYNAMIC_PLACEHOLDER_PLAN" desc="One of the dynamically changing placeholder texts for the NTP searchbox">
         Make a plan
@@ -7464,7 +7464,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Cards
       </message>
       <message name="IDS_NTP_CUSTOMIZE_NO_BACKGROUND_LABEL" desc="The label for the 'Default Brave' tile in the customization menu on the New Tab Page">
-        Default Brave
+        Default Falcon
       </message>
       <message name="IDS_NTP_CUSTOMIZE_CHROME_CHANGE_THEME_LABEL" desc="The label for the action button for changing Brave theme in the New Tab Page customize chrome side panel.">
         Change theme
@@ -7485,7 +7485,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <ph name="THIRD_PARTY_NTP_MANAGER">$1<ex>ZomboCom</ex></ph> is managing your new tab page, opens in a new tab
       </message>
       <message name="IDS_NTP_CUSTOMIZE_CHROME_RESET_TO_CLASSIC_CHROME_COMPLETE" desc="Text for a screenreader to read aloud when the user's theme has finished changing to classic chrome in the Customize Brave side panel.">
-        Theme updated to Default Brave
+        Theme updated to Default Falcon
       </message>
       <message name="IDS_NTP_CUSTOMIZE_CHROME_RESET_TO_UPLOADED_IMAGE_COMPLETE" desc="Text for a screenreader to read aloud when the user's theme has finished changing to an uploaded image in the Customize Brave side panel.">
         Theme updated to uploaded image
@@ -8312,7 +8312,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enhance your search with tabs, files, or an AI tool
       </message>
       <message name="IDS_NTP_COMPOSE_SUGGESTIONS_INFO" desc="The text underneath the composebox that explains to users how suggestions are generated.">
-        Suggestions based on your <ph name="BEGIN_LINK_GOOGLE_ACTIVITY">&lt;a target="_blank" href="$1"&gt;</ph>Brave activity<ph name="END_LINK_GOOGLE_ACTIVITY">&lt;/a&gt;</ph>
+        Suggestions based on your <ph name="BEGIN_LINK_GOOGLE_ACTIVITY">&lt;a target="_blank" href="$1"&gt;</ph>Falcon activity<ph name="END_LINK_GOOGLE_ACTIVITY">&lt;/a&gt;</ph>
       </message>
       <message name="IDS_NTP_COMPOSE_SMART_COMPOSE_A11Y_LABEL" translateable="false" desc="The accessibility label for the smart compose suggestion in the compose box.">
         Press Tab to accept this suggestion
@@ -8368,7 +8368,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           other {Sharing # tabs}}
       </message>
       <message name="IDS_COMPOSE_SHARING_TABS_WITH_GOOGLE" desc="Text for the tooltip above the favicons that show a user is sharing tabs as context.">
-        Sharing tabs with Brave
+        Sharing tabs with Falcon
       </message>
       <message name="IDS_COMPOSE_ADD_OPEN_TABS_TO_ASK_ANYTHING" desc="Label for the action to add open tabs to ask anything in composebox.">
         Add open tabs to ask anything
@@ -8432,16 +8432,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Remove <ph name="TOOL_NAME">$1<ex>Deep Search</ex></ph>
       </message>
       <message name="IDS_COMPOSE_ASK_ABOUT_THIS_TAB" desc="Label for a button in the composebox that allows the user to ask a question about the content of their most recent tab.">
-        Ask Brave about previous tab
+        Ask Falcon about previous tab
       </message>
       <message name="IDS_COMPOSE_ASK_ABOUT_THIS_TAB_ARIA_LABEL" desc="The aria-label for the button that allows the user to ask a question about the content of their most recent tab. The $1 is a placeholder for the tab title.">
-        Ask Brave about previous tab: <ph name="TAB_TITLE">$1</ph>
+        Ask Falcon about previous tab: <ph name="TAB_TITLE">$1</ph>
       </message>
       <message name="IDS_COMPOSE_ASK_ABOUT_THIS_PAGE" desc="Label for a button in the composebox that allows the user to ask a question about the content of their most recent page.">
-        Ask Brave about previous page
+        Ask Falcon about previous page
       </message>
       <message name="IDS_COMPOSE_ASK_ABOUT_THIS_PAGE_ARIA_LABEL" desc="The aria-label for the button that allows the user to ask a question about the content of their most recent tab. The $1 is a placeholder for the page title.">
-        Ask Brave about previous page: <ph name="PAGE_TITLE">$1</ph>
+        Ask Falcon about previous page: <ph name="PAGE_TITLE">$1</ph>
       </message>
       <message name="IDS_NTP_ACTION_CHIP_BRAINSTORM_HEADING" desc="Heading of the brainstorm action chip on the NTP.">
         Brainstorm
@@ -8460,10 +8460,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <ph name="MODULE_NAME">$1<ex>Make Brave Yours</ex></ph> hidden
       </message>
       <message name="IDS_NTP_MODULES_SETUP_LIST_INFO" desc="Text shown in the body of the info dialog of the Make Brave Yours card.">
-        You're seeing suggestions on how to personalize Brave and make it more powerful for your daily needs.
+        You're seeing suggestions on how to personalize Falcon and make it more powerful for your daily needs.
         <ph name="BREAK">&lt;br&gt;</ph>
         <ph name="BREAK">&lt;br&gt;</ph>
-        You can manage settings from the card menu or see more options in Customize Brave.
+        You can manage settings from the card menu or see more options in Customize Falcon.
       </message>
       <message name="IDS_NTP_MODULES_INFO_BUTTON_TITLE" desc="Text shown in tooltip of info button of an NTP module.">
         About this card
@@ -8547,7 +8547,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         You’re seeing suggested files to help you easily get back to your most recent activity in Google Drive.
         <ph name="BREAK">&lt;br&gt;</ph>
         <ph name="BREAK">&lt;br&gt;</ph>
-        You can manage settings from the card menu or see more options in Customize Brave.
+        You can manage settings from the card menu or see more options in Customize Falcon.
       </message>
       <message name="IDS_NTP_MODULES_DRIVE_SEE_MORE" desc="A label for the see more button in the Drive module.">
         See more
@@ -8562,7 +8562,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         You’re seeing suggested files to help you easily get back to your most recent activity in Microsoft SharePoint and OneDrive.
         <ph name="BREAK">&lt;br&gt;</ph>
         <ph name="BREAK">&lt;br&gt;</ph>
-        You can manage settings from the card menu or see more options in Customize Brave.
+        You can manage settings from the card menu or see more options in Customize Falcon.
       </message>
       <message name="IDS_NTP_MODULES_MICROSOFT_FILES_DISABLE_BUTTON_TEXT" desc="Text shown on the disable button of a NTP Microsoft files card.">
         Don't show SharePoint and OneDrive files
@@ -8589,25 +8589,25 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Hide for <ph name="DISMISS_DAYS">$1<ex>5</ex></ph> days
       </message>
       <message name="IDS_NTP_MODULES_GOOGLE_CALENDAR_DISMISS_TOAST_MESSAGE" desc="Text shown on the toast on the NTP indicating that the Brave Calendar card has been dismissed.">
-        Brave Calendar hidden
+        Falcon Calendar hidden
       </message>
       <message name="IDS_NTP_MODULES_GOOGLE_CALENDAR_DISABLE_TOAST_MESSAGE" desc="Text shown on the toast on the NTP indicating that the Brave Calendar card has been disabled.">
-        You won't see Brave Calendar on this page again
+        You won't see Falcon Calendar on this page again
       </message>
       <message name="IDS_NTP_MODULES_GOOGLE_CALENDAR_INFO" desc="Text shown in the body of the info dialog of the google calendar module.">
-        You’re seeing your calendar to help you easily navigate to your next event in Brave Calendar.
+        You’re seeing your calendar to help you easily navigate to your next event in Falcon Calendar.
         <ph name="BREAK">&lt;br&gt;</ph>
         <ph name="BREAK">&lt;br&gt;</ph>
-        You can manage settings from the card menu or see more options in Customize Brave.
+        You can manage settings from the card menu or see more options in Customize Falcon.
       </message>
       <message name="IDS_NTP_MODULES_GOOGLE_CALENDAR_MORE_ACTIONS" desc="Text shown on the tooltip for the 3 dot menu on the Brave Calendar card on the NTP.">
-        More actions for Brave Calendar
+        More actions for Falcon Calendar
       </message>
       <message name="IDS_NTP_MODULES_GOOGLE_CALENDAR_TITLE" desc="Title of the Brave Calendar module shown in various UIs for Customize Brave and the NTP." meaning="Title of feature for showing a glimpse of a user's Google Calendar.">
-        Brave Calendar
+        Falcon Calendar
       </message>
       <message name="IDS_NTP_MODULES_GOOGLE_CALENDAR_DISABLE_BUTTON_TEXT" desc="Text shown on the disable button of a NTP Brave Calendar card.">
-        Don't show Brave Calendar
+        Don't show Falcon Calendar
       </message>
       <message name="IDS_NTP_MODULES_MICROSOFT_SIGN_OUT_BUTTON_TEXT" desc="Button text for signing out of Microsoft for the Microsoft cards on the NTP." meaning="Sign out of account.">
         Sign out of Microsoft
@@ -8625,7 +8625,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
        You’re seeing your calendar to help you easily navigate to your next event in Outlook Calendar.
        <ph name="BREAK">&lt;br&gt;</ph>
        <ph name="BREAK">&lt;br&gt;</ph>
-       You can manage settings from the card menu or see more options in Customize Brave.
+       You can manage settings from the card menu or see more options in Customize Falcon.
      </message>
       <message name="IDS_NTP_MODULES_CALENDAR_DOUBLE_BOOKED" desc="Text displaying that the calendar event is booked at the same time as another." meaning="The meeting takes place at the same time as another.">
         Double-Booked
@@ -8649,7 +8649,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         See more
       </message>
       <message name="IDS_NTP_MODULES_CALENDAR_SEE_MORE_ACCNAME" is_accessibility_with_no_ui="true" desc="Screen reader announcement when the see more link is focused.">
-        See more in Brave Calendar
+        See more in Falcon Calendar
       </message>
       <message name="IDS_NTP_MODULES_KALEIDOSCOPE_TITLE" desc="Title shown in the header of the Kaleidoscope module.">
         Top picks for you
@@ -8658,10 +8658,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         About this card
       </message>
       <message name="IDS_NTP_MODULES_TASKS_INFO" desc="Text shown in the body of the info dialog of a task module.">
-        You're seeing this item based on your previous activity using Brave services. You can see your data, delete it, and change your settings at <ph name="BEGIN_LINK1">&lt;a href="https://myactivity.google.com/" target="_blank"&gt;</ph>myactivity.google.com<ph name="END_LINK1">&lt;/a&gt;</ph>.
+        You're seeing this item based on your previous activity using Falcon services. You can see your data, delete it, and change your settings at <ph name="BEGIN_LINK1">&lt;a href="https://myactivity.google.com/" target="_blank"&gt;</ph>myactivity.google.com<ph name="END_LINK1">&lt;/a&gt;</ph>.
         <ph name="BREAK">&lt;br&gt;</ph>
         <ph name="BREAK">&lt;br&gt;</ph>
-        Learn about the data Brave collects and why at <ph name="BEGIN_LINK2">&lt;a href="https://policies.google.com/" target="_blank"&gt;</ph>policies.google.com<ph name="END_LINK2">&lt;/a&gt;</ph>.
+        Learn about the data Falcon collects and why at <ph name="BEGIN_LINK2">&lt;a href="https://policies.google.com/" target="_blank"&gt;</ph>policies.google.com<ph name="END_LINK2">&lt;/a&gt;</ph>.
       </message>
       <message name="IDS_NTP_MODULES_SHOPPING_TASKS_INFO_CLOSE" desc="Text shown on close button of a task module.">
         Close
@@ -8694,13 +8694,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         You’re seeing pages you've visited and suggested searches to help you easily get back to your most recent activity.
         <ph name="BREAK">&lt;br&gt;</ph>
         <ph name="BREAK">&lt;br&gt;</ph>
-        You can manage settings from the card menu or see more options in Customize Brave.
+        You can manage settings from the card menu or see more options in Customize Falcon.
       </message>
       <message name="IDS_NTP_MODULES_HISTORY_CLUSTERS_WITH_DISCOUNT_INFO" desc="Text shown in the body of the info dialog of the history clusters module when the cluster has available discount.">
         You’re seeing suggested searches and shopping discounts that might interest you based on your recent activity.
         <ph name="BREAK">&lt;br&gt;</ph>
         <ph name="BREAK">&lt;br&gt;</ph>
-        You can manage settings from this card anytime or see more options in Customize Brave.
+        You can manage settings from this card anytime or see more options in Customize Falcon.
       </message>
       <message name="IDS_NTP_MODULES_HISTORY_CLUSTERS_SENTENCE2" desc="Variant of the name of the History Clusters module in sentence case shown in various UIs.">
         Journeys
@@ -8736,7 +8736,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         You’re seeing tabs from other devices to help you easily get back to your most recent activity.
         <ph name="BREAK">&lt;br&gt;</ph>
         <ph name="BREAK">&lt;br&gt;</ph>
-        You can manage settings from the card menu or see more options in Customize Brave.
+        You can manage settings from the card menu or see more options in Customize Falcon.
       </message>
       <message name="IDS_NTP_MODULES_TAB_RESUMPTION_MULTI_DISMISS" desc="String text for module dismissal in the Tab Resumption module.">
         Tabs hidden
@@ -8775,7 +8775,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         You’re seeing your recently used tab groups to help you easily pick up where you left off.
         <ph name="BREAK">&lt;br&gt;</ph>
         <ph name="BREAK">&lt;br&gt;</ph>
-        You can manage settings from the card menu or see more options in Customize Brave.
+        You can manage settings from the card menu or see more options in Customize Falcon.
       </message>
       <message name="IDS_NTP_MODULES_TAB_GROUPS_TITLE" desc="Title for Tab Groups NTP module on the new tab page.">
         Your tab groups
@@ -8818,10 +8818,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Mobile NTP Middle Slot Promo -->
       <message name="IDS_NTP_MOBILE_PROMO_HEADER" desc="Header for a promo that shows on the Desktop NTP prompting user to scan a QR code with their mobile device">
-        Get Brave on your mobile device
+        Get Falcon on your mobile device
       </message>
       <message name="IDS_NTP_MOBILE_PROMO_DESCRIPTION" desc="Description for a promo that shows on the Desktop NTP prompting user to scan a QR code with their mobile device">
-        Download Brave for iOS to access your tabs, bookmarks and passwords on your phone.
+        Download Falcon for iOS to access your tabs, bookmarks and passwords on your phone.
       </message>
       <message name="IDS_NTP_MOBILE_PROMO_QR_CODE_LABEL" desc="Accessibility label for a QR code that shows on the Desktop NTP that prompts the user to scan it.">
         Scan QR Code
@@ -9020,7 +9020,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Get a page summary, related searches, and other useful info about this page
       </message>
       <message name="IDS_SIDE_PANEL_COMPANION_PROMO_PINNING" desc="Text shown on promotional UI appearing next to the pinned companion button, which encourages users to try the feature when Side Panel Pinning is enabled.">
-        You can search this page with Brave to get additional useful info
+        You can search this page with Falcon to get additional useful info
       </message>
       <message name="IDS_SIDE_PANEL_COMPANION_PROMO_SCREEN_READER" is_accessibility_with_no_ui="true" desc="Screen reader announcement on the promotional UI appearing next to the pinned companion button, which excourages users to try the feature.">
         To get a page summary, related searches, and other useful info about this page, select Brave Search side panel button in the toolbar
@@ -9032,7 +9032,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Please try again later
       </message>
       <message name="IDS_SHOW_CUSTOMIZE_CHROME_SIDE_PANEL" desc="The title of the menu item for showing the Customize Brave side panel.">
-        Customize Brave
+        Customize Falcon
       </message>
       <if expr="use_titlecase">
         <message name="IDS_SHOW_CUSTOMIZE_CHROME_TOOLBAR" desc="The title of the menu item for showing the toolbar section of the Customize Brave side panel.">
@@ -9671,7 +9671,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Downloading <ph name="LANGUAGE">$1<ex>English</ex></ph> voices...
       </message>
       <message name="IDS_READING_MODE_LANGUAGE_MENU_VOICES_UNAVAILABLE" desc="Label for status text when a voice attempted to be downloaded from the Read Aloud language menu is unavailable.">
-        Some Brave voices may not be available right now
+        Some Falcon voices may not be available right now
       </message>
       <message name="IDS_READING_MODE_LANGUAGE_MENU_NO_INTERNET" desc="Label for status text when no internet prevents a voice from downloading from the Read Aloud language menu.">
         No internet
@@ -9769,7 +9769,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Use Google Lens to learn more about specific images or text on a page.
       </message>
       <message name="IDS_LENS_COBROWSE_CURRENT_TAB_IPH_DESCRIPTION" desc="Informs user that the content and URL of their current tab is shared with Brave to get more relevant answers.">
-        The content and the URL of your current tab is shared with Brave to give you more relevant answers. You can add or remove tabs as you browse.
+        The content and the URL of your current tab is shared with Falcon to give you more relevant answers. You can add or remove tabs as you browse.
       </message>
 
       <!--Tooltip strings -->
@@ -10253,7 +10253,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Open
         </message>
         <message name="IDS_INTENT_PICKER_BUBBLE_VIEW_STAY_IN_CHROME" desc="Message contained in a button to continue the navigation within Brave.">
-          Stay in Brave
+          Stay in Falcon
         </message>
         <message name="IDS_INTENT_PICKER_BUBBLE_VIEW_INITIATING_ORIGIN" desc="The label for the initiating origin of the intent picker.">
           From <ph name="ORIGIN">$1<ex>https://google.com</ex></ph>
@@ -10303,7 +10303,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
             </message>
           </if>
           <message name="IDS_IOS_PASSWORD_PROMO_BUBBLE_SUBTITLE" desc="The subtitle for the iOS promo bubble which lets the user know they can access their saved password on the Brave Password Manager.">
-            You can access it on Brave Password Manager.
+            You can access it on Falcon Password Manager.
           </message>
           <message name="IDS_IOS_PASSWORD_PROMO_BUBBLE_FOOTER_DESCRIPTION_GENERIC" desc="The description for the iOS promo bubble footer which lets the user know how to use their saved passwords on their phone: download Brave for iOS and sign in to their account.">
             To use your saved passwords on your phone, download Brave for iOS and sign in to your Brave sync chain.
@@ -10370,7 +10370,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           No thanks
         </message>
         <message name="IDS_IOS_DESKTOP_PASSWORD_PROMO_BUBBLE_SUBTITLE" desc="The subtitle for the iOS desktop password promo bubble which lets the user know they can access their saved password on the Brave Password Manager.">
-          You can access it on Brave Password Manager
+          You can access it on Falcon Password Manager
         </message>
       </if>
 
@@ -10689,7 +10689,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Get back here fast by bookmarking this tab
       </message>
       <message name="IDS_CHROME_TIP" desc="Accessible name used by a screen reader for the in-product-help or tutorial bubble icon." is_accessibility_with_no_ui="true">
-        Brave tip
+        Falcon tip
       </message>
       <message name="IDS_EXTENSIONS_MENU_IPH_ENTRY_POINT_TITLE" desc="">
         See what extensions can read or change a site
@@ -10719,7 +10719,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
          Enhance your browser with extensions
       </message>
       <message name="IDS_EXTENSIONS_ZERO_STATE_PROMO_CUSTOM_ACTION_IPH_DESCRIPTION" desc="Body text shown on the promotional UI appearing when the user has no extensions installed.">
-         Extensions are add-ons to Brave that can help you stay organized, simplify tasks, and customize your browsing
+         Extensions are add-ons to Falcon that can help you stay organized, simplify tasks, and customize your browsing
       </message>
       <message name="IDS_EXTENSIONS_ZERO_STATE_PROMO_CUSTOM_ACTION_IPH_ACCEPT" desc="Text on the custom action button that opens a new tab to the Web Store.">
          Discover extensions
@@ -10773,7 +10773,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Open App settings
       </message>
       <message name="IDS_UPDATED_CONNECTION_SECURITY_INDICATORS_PROMO" desc="Text shown on promotional UI appearing next to the new omnibox connection security icon">
-        Your connection is always secure unless Brave tells you otherwise
+        Your connection is always secure unless Falcon tells you otherwise
       </message>
       <message name="IDS_READING_LIST_IN_SIDE_PANEL_PROMO" desc="Text shown on promotional UI appearing next to the side panel button">
         Your reading list has moved to the new side panel. Try it here.
@@ -10896,10 +10896,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Customize Brave Tutorial Strings -->
       <message name="IDS_TUTORIAL_CUSTOMIZE_CHROME_START_TUTORIAL_IPH" desc="The description of the IPH to start the customize chrome tutorial">
-        Customize Brave to give your browser a new look
+        Customize Falcon to give your browser a new look
       </message>
       <message name="IDS_TUTORIAL_CUSTOMIZE_CHROME_OPEN_SIDE_PANEL" desc="The description of the 'open side panel' step in customize chrome tutorial">
-        Click "Customize Brave"
+        Click "Customize Falcon"
       </message>
       <message name="IDS_TUTORIAL_CUSTOMIZE_CHROME_CHANGE_THEME" desc="The description of the 'change theme' step in customize chrome tutorial">
         Click “Change theme” to explore themes inspired by artists, nature and more
@@ -10914,7 +10914,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Click the back arrow to explore other options
       </message>
       <message name="IDS_TUTORIAL_CUSTOMIZE_CHROME_SUCCESS_BODY" desc="The description of the body text in the 'success' step in customize chrome tutorial">
-        You can now give your browser a new look at any time from the Customize Brave menu
+        You can now give your browser a new look at any time from the Customize Falcon menu
       </message>
 
       <!-- Password Manager Tutorial Strings -->
@@ -11021,12 +11021,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
          Show original content?
       </message>
       <message name="IDS_NEAR_OOM_REDUCTION_MESSAGE_DESCRIPTION" desc="The description of the message stating that the browser removed some content on the page using too much memory.">
-         To save memory, Brave removed some content
+         To save memory, Falcon removed some content
       </message>
 
       <!-- Tailored Security Prompt for Unconsented users -->
       <message name="IDS_TAILORED_SECURITY_UNCONSENTED_MESSAGE_TITLE" desc="The title of the message asking if the user wants to enable Enhanced Safe Browsing">
-         Also turn on Enhanced Safe Browsing for this Brave profile?
+         Also turn on Enhanced Safe Browsing for this Falcon profile?
       </message>
       <message name="IDS_TAILORED_SECURITY_UNCONSENTED_MESSAGE_ACCEPT" desc="The text on the 'accept' button when asking if the user wants to enable Enhanced Safe Browsing">
         Turn on
@@ -11062,10 +11062,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
           {COUNT, plural,
           =1 {Successfully changed the compromised password.
 
-You have # more compromised password. Brave Password Manager recommends checking this password now.}
+You have # more compromised password. Falcon Password Manager recommends checking this password now.}
           other {Successfully changed the compromised password.
 
-You have # more compromised passwords. Brave Password Manager recommends checking these passwords now.}}
+You have # more compromised passwords. Falcon Password Manager recommends checking these passwords now.}}
         </message>
         <message name="IDS_PASSWORD_MANAGER_SAFE_STATE_BODY_MESSAGE_GOOGLE_PASSWORD_MANAGER" desc="The content of the bubble notifying that there are more problems to fix after the user changed a compromised password.">
           Successfully changed the compromised password.
@@ -11125,19 +11125,19 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Brave P
           <ph name="message">$1<ex>Use Brave Password Manager to sign in faster</ex></ph>
         </message>
         <message name="IDS_PASSWORDS_SAVE_PRIMING_PROMO_BODY_SIGNED_IN" desc="Body of IPH prompting users to consider saving passwords">
-          Use Brave Password Manager to sign in faster to sites from any of your devices
+          Use Falcon Password Manager to sign in faster to sites from any of your devices
         </message>
         <message name="IDS_PASSWORDS_SAVE_PRIMING_PROMO_BODY_NOT_SIGNED_IN" desc="Body of IPH prompting users to consider saving passwords">
-          To save strong passwords with Brave Password Manager, sign in to Brave
+          To save strong passwords with Falcon Password Manager, sign in to Falcon
         </message>
         <message name="IDS_PASSWORDS_SAVE_PRIMING_PROMO_SCREENREADER" is_accessibility_with_no_ui="true" desc="Screenreader text for IPH prompting users to consider saving passwords">
-          You can save passwords with Brave Password Manager when you are signed in to Brave
+          You can save passwords with Falcon Password Manager when you are signed in to Falcon
         </message>
         <message name="IDS_PASSWORDS_SAVE_RECOVERY_PROMO_BODY" desc="Body of IPH prompting users to reconsider saving passwords">
-          To save your password to Brave Password Manager, click the key
+          To save your password to Falcon Password Manager, click the key
         </message>
         <message name="IDS_PASSWORDS_SAVE_RECOVERY_PROMO_SCREENREADER" is_accessibility_with_no_ui="true" desc="Screenreader text for IPH prompting users to reconsider saving passwords">
-          To save your password to Brave Password Manager, the Password Manager icon in the Location Bar
+          To save your password to Falcon Password Manager, the Password Manager icon in the Location Bar
         </message>
         <message name="IDS_PASSWORD_MANAGER_TOOLTIP_BLOCKED" desc="Text for the 'Manage Passwords' when the user has blocked saving passwords for this site">
           Never for this site
@@ -11322,7 +11322,7 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Brave P
         </message>
         <if expr="use_titlecase">
           <message name="IDS_FEEDBACK_REPORT_PAGE_TITLE" desc="Label showing the title of the page that will be reported">
-            Send Feedback to Brave
+            Send Feedback to Falcon
           </message>
           <message name="IDS_FEEDBACK_REPORT_PAGE_TITLE_SAD_TAB_FLOW" desc="Label showing the title of the feedback app window when the crash report has been requested from the 'Aw, Snap!' page">
             Describe What You Were Doing When The Tab Crashed
@@ -11330,7 +11330,7 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Brave P
         </if>
         <if expr="not use_titlecase">
           <message name="IDS_FEEDBACK_REPORT_PAGE_TITLE" desc="Label showing the title of the page that will be reported">
-            Send feedback to Brave
+            Send feedback to Falcon
           </message>
           <message name="IDS_FEEDBACK_REPORT_PAGE_TITLE_SAD_TAB_FLOW" desc="Label showing the title of the feedback app window when the crash report has been requested from the 'Aw, Snap!' page">
             Describe what you were doing when the tab crashed
@@ -11346,7 +11346,7 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Brave P
           Describe the issue in detail
         </message>
         <message name="IDS_FEEDBACK_FREE_TEXT_AI_LABEL" desc="Label of the text box where users can describe a problem they are having for AI">
-          Describe the issue in detail. Feedback will be sent to Brave for human review and may be used for improving or developing Brave products and services.
+          Describe the issue in detail. Feedback will be sent to Falcon for human review and may be used for improving or developing Falcon products and services.
         </message>
         <message name="IDS_FEEDBACK_REPORT_URL_LABEL" desc="Label showing the URL that will be reported">
           URL
@@ -11386,7 +11386,7 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Brave P
           </message>
         </if>
         <message name="IDS_FEEDBACK_ATTACH_FILE_NOTE" desc="Text for describing the maximum size for an attached file">
-          File will be sent to Brave for debugging
+          File will be sent to Falcon for debugging
         </message>
         <message name="IDS_FEEDBACK_ATTACH_FILE_LABEL" desc="Text for the label for the attached filename">
           Attach file
@@ -11406,7 +11406,7 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Brave P
           Include my server logs.
         </message>
         <message name="IDS_FEEDBACK_PRIVACY_NOTE" desc="Text for the privacy note included in the feedback app">
-          Go to the <ph name="BEGIN_LINK1">&lt;a href="#" id="legal-help-page-url"&gt;</ph>Legal Help page<ph name="END_LINK1">&lt;/a&gt;</ph> to request content changes for legal reasons.  Some account and system information may be sent to Brave.  We will use the information you give us to help address technical issues and to improve our services, subject to our <ph name="BEGIN_LINK2">&lt;a href="#" id="privacy-policy-url"&gt;</ph>Privacy Policy<ph name="END_LINK2">&lt;/a&gt;</ph> and <ph name="BEGIN_LINK3">&lt;a href="#" id="terms-of-service-url"&gt;</ph>Terms of Service<ph name="END_LINK3">&lt;/a&gt;</ph>.
+          Go to the <ph name="BEGIN_LINK1">&lt;a href="#" id="legal-help-page-url"&gt;</ph>Legal Help page<ph name="END_LINK1">&lt;/a&gt;</ph> to request content changes for legal reasons.  Some account and system information may be sent to Falcon.  We will use the information you give us to help address technical issues and to improve our services, subject to our <ph name="BEGIN_LINK2">&lt;a href="#" id="privacy-policy-url"&gt;</ph>Privacy Policy<ph name="END_LINK2">&lt;/a&gt;</ph> and <ph name="BEGIN_LINK3">&lt;a href="#" id="terms-of-service-url"&gt;</ph>Terms of Service<ph name="END_LINK3">&lt;/a&gt;</ph>.
         </message>
         <message name="IDS_FEEDBACK_NO_DESCRIPTION" desc="Message shown when no text is entered before hitting send feedback">
           Please describe the problem before sending feedback.
@@ -11439,7 +11439,7 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Brave P
         The selected data has been removed from Brave and synced devices. Your Brave sync chain may have other forms of browsing history like searches and activity from other Brave services at <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>myactivity.google.com<ph name="END_LINK">&lt;/a&gt;</ph>.
       </message>
       <message name="IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_TITLE" desc="Title of a dialog that informs the user that the deletion of Brave's browsing data has been completed.">
-        Deleted Brave data
+        Deleted Falcon data
       </message>
       <message name="IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_OK" desc="Button in a dialog that informs the user that the deletion of Brave's browsing data has been completed.">
         Ok, got it
@@ -11472,7 +11472,7 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Brave P
       </message>
 
       <message name="IDS_ZOOMLEVELS_CHROME_ERROR_PAGES_LABEL" desc="Label for zoom level list entry for Brave error pages.">
-        (Brave error pages)
+        (Falcon error pages)
       </message>
 
       <message name="IDS_STORAGE_ACCESS_MANAGE_TEXT" desc="The text on the button to manage the StorageAcccess settings.">
@@ -12910,7 +12910,7 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Brave P
           Collaborate with others
         </message>
         <message name="IDS_DATA_SHARING_NEED_SIGN_IN_AND_SYNC_HISTORY_BODY" desc="The body of dialog that prompts users to sign in and opt in to history sync.">
-          To share tabs and collaborate with others, sign in to Brave and sync your history and tabs. You’ll also get your passwords and more on all your devices.
+          To share tabs and collaborate with others, sign in to Falcon and sync your history and tabs. You’ll also get your passwords and more on all your devices.
         </message>
         <message name="IDS_DATA_SHARING_NEED_SYNC_HISTORY_BODY" desc="The body of dialog that prompts users to sign in and opt in to history sync.">
           To share tabs and collaborate with others, sync your history and tabs to <ph name="EMAIL">$1<ex>foo@gmail.com</ex></ph>
@@ -12922,7 +12922,7 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Brave P
           Sync history
         </message>
         <message name="IDS_SYNC_HISTORY_FOOTER" desc="The footer of dialog that prompts users to sign in and opt in to history sync.">
-          You can stop syncing anytime in settings. Brave may personalize Search and other services based on your history.
+          You can stop syncing anytime in settings. Falcon may personalize Search and other services based on your history.
         </message>
       <!-- /History Sync Opt In Flows -->
 
@@ -12937,13 +12937,13 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Brave P
           Make sure you trust the person that sent this invitation
         </message>
         <message name="IDS_DATA_SHARING_ORGANIZATION_DISALLOW_SIGN_IN_BODY" desc="The body text of the organization disallowing signin dialog.">
-          To share or join tab groups, you must be able to sign in to Brave
+          To share or join tab groups, you must be able to sign in to Falcon
         </message>
         <message name="IDS_DATA_SHARING_ORGANIZATION_LIMIT_SAVE_BODY" desc="The body text of the organization limiting saving to account dialog.">
           When your organization limits saving to your Brave sync chain, you can’t share or join tab groups
         </message>
         <message name="IDS_DATA_SHARING_SIGNED_OUT_BODY" desc="The body text of the dialog that prompts users to allow Brave sign in.">
-          To share, join, and collaborate in tab groups, open settings and turn on Allow Brave sign-in
+          To share, join, and collaborate in tab groups, open settings and turn on Allow Falcon sign-in
         </message>
         <message name="IDS_DATA_SHARING_SETTINGS" desc="The generic text on buttons that take users to Brave settings page.">
           Settings
@@ -13127,7 +13127,7 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Brave P
           Relaunch to update
         </message>
         <message name="IDS_APP_MENU_BUTTON_UPDATE_ALT3" desc="Alternate short label next to app-menu button when an update is available.">
-          New Brave available
+          New Falcon available
         </message>
       </if>
       <message name="IDS_APP_MENU_BUTTON_ERROR" desc="Short label next to app-menu button when the user needs to resolve something.">
@@ -13238,7 +13238,7 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Brave P
 
       <!-- First-run dialog -->
       <message name="IDS_FR_ENABLE_LOGGING" desc="The label of the checkbox to enable/disable crash and user metrics logging">
-        Automatically send usage statistics and crash reports to Brave
+        Automatically send usage statistics and crash reports to Falcon
       </message>
 
       <!-- Mac First-run dialog messages -->
@@ -13265,7 +13265,7 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Brave P
       <!-- Killed Tab Strings -->
       <if expr="is_chromeos">
         <message name="IDS_KILLED_TAB_BY_OOM_MESSAGE" desc="The message displayed on the killed tab page when the page was killed by an out of memory error.">
-          Either Brave ran out of memory or the process for the webpage was terminated for some other reason.  To continue, reload or go to another page.
+          Either Falcon ran out of memory or the process for the webpage was terminated for some other reason.  To continue, reload or go to another page.
         </message>
       </if>
       <message name="IDS_KILLED_TAB_FEEDBACK_MESSAGE" desc="The text to auto-populate the feedback page with. The triple single quotes are needed to preserve the line break.">
@@ -13412,7 +13412,7 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Brave P
           This extension violates the Web Store policy.
         </message>
         <message name="IDS_EXTENSIONS_BLOCKLISTED_POTENTIALLY_UNWANTED" desc="The text explaining the reason for disabling extension or app. The extension in question might have been installed without user consent.">
-          Disabled by Brave. This extension may be unsafe.
+          Disabled by Falcon. This extension may be unsafe.
         </message>
 
         <!-- Enhanced Safe Browsing CRX allowlist warning -->
@@ -13540,7 +13540,7 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Brave P
         Shared Tab
       </message>
       <message name="IDS_TOOLBAR_BUTTON_SEND_TAB_TO_SELF_BUTTON_HINT_TEXT" desc="The hint text shown on received tab dialog shown from the toolbar button. Where 'THERE' is the device the user selected.">
-        Choose a device. Then, to see the page, open Brave there.
+        Choose a device. Then, to see the page, open Falcon there.
       </message>
       <if expr="use_titlecase">
         <then>
@@ -13567,13 +13567,13 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Brave P
         <ph name="BEGIN_LINK">$1</ph>Your devices<ph name="END_LINK">$2</ph> · <ph name="EMAIL">$3<ex>foo@gmail.com</ex></ph>
       </message>
       <message name="IDS_SEND_TAB_TO_SELF_SIGN_IN_PROMO_LABEL" desc="Text when a signed out user attempts to use send-tab-to-self, then sees a sign-in promo.">
-        To send this tab to another device, sign in to Brave on both devices
+        To send this tab to another device, sign in to Falcon on both devices
       </message>
       <message name="IDS_SEND_TAB_TO_SELF_NO_TARGET_DEVICE_LABEL" desc="Text shown when a user with no available target devices attempts to use send-tab-to-self.">
-        To send this tab to another device, sign in to Brave there
+        To send this tab to another device, sign in to Falcon there
       </message>
       <message name="IDS_SEND_TAB_TO_SELF_SIGN_IN_PROMO_BODY" desc="Body label text of the send-tab-to-self sign-in promo bubble.">
-        To send links between devices, ensure both are signed in to the same Brave account.
+        To send links between devices, ensure both are signed in to the same Falcon account.
       </message>
       <message name="IDS_SEND_TAB_TO_SELF_VERIFY_ITS_YOU_PROMO_TITLE" desc="Title of the send-tab-to-self sign-in promo bubble when the user needs to verify their identity (reauthenticate).">
         Send a link to another device
@@ -14310,7 +14310,7 @@ This can include information about installed software, files, your browser, the 
         History and more
       </message>
       <message name="IDS_SYNC_CONFIRMATION_TANGIBLE_SYNC_INFO_DESC" desc="This string appears in the footer on a screen that asks users if they want to turn on sync. This string informs the user that if they choose to sync, then their history may be used to personalize Search and other services. Translate 'history' according to https://localization.google.com/glossary/termset?gid=27517723&amp;tsid=59c3162">
-        You can always choose what to sync in settings. Brave may personalize Search and other services based on your history.
+        You can always choose what to sync in settings. Falcon may personalize Search and other services based on your history.
       </message>
 
       <!--  Sync Confirmation section of the Signin Intercept first run experience flow -->
@@ -14880,7 +14880,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_SYNC_EMPTY_STRING" desc="Empty string, exist only to make code generic. No translation required." translateable="false" />
       <if expr="not is_chromeos">
         <message name="IDS_SYNC_OVERVIEW" desc="The message that appears in the options dialog when sync has not been set up by the user.">
-          Sign in to get your bookmarks, history, passwords and other settings on all your devices. You'll also automatically be signed in to your Brave services.
+          Sign in to get your bookmarks, history, passwords and other settings on all your devices. You'll also automatically be signed in to your Falcon services.
         </message>
       </if>
       <message name="IDS_SYNC_START_SYNC_BUTTON_LABEL" desc="The label that appears on the sync button in the options dialog when sync has not been set up by the user.">
@@ -14891,7 +14891,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
       <if expr="is_chromeos">
         <message name="IDS_SIGNED_IN_WITH_SYNC_STOPPED_VIA_DASHBOARD" desc="The message that appears in the settings page indicating that user is signed in, but sync has been stopped via the Brave dashboard.">
-          Sync has been stopped via the Brave Dashboard.
+          Sync has been stopped via the Falcon Dashboard.
         </message>
       </if>
       <message name="IDS_SYNC_SETTINGS_NOT_CONFIRMED" desc="The message that appears in the settings page indicating that user is signed in, but sync hasn't started because the sync settings haven't been confirmed.">
@@ -17113,19 +17113,19 @@ Please help our engineers fix this problem. Tell us what happened right before y
 
     <!-- Automation infobar -->
     <message name="IDS_CONTROLLED_BY_AUTOMATION" desc="Message shown when the browser session is being controlled by an automated test.">
-      Brave is being controlled by automated test software
+      Falcon is being controlled by automated test software
     </message>
 
     <!-- Brave for Testing infobar main text -->
     <message name="IDS_CHROME_FOR_TESTING_DISCLAIMER" desc="An infobar prompt shown whenever Brave for Testing is launched. In Title Case: 'Brave for Testing'.">
-      Brave for Testing v<ph name="BROWSER_VERSION">
+      Falcon for Testing v<ph name="BROWSER_VERSION">
         $1<ex>109.0.5369.0</ex>
-      </ph> is only for automated testing. For regular browsing, use a standard version of Brave that updates automatically.
+      </ph> is only for automated testing. For regular browsing, use a standard version of Falcon that updates automatically.
     </message>
 
     <!-- Brave for Testing infobar download chrome hyperlink text -->
     <message name="IDS_DOWNLOAD_CHROME" desc="Hyperlink call-out to download Brave">
-      Download Brave
+      Download Falcon
     </message>
 
     <!-- Security Key permission -->
@@ -17399,7 +17399,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
       <if expr="is_macosx">
         <message name="IDS_WEBAUTHN_YOUR_CHROME_PROFILE" desc="Menu item text. The user selects this to use a hardware-based authentication mechanism that is built in to the computer, such as a fingerprint reader. The credential itself is stored in the Brave profile, however, and this text emphasizes that.">
-          Your Brave profile
+          Your Falcon profile
         </message>
       </if>
       <message name="IDS_WEBAUTHN_TRANSPORT_INTERNAL" desc="Menu item text. The user selects this to use a hardware-based authentication mechanism that is built in to the computer, such as a fingerprint reader.">
@@ -17460,7 +17460,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
         There aren't any passkeys for <ph name="APP_NAME">$1<ex>google.com</ex></ph> on this device
       </message>
       <message name="IDS_WEBAUTHN_ERROR_GPM_DISABLED_TITLE" desc="Title of the dialog shown when the user could not create a passkey for a website because Brave Password Manager passkeys are turned off through settings or enterprise policy.">
-        Brave Password Manager is turned off
+        Falcon Password Manager is turned off
       </message>
       <message name="IDS_WEBAUTHN_ERROR_GPM_DISABLED_DESCRIPTION" desc="Description of the dialog shown when the user could not create a passkey for a website because Brave Password Manager passkeys are disabled through settings or enterprise policy.">
         To create a passkey for <ph name="APP_NAME">$1<ex>google.com</ex></ph>, Brave Password Manager must be on
@@ -17489,7 +17489,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
 
       <if expr="is_macosx">
         <message name="IDS_WEBAUTHN_BLUETOOTH_PERMISSION" desc="Body text in a dialog that appears when the user has requested some function that depends on Bluetooth, but Brave doesn't have permission to use Bluetooth. The action on this dialog is a button that will open the macOS System Settings so that the user can grant permission.">
-          Brave needs permission to use Bluetooth to connect to your device
+          Falcon needs permission to use Bluetooth to connect to your device
         </message>
       </if>
 
@@ -17665,7 +17665,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
         On other devices
       </message>
       <message name="IDS_WEBAUTHN_SOURCE_CHROME_PROFILE" desc="The subtitle shown in a button that lets the user select a passkey to sign in, indicating that the passkey resides in the user's Brave Profile.">
-        Your Brave profile
+        Your Falcon profile
       </message>
       <message name="IDS_WEBAUTHN_SOURCE_ICLOUD_KEYCHAIN" desc="The subtitle shown in a button that lets the user select a passkey to sign in, indicating that the passkey resides in the user's iCloud Keychain.">
         iCloud Keychain
@@ -17674,7 +17674,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
         Windows Hello
       </message>
       <message name="IDS_WEBAUTHN_SOURCE_GOOGLE_PASSWORD_MANAGER" desc="The subtitle shown in a button that lets the user select a passkey to sign in, indicating that the passkey resides in Brave Password Manager.">
-        Brave Password Manager
+        Falcon Password Manager
       </message>
       <message name="IDS_WEBAUTHN_SOURCE_USB_SECURITY_KEY" desc="The subtitle shown in a button that lets the user select a passkey to sign in, indicating that the passkey resides in a USB security key.">
         USB security key
@@ -17718,7 +17718,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
         Save another way
       </message>
       <message name="IDS_WEBAUTHN_GPM_TRUST_THIS_COMPUTER_CREATION_TITLE" desc="This string appears in a dialog users see after they choose to create a sign-in method called a passkey on a website. It means that before the user can create the passkey, they need to verify their identity by, e.g., entering their Brave Password Manager PIN or the lockscreen of a phone they own. Refer to Glossary for the meaning of 'passkey'; do not translate it as 'password'.">
-        To create this passkey with Brave Password Manager, verify it's you
+        To create this passkey with Falcon Password Manager, verify it's you
       </message>
       <message name="IDS_WEBAUTHN_GPM_TRUST_THIS_COMPUTER_CREATION_DESC" desc="This string appears in a dialog users see after they choose to create a sign-in method called a passkey on a website. It means that the passkey will be saved to Brave Password Manager for the Brave email address they are using. The second sentence means they only have to verify their identity once by, e.g., entering their Brave Password Manager PIN or the lockscreen of a phone they own. Refer to Glossary for the meaning of 'passkey'; do not translate it as 'password'.">
         Your passkey will be saved to Brave Password Manager for <ph name="ACCOUNT_NAME">$1<ex>example@gmail.com</ex></ph>. You’ll only have to do this once.
@@ -17727,7 +17727,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
         To use your passkeys on this device, verify it's you
       </message>
       <message name="IDS_WEBAUTHN_GPM_TRUST_THIS_COMPUTER_ASSERTION_DESC" desc="This string appears in a dialog users see after they use a sign-in method called a passkey. It means that the user can allow this device to access all of their passkeys saved in Brave Password Manager on this device. The second sentence means they only have to verify their identity once. Refer to Glossary for the meaning of 'passkey'; do not translate it as 'password'.">
-        You can use all of your passkeys saved to Brave Password Manager on this device. You'll only have to do this once.
+        You can use all of your passkeys saved to Falcon Password Manager on this device. You'll only have to do this once.
       </message>
       <message name="IDS_WEBAUTHN_USE_A_DIFFERENT_DEVICE" desc="Text link that appears on a button that allows the user to sign in using a different device.">
         Use a different device
@@ -17745,10 +17745,10 @@ Please help our engineers fix this problem. Tell us what happened right before y
         Enter password
       </message>
       <message name="IDS_WEBAUTHN_GPM_ERROR_TITLE" desc="The title of a dialog that is shown when an error occurs with Brave Password Manager. Since this involves communication with a server, the most likely cause of the error is a connectivity problem thus 'reach' refers to this external communication.">
-        Can't reach Brave Password Manager
+        Can't reach Falcon Password Manager
       </message>
       <message name="IDS_WEBAUTHN_GPM_ERROR_DESC" desc="The description of a dialog that is shown when an error occurs with Brave Password Manager. Since this involves communication with a server, the most likely cause of the error is a connectivity problem thus 'reach' refers to this external communication.">
-        Can’t reach Brave Password Manager. Try again in a few minutes
+        Can’t reach Falcon Password Manager. Try again in a few minutes
       </message>
       <message name="IDS_WEBAUTHN_SIGN_IN_AGAIN_TITLE" desc="The first line in a button that is shown when Sync is 'paused' and the user is trying to sign in with or create a passkey. Sync 'paused' is a state where the user has opted in to Sync, but their sign-in status has expired and they need to sign in again to restore it. Tapping this button closes the passkey window and opens a new tab where the user can sign in to Brave.">
         Sign in again
@@ -17766,7 +17766,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
         Create a recovery PIN
       </message>
       <message name="IDS_WEBAUTHN_GPM_CREATE_ALPHANUMERIC_PIN_ACCESSIBILITY" desc="The accessibility label that is announced by a screen reader when a focus lands on a Brave Password Manager PIN textfield during creation of an alphanumeric pin.">
-        Create an alphanumeric recovery PIN for Brave Password Manager
+        Create an alphanumeric recovery PIN for Falcon Password Manager
       </message>
       <message name="IDS_WEBAUTHN_GPM_CREATE_PIN_DESC" desc="The description of a dialog that is shown when a user is creating a Brave Password Manager PIN explaining that it will be used to access their passkeys on all devices. Refer to Glossary for the meaning of 'passkey'; do not translate it as 'password'">
         This helps you access your saved passkeys on any device
@@ -17810,7 +17810,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
         Change PIN
       </message>
       <message name="IDS_WEBAUTHN_LOCKED_GPM_PIN_TITLE" desc="The title of a dialog that is displayed when the user entered their Brave Password Manager PIN incorrectly too many times.">
-        Change your recovery PIN for Brave Password Manager
+        Change your recovery PIN for Falcon Password Manager
       </message>
       <message name="IDS_WEBAUTHN_LOCKED_GPM_PIN_DESCRIPTION" desc="The description of a dialog that is displayed when the user entered their Brave Password Manager PIN incorrectly too many times.">
         You've entered the wrong PIN too many times. To access your passkeys and passwords, change your PIN.
@@ -17825,7 +17825,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
         You can view and manage your passkeys saved in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Brave Password Manager</ex></ph>
       </message>
       <message name="IDS_WEBAUTHN_GPM_PASSKEY_SAVED_LINK" desc="Link text within a bubble that is displayed as a confirmation that a passkey was created and saved in Brave Password Manager. See IDS_WEBAUTHN_GPM_PASSKEY_SAVED_LABEL for more details.">
-        Brave Password Manager
+        Falcon Password Manager
       </message>
       <message name="IDS_WEBAUTHN_GPM_PASSKEY_UPDATE_NEEDED_TITLE" desc="The title of a bubble that is displayed to notify that the passkey the user tried to use was deleted from the site, explaining to the user that they need to sign in with some other method. Refer to Glossary for the meaning of 'passkey'; do not translate it as 'password'">
         This passkey was deleted from this site
@@ -17840,7 +17840,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
         Manage your passwords &amp; passkeys in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Brave Password Manager</ex></ph>
       </message>
       <message name="IDS_WEBAUTHN_GPM_PASSKEY_UPDATED_LINK" desc="Link text that directs the user to the Brave Password Manager passwords page within a bubble that is displayed as a confirmation that a passkey was updated with the current user details in Brave Password Manager. See IDS_WEBAUTHN_GPM_PASSKEY_UPDATED_LABEL for more details.">
-        Brave Password Manager
+        Falcon Password Manager
       </message>
       <message name="IDS_WEBAUTHN_GPM_PASSKEY_DELETED_TITLE" desc="The title of a bubble that is displayed as a confirmation that a passkey was deleted in Brave Password Manager. Refer to Glossary for the meaning of 'passkey'; do not translate it as 'password'">
         Deleted passkey
@@ -17849,7 +17849,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
         This passkey doesn't work anymore. It will get deleted soon from <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Brave Password Manager</ex></ph>.
       </message>
       <message name="IDS_WEBAUTHN_GPM_PASSKEY_DELETED_LINK" desc="Link text that directs the user to the Brave Password Manager passwords page within a bubble that is displayed as a confirmation that a passkey was deleted in Brave Password Manager. See IDS_WEBAUTHN_GPM_PASSKEY_DELETED_LABEL for more details.">
-        Brave Password Manager
+        Falcon Password Manager
       </message>
       <message name="IDS_WEBAUTHN_GPM_SETTINGS" desc="The label in a button that opens Brave Password Manager settings.">
         Settings
@@ -18125,24 +18125,24 @@ Please help our engineers fix this problem. Tell us what happened right before y
     </message>
 
     <message name="IDS_TAILORED_SECURITY_ENABLED_DIALOG_MAIN_TEXT" desc="Title shown in the tab dialog when the account tailored security setting changes for a consented primary account">
-      You have Brave's strongest security against dangerous websites, downloads and extensions
+      You have Falcon's strongest security against dangerous websites, downloads and extensions
     </message>
     <message name="IDS_TAILORED_SECURITY_DISABLED_DIALOG_MAIN_TEXT" desc="Title shown in the tab dialog when the account tailored security setting changes for a consented primary account">
-      You're getting standard security protection. To get more protection against dangerous websites, downloads, and extensions, turn on Enhanced Safe Browsing in Brave settings.
+      You're getting standard security protection. To get more protection against dangerous websites, downloads, and extensions, turn on Enhanced Safe Browsing in Falcon settings.
     </message>
     <message name="IDS_TAILORED_SECURITY_DISABLED_DIALOG_ACCEPT_BUTTON" desc="The text on the accept button in the tab modal dialog when the account tailored security setting is disabled for a consented primary account">
       Got it
     </message>
     <message name="IDS_TAILORED_SECURITY_DIALOG_SETTINGS_BUTTON" desc="The text on the cancel button in the tab dialog when the account tailored security setting changes for a consented primary account">
-      Brave settings
+      Falcon settings
     </message>
 
     <!-- Tailored security dialog for unconsented primary accounts -->
     <message name="IDS_TAILORED_SECURITY_UNCONSENTED_MODAL_TITLE" desc="Title shown in the tab modal dialog when the account tailored security setting changes for an unconsented primary account">
-      Also turn on Enhanced Safe Browsing for this Brave profile?
+      Also turn on Enhanced Safe Browsing for this Falcon profile?
     </message>
     <message name="IDS_TAILORED_SECURITY_UNCONSENTED_MODAL_BODY" desc="Body shown in the tab modal dialog when the account tailored security setting changes for an unconsented primary account">
-      Brave’s strongest security does more to protect you against dangerous websites, downloads, and extensions
+      Falcon’s strongest security does more to protect you against dangerous websites, downloads, and extensions
     </message>
     <message name="IDS_TAILORED_SECURITY_UNCONSENTED_ACCEPT_BUTTON" desc="The text on the accept button in the tab modal dialog when the account tailored security setting changes for an unconsented primary account">
       Turn on
@@ -18156,7 +18156,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
       Enhanced Safe Browsing is on
     </message>
     <message name="IDS_TAILORED_SECURITY_CONSENTED_ENABLE_MESSAGE_DESCRIPTION" desc="Description shown in the Android message when the account tailored security setting changes for a consented primary account">
-      You have Brave’s strongest security against harmful websites
+      You have Falcon’s strongest security against harmful websites
     </message>
     <message name="IDS_TAILORED_SECURITY_CONSENTED_DISABLE_MESSAGE_TITLE" desc="Title shown in the Android message when the account tailored security setting changes for a consented primary account">
       Enhanced Safe Browsing is off
@@ -18778,10 +18778,10 @@ Please help our engineers fix this problem. Tell us what happened right before y
         From your recent search
       </message>
       <message name="IDS_MULTISTEP_FILTER_IPH_BODY" desc="Text shown in the IPH bubble for educating users about Multistep Filter." translateable="false">
-        Brave can now suggest your recent filters and search details, helping you pick up where you left off or compare options across sites
+        Falcon can now suggest your recent filters and search details, helping you pick up where you left off or compare options across sites
       </message>
       <message name="IDS_MULTISTEP_FILTER_IPH_BODY_SCREENREADER" is_accessibility_with_no_ui="true" desc="Screenreader text shown in the IPH bubble for educating users about Multistep Filter." translateable="false">
-        Brave can now suggest your recent filters and search details, helping you pick up where you left off or compare options across sites
+        Falcon can now suggest your recent filters and search details, helping you pick up where you left off or compare options across sites
       </message>
       <message name="IDS_LINK_COPIED_TOAST_BODY" desc="Text on a toast notification that is shown when a link is successfully copied.">
         Link copied
@@ -18816,7 +18816,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
         Close
       </message>
       <message name="IDS_NON_MILESTONE_UPDATE_TOAST_BODY" desc="Text on a toast notification that is shown when a non milestone update is complete.">
-        Brave was updated
+        Falcon was updated
       </message>
       <message name="IDS_GLIC_SHARE_IMAGE_FAILED_TOAST_BODY" desc="Text on a toast notification that is shown when sharing an image with Gemini fails (when using the 'Create image with Gemini' context menu item)">
         Could not share image with Gemini. Try again or try another image.
@@ -18853,7 +18853,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
       <!-- Dictation strings -->
       <message name="IDS_DICTATION_ONBOARDING_BULLET_DATA_SHARING" desc="The second paragraph in the onboarding dialog describing data sharing with Brave servers." translateable="false">
-        The content and URL of the page you're on will be sent to Brave to generate text based on your spoken audio and the page context
+        The content and URL of the page you're on will be sent to Falcon to generate text based on your spoken audio and the page context
       </message>
       <message name="IDS_DICTATION_ONBOARDING_BUTTON_ACCEPT" desc="Button label on the onboarding dialog to confirm the provided information and use the feature." translateable="false">
         Allow
@@ -19024,7 +19024,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
       To learn why, contact the app developer
     </message>
     <message name="IDS_IWA_INSTALLER_INSTALL_FAILED_BUNDLE_BLOCKLISTED_MESSAGE" desc="Message of the error dialog that is shown when an Isolated Web App failed to install because it's on the blocklist">
-      This app is potentially dangerous and was blocked by Brave
+      This app is potentially dangerous and was blocked by Falcon
     </message>
     <message name="IDS_IWA_INSTALLER_INSTALL_FAILED_RETRY" desc="Label of the retry button in the error dialog that is shown when an Isolated Web App failed to install">
       Retry
@@ -19039,7 +19039,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
       Launch application
     </message>
     <message name="IDS_IWA_INSTALLER_VERIFICATION_TITLE" desc="Title of the verification step of the IWA installation">
-      Brave is verifying the installation bundle
+      Falcon is verifying the installation bundle
     </message>
     <message name="IDS_IWA_INSTALLER_VERIFICATION_SUBTITLE" desc="Subtitle of the verification step of the IWA installation">
       Please wait while verification is in progress
@@ -19051,7 +19051,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
         other {Checking public key and integrity block... # minutes remaining}}
     </message>
     <message name="IDS_IWA_INSTALLER_VERIFICATION_ERROR_TITLE" desc="Title of an error popup during the verification step of the Isolated Web App installer">
-      Brave failed to verify this installation bundle
+      Falcon failed to verify this installation bundle
     </message>
     <message name="IDS_IWA_INSTALLER_VERIFICATION_ERROR_SUBTITLE" desc="Subtitle of an error popup during the verification step of the Isolated Web App installer">
       This bundle might be broken or compromised. Please close this window and download it again
@@ -19141,8 +19141,8 @@ Please help our engineers fix this problem. Tell us what happened right before y
         </message>
         <message name="IDS_SETTINGS_SAFETY_HUB_REVOKED_PERMISSIONS_MENU_NOTIFICATION" desc="Title for the permissions review Safety Check module on the Magic Stack. Shown when Safety Check has identified several sites that send abusive notifications.">
           {NUM_SITES, plural,
-          =1 {Brave removed permissions from 1 site}
-          other {Brave removed permissions from {NUM_SITES} sites}}
+          =1 {Falcon removed permissions from 1 site}
+          other {Falcon removed permissions from {NUM_SITES} sites}}
         </message>
         <message name="IDS_SETTINGS_SAFETY_HUB_COMPROMISED_PASSWORDS_MENU_NOTIFICATION" desc="Summary for the compromised passwords Safety Check module on the Magic Stack. Shown when Safety Check has identified insecure credentials.">
           {NUM_SITES, plural,
@@ -19161,7 +19161,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
 
     <!-- PDF Searchify elements. -->
     <message name="IDS_PDF_SEARCHIFY_IPH_TITLE" desc="Title of in product help to introduce PDF Searchify feature.">
-    Brave makes PDFs better
+    Falcon makes PDFs better
     </message>
     <message name="IDS_PDF_SEARCHIFY_IPH_BODY" desc="Content of in product help to introduce PDF Searchify feature.">
     PDFs automatically get converted so you can search and select text
@@ -19250,25 +19250,25 @@ Please help our engineers fix this problem. Tell us what happened right before y
     Always allow
   </message>
   <message name="IDS_CHROME_NO_LONGER_SHOW_WARNINGS_NOTIFICATION_BODY" desc="The body for the notification sent by Brave informing the user that their decision to never show warnings for the url has been applied.">
-    Brave will stop flagging notifications from this site as spam
+    Falcon will stop flagging notifications from this site as spam
   </message>
   <message name="IDS_CHROME_NO_LONGER_SHOW_WARNINGS_NOTIFICATION_TITLE_NEW" desc="The title for the notification sent by Brave informing the user that their decision to never show warnings for the url has been applied.">
     Notifications allowed from <ph name="DOMAIN">$1<ex>example.com</ex></ph>
   </message>
   <message name="IDS_CHROME_NO_LONGER_SHOW_WARNINGS_NOTIFICATION_BODY_NEW" desc="The body for the notification sent by Brave informing the user that their decision to never show warnings for the url has been applied and they may report their notification contents to Brave.">
-    Help improve spam protection by sharing notification content and the site's URL with Brave. Content may be reviewed by humans.
+    Help improve spam protection by sharing notification content and the site's URL with Falcon. Content may be reviewed by humans.
   </message>
 
     <!-- Brave Apps Deprecation -->
     <if expr="is_chromeos">
       <message name="IDS_USER_INSTALLED_CHROME_APP_DEPRECATION_NOTIFICATION_MESSAGE" desc="Message of the notification displayed while launching a user-installed app.">
-        This Brave app will stop working after your ChromeOS version is updated. Save any app data you want to keep. To learn about your options, contact the app developer or your IT support team.
+        This Falcon app will stop working after your ChromeOS version is updated. Save any app data you want to keep. To learn about your options, contact the app developer or your IT support team.
       </message>
       <message name="IDS_USER_INSTALLED_CHROME_APP_DEPRECATION_BLOCKED_LAUNCH_DIALOG_TITLE" desc="The title of the dialog displayed when a Crome App launch is blocked.">
         <ph name="APP_NAME">$1<ex>Application</ex></ph> can't be launched
       </message>
       <message name="IDS_USER_INSTALLED_CHROME_APP_DEPRECATION_BLOCKED_LAUNCH_DIALOG_MESSAGE" desc="The content of the dialog displayed when a Crome App launch is blocked, explaining why the app was not launched.">
-        Brave apps stopped running on ChromeOS devices in July 2025. Consider an alternative app.
+        Falcon apps stopped running on ChromeOS devices in July 2025. Consider an alternative app.
       </message>
       <message name="IDS_USER_INSTALLED_CHROME_APP_DEPRECATION_BLOCKED_LAUNCH_DIALOG_CLOSE_BUTTON" desc="The text of the button to dismiss the dialog displayed when a Brave App launch is blocked.">
         Got it
@@ -19352,7 +19352,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
       Find your <ph name="FILENAME">$1<ex>document.pdf</ex></ph> in the <ph name="FEATURE_NAME">$2<ex>Saved from Brave</ex></ph> folder
     </message>
     <message name="IDS_SAVE_TO_DRIVE_FOLDER_NAME" desc="Name of the folder in Drive where files saved from Brave are stored." meaning="Name of the folder in Drive where files saved from Chrome are stored. Please use the short version of the branded term for Google Chrome i.e. Chrome">
-      Saved from Brave
+      Saved from Falcon
     </message>
     <message name="IDS_ACCOUNT_CHOOSER_DRIVE" desc="Google Drive product name.">
       Drive
@@ -19369,10 +19369,10 @@ Please help our engineers fix this problem. Tell us what happened right before y
 
     <!-- Tips Notifications-->
     <message name="IDS_TIPS_NOTIFICATIONS_HELPFUL_BUTTON_TEXT" desc="Text for the helpful button found on tips notifications.">
-      Open Brave
+      Open Falcon
     </message>
     <message name="IDS_TIPS_NOTIFICATIONS_ENHANCED_SAFE_BROWSING_TITLE" desc="Title for the enhanced safe browsing tip notification. [CHAR_LIMIT=32]">
-      Get Brave's strongest security
+      Get Falcon's strongest security
     </message>
     <message name="IDS_TIPS_NOTIFICATIONS_ENHANCED_SAFE_BROWSING_SUBTITLE" desc="Subtitle for the enhanced safe browsing tip notification.">
       Add an extra layer of security against online threats with enhanced protection
@@ -19402,7 +19402,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
       Create, save, and manage your passwords so you can easily sign in
     </message>
     <message name="IDS_TIPS_NOTIFICATIONS_SIGNIN_TITLE" desc="Title for the sign-in tip notification. [CHAR_LIMIT=32]">
-      Make Brave your own
+      Make Falcon your own
     </message>
     <message name="IDS_TIPS_NOTIFICATIONS_SIGNIN_SUBTITLE" desc="Subtitle for the sign-in tip notification.">
       Sign in to easily continue on all your devices
@@ -19423,7 +19423,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
       Pick up where you left off
     </message>
     <message name="IDS_TIPS_NOTIFICATIONS_RECENT_TABS_SUBTITLE" desc="Subtitle for the recent tabs tip notification.">
-      You can reopen tabs that you've recently closed from wherever you use Brave
+      You can reopen tabs that you've recently closed from wherever you use Falcon
     </message>
 
     <!-- chrome://updater -->
@@ -19591,7 +19591,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
         Updater Scope: <ph name="OUTCOMES">$1<ex>Per-system updater, Per-user updater</ex></ph>
       </message>
       <message name="IDS_UPDATER_HELP_CENTER_TOOLTIP" desc="Tooltip for the help center link about maintaining Brave updates.">
-        Learn more about maintaining Brave updates
+        Learn more about maintaining Falcon updates
       </message>
       <message name="IDS_UPDATER_INACTIVE_VERSIONS_LABEL" desc="A label for a list of inactive versions of the Brave Updater. Multiple Brave Updater versions may be present on a users machine but only one may be active at a time.">
         Inactive Versions:
@@ -19759,7 +19759,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
         Update Error
       </message>
       <message name="IDS_UPDATER_VIEW_ALL_CHROME_POLICIES" desc="Label for a button that opens the chrome://policy page.">
-        View all Brave Policies
+        View all Falcon Policies
       </message>
       <message name="IDS_UPDATER_VIEW_RAW_DETAILS" desc="Title of the button to display the contents of a Brave Updater log in JSON format">
         Source
@@ -19788,7 +19788,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
 
     <!-- Brave finds Notifications -->
     <message name="IDS_CHROME_FINDS_NOTIFICATIONS_HELPFUL_BUTTON_TEXT" desc="Text for the helpful button found on Brave finds notifications.">
-      Open in Brave
+      Open in Falcon
     </message>
     <message name="IDS_CHROME_FINDS_NOTIFICATIONS_UNHELPFUL_BUTTON_TEXT" desc="Text for the unhelpful button found on Brave finds notifications.">
       Not interested

@@ -229,10 +229,10 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
       </if>
 
       <message name="IDS_SAFETY_CHECK_EXTENSIONS_POLICY_VIOLATION" desc="The text explaining the reason for disabling extension. The extension in question violates Web Store policy.">
-        This extension violates the Web Store policy, and might be unsafe. Remove it from Brave so it can no longer see and change your data on sites you visit, including your personal info.
+        This extension violates the Web Store policy, and might be unsafe. Remove it from Falcon so it can no longer see and change your data on sites you visit, including your personal info.
       </message>
       <message name="IDS_EXTENSIONS_INCOGNITO_WARNING" desc="Warns the user that Brave cannot prevent extensions from recording history in Private mode. Displayed in extensions management UI after an extension is selected to be run in Private mode.">
-        Warning: Brave cannot prevent extensions from recording your browsing history. To disable this extension in Private mode, unselect this option.
+        Warning: Falcon cannot prevent extensions from recording your browsing history. To disable this extension in Private mode, unselect this option.
       </message>
       <if expr="enable_extensions">
         <message name="IDS_EXTENSIONS_MULTIPLE_UNSUPPORTED_DISABLED_BODY" desc="Body of the dialog shown when multiple unsupported extensions have been disabled.">
@@ -344,18 +344,18 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
       <if expr="not is_android">
         <if expr="not use_titlecase">
           <message name="IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD_INAPP" desc="The name of the command to open a link in a Private browser window when the user is in an app window">
-            Open link in Brave &amp;private window
+            Open link in Falcon &amp;private window
           </message>
           <message name="IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD_INAPP_V2" desc="The name of the command to open a link in a Private browser window when the user is in an app window">
-            Open link in Brave &amp;Private window
+            Open link in Falcon &amp;Private window
           </message>
         </if>
         <if expr="use_titlecase">
           <message name="IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD_INAPP" desc="In Title Case: The name of the command to open a link in a Private browser window when the user is in an app window">
-            Open Link in Brave &amp;Private Window
+            Open Link in Falcon &amp;Private Window
           </message>
           <message name="IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD_INAPP_V2" desc="In Title Case: The name of the command to open a link in a Private browser window when the user is in an app window">
-            Open Link in Brave &amp;Private Window
+            Open Link in Falcon &amp;Private Window
           </message>
         </if>
 
@@ -368,9 +368,9 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
       <if expr="not is_chromeos">
         <message name="IDS_UPDATE_RECOMMENDED" desc="The main text of the Update Recommended dialog with a count of open Private windows.">
           {COUNT, plural,
-          =0 {A new update for Brave is available and will be applied as soon as you relaunch.}
-          =1 {A new update for Brave is available and will be applied as soon as you relaunch. Your Private window won't reopen.}
-          other {A new update for Brave is available and will be applied as soon as you relaunch. Your # Private windows won't reopen.}}
+          =0 {A new update for Falcon is available and will be applied as soon as you relaunch.}
+          =1 {A new update for Falcon is available and will be applied as soon as you relaunch. Your Private window won't reopen.}
+          other {A new update for Falcon is available and will be applied as soon as you relaunch. Your # Private windows won't reopen.}}
         </message>
         </if>
       <if expr="is_chromeos">
@@ -393,7 +393,7 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
 
       <if expr="is_macosx">
         <message name="IDS_LOCAL_NETWORK_ACCESS_PERMISSION_DESC" desc="Text shown in the macOS permission dialog, describing why Brave needs the permission to access local network.">
-          This will allow you to share content from Brave to your local devices, such as a TV or speaker.
+          This will allow you to share content from Falcon to your local devices, such as a TV or speaker.
         </message>
       </if>
 
@@ -417,21 +417,21 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
         <if expr="not is_chromeos">
           <message name="IDS_RELAUNCH_RECOMMENDED_BODY" desc="The body text of a dialog that tells users that a browser relaunch is recommended for an update with Private counter.">
              {COUNT, plural,
-              =0 {Your administrator asks that you relaunch Brave to apply this update}
-              =1 {Your administrator asks that you relaunch Brave to apply this update. Your Private window won't reopen.}
-              other {Your administrator asks that you relaunch Brave to apply this update. Your # Private windows won't reopen.}}
+              =0 {Your administrator asks that you relaunch Falcon to apply this update}
+              =1 {Your administrator asks that you relaunch Falcon to apply this update. Your Private window won't reopen.}
+              other {Your administrator asks that you relaunch Falcon to apply this update. Your # Private windows won't reopen.}}
           </message>
           <message name="IDS_RELAUNCH_REQUIRED_BODY" desc="The body text of a dialog that tells users the browser must be relaunched with Private counter.">
              {COUNT, plural,
-              =0 {Your administrator requires that you relaunch Brave to apply an update}
-              =1 {Your administrator requires that you relaunch Brave to apply an update. Your Private window won't reopen.}
-              other {Your administrator requires that you relaunch Brave to apply an update. Your # Private windows won't reopen.}}
+              =0 {Your administrator requires that you relaunch Falcon to apply an update}
+              =1 {Your administrator requires that you relaunch Falcon to apply an update. Your Private window won't reopen.}
+              other {Your administrator requires that you relaunch Falcon to apply an update. Your # Private windows won't reopen.}}
           </message>
              <message name="IDS_ADVANCED_PROTECTION_RELAUNCH_REQUIRED_BODY" desc="The body text of a dialog that tells Advanced Protection users the browser must be relaunched with Private counter">
              {COUNT, plural,
-              =0 {Advanced Protection requires that you relaunch Brave to apply an update}
-              =1 {Advanced Protection requires that you relaunch Brave to apply an update. Your Private window won't reopen.}
-              other {Advanced Protection requires that you relaunch Brave to apply an update. Your # Private windows won't reopen.}}
+              =0 {Advanced Protection requires that you relaunch Falcon to apply an update}
+              =1 {Advanced Protection requires that you relaunch Falcon to apply an update. Your Private window won't reopen.}
+              other {Advanced Protection requires that you relaunch Falcon to apply an update. Your # Private windows won't reopen.}}
           </message>
         </if>
       </if>
