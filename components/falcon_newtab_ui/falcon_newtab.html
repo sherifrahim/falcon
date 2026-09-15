@@ -7,8 +7,16 @@
   <title>New Tab</title>
   <script src="chrome://resources/js/load_time_data_deprecated.js"></script>
   <script src="/strings.js"></script>
+  <script>
+    try { if (loadTimeData.getBoolean('blackTheme')) document.documentElement.dataset.black = '1' } catch (e) {}
+  </script>
   <script src="/falcon_newtab.bundle.js"></script>
   <style>
+    html[data-black] {
+      --f-bg-0: #000; --f-bg-1: #050505; --f-bg-2: #0a0a0a; --f-bg-3: #121212; --f-border: #1f1f1f;
+      --leo-color-page-background: #000; --leo-color-container-background: #050505;
+      --leo-color-divider-subtle: #1f1f1f; --leo-color-container-highlight: #0a0a0a;
+    }
     html, body, #root { height: 100%; margin: 0; }
     body {
       background: #0b1220;

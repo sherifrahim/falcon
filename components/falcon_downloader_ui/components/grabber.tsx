@@ -27,7 +27,7 @@ const Panel = styled(Card)`
 const List = styled.div`
   max-height: 300px;
   overflow: auto;
-  border: 1px solid var(--leo-color-divider-subtle, #334155);
+  border: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
   border-radius: 10px;
   padding: 4px 8px;
   label { display: flex; gap: 8px; align-items: center; padding: 4px 0; font-size: 12px; }

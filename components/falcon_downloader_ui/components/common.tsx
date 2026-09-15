@@ -109,7 +109,7 @@ export const Button = styled.button<{ $primary?: boolean; $danger?: boolean; $sm
   padding: ${(p) => (p.$small ? '5px 10px' : '9px 14px')};
   border-radius: 10px;
   border: 1px solid transparent;
-  background: ${(p) => (p.$primary ? '#0ea5e9' : p.$danger ? '#7f1d1d' : 'var(--leo-color-container-background, #1e293b)')};
+  background: ${(p) => (p.$primary ? '#0ea5e9' : p.$danger ? '#7f1d1d' : 'var(--leo-color-container-background, var(--f-bg-3, #1e293b))')};
   color: ${(p) => (p.$primary ? '#fff' : 'inherit')};
   font-size: ${(p) => (p.$small ? '12px' : '13px')};
   font-weight: 600;
@@ -122,8 +122,8 @@ export const Button = styled.button<{ $primary?: boolean; $danger?: boolean; $sm
 export const Input = styled.input`
   padding: 10px 12px;
   border-radius: 10px;
-  border: 1px solid var(--leo-color-divider-subtle, #334155);
-  background: var(--leo-color-container-background, #1e293b);
+  border: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
+  background: var(--leo-color-container-background, var(--f-bg-3, #1e293b));
   color: inherit;
   font-size: 14px;
   outline: none;
@@ -133,8 +133,8 @@ export const Input = styled.input`
 export const Select = styled.select`
   padding: 6px 10px;
   border-radius: 10px;
-  border: 1px solid var(--leo-color-divider-subtle, #334155);
-  background: var(--leo-color-container-background, #1e293b);
+  border: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
+  background: var(--leo-color-container-background, var(--f-bg-3, #1e293b));
   color: inherit;
   font-size: 12px;
 `
@@ -142,7 +142,7 @@ export const Select = styled.select`
 export const Chip = styled.button<{ $active: boolean }>`
   padding: 6px 12px;
   border-radius: 999px;
-  border: 1px solid ${(p) => (p.$active ? '#38bdf8' : 'var(--leo-color-divider-subtle, #334155)')};
+  border: 1px solid ${(p) => (p.$active ? '#38bdf8' : 'var(--leo-color-divider-subtle, var(--f-border, #334155))')};
   background: ${(p) => (p.$active ? 'rgba(56,189,248,0.15)' : 'transparent')};
   color: inherit;
   font-size: 12px;
@@ -168,8 +168,8 @@ export const ErrorText = styled.span`
 `
 
 export const Card = styled.div`
-  background: var(--leo-color-container-background, #1e293b);
-  border: 1px solid var(--leo-color-divider-subtle, #334155);
+  background: var(--leo-color-container-background, var(--f-bg-3, #1e293b));
+  border: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
   border-radius: 14px;
   padding: 12px 14px;
 `
@@ -180,7 +180,7 @@ export const Toggle = styled.label`
   justify-content: space-between;
   gap: 16px;
   padding: 10px 0;
-  border-bottom: 1px solid var(--leo-color-divider-subtle, #334155);
+  border-bottom: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
   font-size: 13px;
   cursor: pointer;
   .sub { display: block; font-size: 12px; opacity: 0.65; margin-top: 2px; }

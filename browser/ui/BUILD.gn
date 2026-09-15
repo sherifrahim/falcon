@@ -137,6 +137,8 @@ source_set("ui") {
     "toolbar/brave_location_bar_model_delegate.h",
     "webui/brave_adblock_internals_ui.cc",
     "webui/brave_adblock_internals_ui.h",
+    "views/falcon/mini_menu_bubble.cc",
+    "views/falcon/mini_menu_bubble.h",
     "views/falcon/peek_window.cc",
     "views/falcon/peek_window.h",
     "views/falcon/telemetry_edge_view.cc",

@@ -35,9 +35,11 @@ namespace falcon {
 
 namespace prefs {
 inline constexpr char kPeekEnabled[] = "falcon.peek.enabled";
-// Cockpit shell: Brave's Focus Mode (toolbar hidden, revealed at the top
-// edge / Ctrl+L) is Falcon's default and persists across windows.
-inline constexpr char kCockpitMode[] = "falcon.shell.cockpit";
+// Window style (falcon://falcon > Look): 0 = classic Windows chrome,
+// 1 = macOS-style slim title bar (toolbar on hover), 2 = cockpit (nothing;
+// toolbar capsule on hover). 1 and 2 ride on Brave's Focus Mode.
+inline constexpr char kShellMode[] = "falcon.shell.mode";
+enum ShellMode { kShellClassic = 0, kShellMac = 1, kShellCockpit = 2 };
 void RegisterPeekPrefs(user_prefs::PrefRegistrySyncable* registry);
 }  // namespace prefs
 

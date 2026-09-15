@@ -8,6 +8,8 @@ brave_browser_falcon_ux_sources = [
   "//brave/browser/falcon/ux/auto_reload_tab_helper.h",
   "//brave/browser/falcon/ux/boost_tab_helper.cc",
   "//brave/browser/falcon/ux/boost_tab_helper.h",
+  "//brave/browser/falcon/ux/mini_menu_tab_helper.cc",
+  "//brave/browser/falcon/ux/mini_menu_tab_helper.h",
   "//brave/browser/falcon/ux/mouse_gesture_tab_helper.cc",
   "//brave/browser/falcon/ux/mouse_gesture_tab_helper.h",
 ]

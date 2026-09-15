@@ -14,8 +14,8 @@ import {
 } from './common'
 
 const Row = styled.div<{ $open: boolean }>`
-  background: var(--leo-color-container-background, #1e293b);
-  border: 1px solid ${(p) => (p.$open ? '#38bdf8' : 'var(--leo-color-divider-subtle, #334155)')};
+  background: var(--leo-color-container-background, var(--f-bg-3, #1e293b));
+  border: 1px solid ${(p) => (p.$open ? '#38bdf8' : 'var(--leo-color-divider-subtle, var(--f-border, #334155))')};
   border-radius: 14px;
   padding: 12px 14px;
   display: grid;
@@ -59,7 +59,7 @@ const Actions = styled.div`
 
 const Details = styled.div`
   grid-column: 1 / -1;
-  border-top: 1px solid var(--leo-color-divider-subtle, #334155);
+  border-top: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
   padding-top: 10px;
   display: grid;
   grid-template-columns: 110px 1fr;
@@ -73,7 +73,7 @@ const FileList = styled.div`
   grid-column: 1 / -1;
   max-height: 260px;
   overflow: auto;
-  border: 1px solid var(--leo-color-divider-subtle, #334155);
+  border: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
   border-radius: 10px;
   padding: 6px 10px;
   label { display: flex; gap: 8px; align-items: center; padding: 3px 0; font-size: 12px; }

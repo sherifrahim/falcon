@@ -41,7 +41,7 @@ const Row = styled.label`
   font-size: 13px;
   cursor: pointer;
   input[type='checkbox'] { width: 18px; height: 18px; accent-color: #0ea5e9; }
-  input[type='text'], input[type='color'] { padding: 7px 10px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: inherit; font-size: 13px; width: 170px; outline: none; }
+  input[type='text'], input[type='color'] { padding: 7px 10px; border-radius: 8px; border: 1px solid var(--f-border, #334155); background: var(--f-bg-3, #1e293b); color: inherit; font-size: 13px; width: 170px; outline: none; }
   input[type='text']:focus { border-color: #38bdf8; }
   input[type='range'] { width: 150px; accent-color: #0ea5e9; }
   .sub { display: block; font-size: 11px; opacity: 0.6; margin-top: 2px; }
@@ -72,7 +72,7 @@ const Modes = styled.div`
   flex-wrap: wrap;
   margin: 6px 0;
   button {
-    padding: 6px 12px; border-radius: 999px; border: 1px solid #334155; background: transparent; color: inherit; font-size: 12px; cursor: pointer;
+    padding: 6px 12px; border-radius: 999px; border: 1px solid var(--f-border, #334155); background: transparent; color: inherit; font-size: 12px; cursor: pointer;
   }
   button.on { border-color: #38bdf8; background: rgba(56,189,248,0.15); }
 `
@@ -81,7 +81,7 @@ const Btn = styled.button`
   padding: 7px 12px;
   border-radius: 10px;
   border: 1px solid transparent;
-  background: #1e293b;
+  background: var(--f-bg-3, #1e293b);
   color: inherit;
   font-size: 12px;
   font-weight: 600;

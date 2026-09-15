@@ -47,7 +47,7 @@ const Video = styled.video<{ $blur: number }>`
   height: 100%;
   object-fit: cover;
   filter: ${(p) => (p.$blur > 0 ? `blur(${p.$blur}px)` : 'none')};
-  background: #0b1220;
+  background: var(--f-bg-0, #0b1220);
 `
 
 const Dim = styled.div<{ $dim: number }>`
@@ -254,12 +254,12 @@ const Dialog = styled.div`
   }
   h3 { margin: 0 0 4px; font-size: 16px; font-weight: 600; }
   input {
-    padding: 10px 12px; border-radius: 10px; border: 1px solid #334155; background: #1e293b; color: inherit; font-size: 14px; outline: none;
+    padding: 10px 12px; border-radius: 10px; border: 1px solid var(--f-border, #334155); background: var(--f-bg-3, #1e293b); color: inherit; font-size: 14px; outline: none;
   }
   input:focus { border-color: #38bdf8; }
   .row { display: flex; gap: 8px; justify-content: flex-end; }
   button {
-    padding: 8px 14px; border-radius: 10px; border: 1px solid transparent; background: #1e293b; color: inherit; cursor: pointer; font-weight: 600;
+    padding: 8px 14px; border-radius: 10px; border: 1px solid transparent; background: var(--f-bg-3, #1e293b); color: inherit; cursor: pointer; font-weight: 600;
   }
   button.primary { background: #0ea5e9; color: #fff; }
 `
@@ -332,11 +332,11 @@ export function App() {
   const bg = state.bg
   let css = GRADIENTS[bg.gradient % GRADIENTS.length].css
   let isImage = false
-  if (bg.mode === 'solid') css = bg.color || '#0b1220'
-  else if (bg.mode === 'image' && bg.imageUrl) { css = `url("${bg.imageUrl.replace(/"/g, '')}") center / cover no-repeat #0b1220`; isImage = true }
-  else if (bg.mode === 'bing' && bing) { css = `url("${bing.url}") center / cover no-repeat #0b1220`; isImage = true }
+  if (bg.mode === 'solid') css = bg.color || 'var(--f-bg-0, #0b1220)'
+  else if (bg.mode === 'image' && bg.imageUrl) { css = `url("${bg.imageUrl.replace(/"/g, '')}") center / cover no-repeat var(--f-bg-0, #0b1220)`; isImage = true }
+  else if (bg.mode === 'bing' && bing) { css = `url("${bing.url}") center / cover no-repeat var(--f-bg-0, #0b1220)`; isImage = true }
   const isVideo = bg.mode === 'video' && !!bg.videoUrl
-  if (isVideo) css = '#0b1220'
+  if (isVideo) css = 'var(--f-bg-0, #0b1220)'
 
   // Clock/date ---------------------------------------------------------------
   const h = now.getHours()

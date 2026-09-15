@@ -565,6 +565,8 @@ void SetUpDownloaderDataSource(content::WebUI* web_ui,
   content::WebUIDataSource* source = CreateAndAddWebUIDataSource(
       web_ui, host, kFalconDownloaderGenerated, IDR_FALCON_DOWNLOADER_HTML);
   source->AddBoolean("panel", panel);
+  source->AddBoolean("blackTheme", g_browser_process->local_state()->GetBoolean(
+                                       falcon::prefs::kThemeBlack));
 
   source->AddString("rpcUrl", aria2->rpc_ws_url());
   source->AddString("rpcSecret", aria2->rpc_secret());

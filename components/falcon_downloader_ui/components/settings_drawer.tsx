@@ -45,8 +45,8 @@ const Drawer = styled.div`
   right: 0;
   height: 100%;
   width: min(440px, 100%);
-  background: var(--leo-color-page-background, #0f172a);
-  border-left: 1px solid var(--leo-color-divider-subtle, #334155);
+  background: var(--leo-color-page-background, var(--f-bg-1, #0f172a));
+  border-left: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
   box-shadow: -12px 0 40px rgba(0, 0, 0, 0.45);
   padding: 22px 22px 40px;
   overflow-y: auto;
@@ -71,8 +71,8 @@ const Rules = styled.textarea`
   margin: 6px 0 2px;
   padding: 8px 10px;
   border-radius: 10px;
-  border: 1px solid var(--leo-color-divider-subtle, #334155);
-  background: var(--leo-color-container-background, #1e293b);
+  border: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
+  background: var(--leo-color-container-background, var(--f-bg-3, #1e293b));
   color: inherit;
   font-family: ui-monospace, Consolas, monospace;
   font-size: 12px;

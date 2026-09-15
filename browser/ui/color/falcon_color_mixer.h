@@ -15,4 +15,13 @@
 void AddFalconColorMixer(ui::ColorProvider* provider,
                          const ui::ColorProviderKey& key);
 
+namespace falcon {
+// Pitch-black (OLED) variant of the dark scheme. Process-wide because colour
+// mixers have no profile; the value is persisted in local state
+// (falcon.theme.black) by the caller. `SetBlackTheme` rebuilds every colour
+// provider so open windows repaint.
+void SetBlackTheme(bool black);
+bool IsBlackTheme();
+}  // namespace falcon
+
 #endif  // BRAVE_BROWSER_UI_COLOR_FALCON_COLOR_MIXER_H_

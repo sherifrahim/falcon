@@ -11,7 +11,9 @@
 #include "ui/color/color_id.h"
 #include "ui/color/color_mixer.h"
 #include "ui/color/color_recipe.h"
+#include "ui/color/color_provider_manager.h"
 #include "ui/color/color_transform.h"
+#include "ui/native_theme/native_theme.h"
 
 namespace {
 
@@ -91,7 +93,64 @@ void AddLight(ui::ColorMixer& mixer) {
   mixer[kColorBraveVerticalTabInactiveBackground] = {kSlate200};
 }
 
+bool g_black_theme = false;
+
+constexpr SkColor kBlack0 = SkColorSetRGB(0x00, 0x00, 0x00);
+constexpr SkColor kBlack1 = SkColorSetRGB(0x05, 0x05, 0x05);
+constexpr SkColor kBlack2 = SkColorSetRGB(0x0A, 0x0A, 0x0A);
+constexpr SkColor kBlack3 = SkColorSetRGB(0x12, 0x12, 0x12);
+constexpr SkColor kBlackBorder = SkColorSetRGB(0x1F, 0x1F, 0x1F);
+
+// Layered after AddDark(): every slate surface becomes true black.
+void AddBlack(ui::ColorMixer& mixer) {
+  mixer[ui::kColorFrameActive] = {kBlack0};
+  mixer[ui::kColorFrameInactive] = {kBlack0};
+  mixer[kColorToolbar] = {kBlack1};
+  mixer[kColorBookmarkBarBackground] = {kBlack1};
+  mixer[kColorToolbarContentAreaSeparator] = {kBlackBorder};
+  mixer[kColorToolbarSeparator] = {kBlackBorder};
+  mixer[kColorTabBackgroundActiveFrameActive] = {kBlack1};
+  mixer[kColorTabBackgroundActiveFrameInactive] = {kBlack1};
+  mixer[kColorTabBackgroundInactiveFrameActive] = {kBlack0};
+  mixer[kColorTabBackgroundInactiveFrameInactive] = {kBlack0};
+  mixer[kColorTabStrokeFrameActive] = {kBlack1};
+  mixer[kColorTabStrokeFrameInactive] = {kBlack1};
+  mixer[kColorTabDividerFrameActive] = {kBlackBorder};
+  mixer[kColorNewTabButtonBackgroundFrameActive] = {kBlack0};
+  mixer[kColorNewTabButtonBackgroundFrameInactive] = {kBlack0};
+  mixer[kColorLocationBarBackground] = {kBlack3};
+  mixer[kColorLocationBarBackgroundHovered] = {kBlackBorder};
+  mixer[kColorOmniboxResultsBackground] = {kBlack2};
+  mixer[kColorSidePanelBackground] = {kBlack1};
+  mixer[kColorSidebarSeparator] = {kBlackBorder};
+  mixer[kColorBraveVerticalTabActiveBackground] = {kBlack3};
+  mixer[kColorBraveVerticalTabHoveredBackground] = {kBlack2};
+  mixer[kColorBraveVerticalTabInactiveBackground] = {kBlack0};
+  mixer[kColorBraveVerticalTabSeparator] = {kBlackBorder};
+  mixer[kColorNewTabPageBackground] = {kBlack0};
+  mixer[ui::kColorDialogBackground] = {kBlack1};
+  mixer[ui::kColorBubbleBackground] = {kBlack1};
+  mixer[ui::kColorMenuBackground] = {kBlack1};
+}
+
 }  // namespace
+
+namespace falcon {
+
+void SetBlackTheme(bool black) {
+  if (g_black_theme == black) {
+    return;
+  }
+  g_black_theme = black;
+  ui::ColorProviderManager::Get().ResetColorProviderCache();
+  ui::NativeTheme::GetInstanceForNativeUi()->NotifyOnNativeThemeUpdated();
+}
+
+bool IsBlackTheme() {
+  return g_black_theme;
+}
+
+}  // namespace falcon
 
 void AddFalconColorMixer(ui::ColorProvider* provider,
                          const ui::ColorProviderKey& key) {
@@ -101,6 +160,9 @@ void AddFalconColorMixer(ui::ColorProvider* provider,
   ui::ColorMixer& mixer = provider->AddMixer();
   if (key.color_mode == ui::ColorProviderKey::ColorMode::kDark) {
     AddDark(mixer);
+    if (g_black_theme) {
+      AddBlack(mixer);
+    }
   } else {
     AddLight(mixer);
   }

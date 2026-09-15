@@ -74,7 +74,7 @@ const Head = styled.div`
   display: flex;
   gap: 14px;
   align-items: center;
-  img { width: 128px; height: 72px; object-fit: cover; border-radius: 8px; background: #0f172a; }
+  img { width: 128px; height: 72px; object-fit: cover; border-radius: 8px; background: var(--f-bg-1, #0f172a); }
   .t { font-weight: 600; font-size: 14px; }
 `
 
@@ -88,12 +88,12 @@ const Presets = styled.div`
 const Table = styled.div`
   max-height: 260px;
   overflow: auto;
-  border: 1px solid var(--leo-color-divider-subtle, #334155);
+  border: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
   border-radius: 10px;
   font-size: 12px;
   table { width: 100%; border-collapse: collapse; }
   th, td { text-align: left; padding: 5px 10px; white-space: nowrap; }
-  th { position: sticky; top: 0; background: var(--leo-color-container-background, #1e293b); opacity: 0.8; font-weight: 600; }
+  th { position: sticky; top: 0; background: var(--leo-color-container-background, var(--f-bg-3, #1e293b)); opacity: 0.8; font-weight: 600; }
   tr:hover td { background: rgba(56,189,248,0.08); }
 `
 
@@ -184,7 +184,7 @@ export function MediaPicker(props: {
         </label>
         <label style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
           Audio-only format
-          <select value={audioFormat} onChange={(e) => setAudioFormat(e.target.value)} style={{ background: 'transparent', color: 'inherit', border: '1px solid #334155', borderRadius: 8, padding: '2px 6px' }}>
+          <select value={audioFormat} onChange={(e) => setAudioFormat(e.target.value)} style={{ background: 'transparent', color: 'inherit', border: '1px solid var(--f-border, #334155)', borderRadius: 8, padding: '2px 6px' }}>
             <option value="m4a">m4a</option><option value="mp3">mp3</option><option value="opus">opus</option>
           </select>
         </label>

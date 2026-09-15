@@ -26,6 +26,8 @@
 #include "brave/browser/ui/commands/accelerator_service_factory.h"
 #include "brave/browser/ui/focus_mode/focus_mode_features.h"
 #include "brave/browser/ui/focus_mode/focus_mode_utils.h"
+#include "brave/browser/falcon/download/pref_names.h"
+#include "brave/browser/ui/color/falcon_color_mixer.h"
 #include "brave/browser/ui/views/falcon/peek_window.h"
 #include "brave/browser/ui/views/falcon/telemetry_edge_view.h"
 #include "brave/browser/ui/page_info/features.h"
@@ -346,6 +348,14 @@ bool BraveBrowserView::ShouldUseBraveWebViewRoundedCornersForContents(
 }
 
 BraveBrowserView::BraveBrowserView(Browser* browser) : BrowserView(browser) {
+  // Falcon: the pitch-black theme flag lives in local state; prime the mixer
+  // before this window's colour providers are built.
+  static bool black_theme_loaded = false;
+  if (!black_theme_loaded) {
+    black_theme_loaded = true;
+    falcon::SetBlackTheme(g_browser_process->local_state()->GetBoolean(
+        falcon::prefs::kThemeBlack));
+  }
   CHECK(multi_contents_view_);
 
   // Upstream doesn't set icon because kFeatureTitleBar is not supported by
@@ -382,10 +392,10 @@ BraveBrowserView::BraveBrowserView(Browser* browser) : BrowserView(browser) {
       base::BindRepeating(&BraveBrowserView::OnPreferenceChanged,
                           base::Unretained(this)));
 
-  // Falcon cockpit mode follows one profile pref across all windows.
+  // Falcon window style follows one profile pref across all windows.
   pref_change_registrar_.Add(
-      falcon::prefs::kCockpitMode,
-      base::BindRepeating(&BraveBrowserView::OnCockpitPrefChanged,
+      falcon::prefs::kShellMode,
+      base::BindRepeating(&BraveBrowserView::OnShellModeChanged,
                           base::Unretained(this)));
 
 #if BUILDFLAG(ENABLE_BRAVE_VPN)
@@ -437,12 +447,11 @@ BraveBrowserView::BraveBrowserView(Browser* browser) : BrowserView(browser) {
     CHECK(controller);
     focus_mode_observation_.Observe(controller);
 
-    if (features::kFocusModeUrlDisplay.Get() ==
-        features::FocusModeUrlDisplay::kTitleBar) {
-      focus_mode_title_bar_view_ =
-          AddChildView(std::make_unique<FocusModeTitleBarView>());
-      focus_mode_title_bar_view_->SetVisible(false);
-    }
+    // Falcon: the slim title bar is one of the window styles, so it always
+    // exists; UpdateFocusModeState() decides when it shows.
+    focus_mode_title_bar_view_ =
+        AddChildView(std::make_unique<FocusModeTitleBarView>());
+    focus_mode_title_bar_view_->SetVisible(false);
 
     focus_mode_top_overlay_ =
         AddChildView(std::make_unique<FocusModeTopOverlay>(
@@ -821,10 +830,14 @@ void BraveBrowserView::OnAcceleratorsChanged(
 
 void BraveBrowserView::OnFocusModeToggled(bool enabled) {
   UpdateFocusModeState();
-  // Persist so new windows and the control panel agree (no-op when equal).
+  // Persist (Ctrl+Shift+F / app menu toggles): off -> classic, on -> cockpit
+  // unless the profile already prefers a non-classic style.
   PrefService* prefs = GetProfile()->GetPrefs();
-  if (prefs->GetBoolean(falcon::prefs::kCockpitMode) != enabled) {
-    prefs->SetBoolean(falcon::prefs::kCockpitMode, enabled);
+  const int mode = prefs->GetInteger(falcon::prefs::kShellMode);
+  if (!enabled && mode != falcon::prefs::kShellClassic) {
+    prefs->SetInteger(falcon::prefs::kShellMode, falcon::prefs::kShellClassic);
+  } else if (enabled && mode == falcon::prefs::kShellClassic) {
+    prefs->SetInteger(falcon::prefs::kShellMode, falcon::prefs::kShellCockpit);
   }
 }
 
@@ -870,8 +883,8 @@ void BraveBrowserView::AddedToWidget() {
         focus_mode_title_bar_view_);
   }
 
-  // Falcon: start in cockpit mode when the profile says so.
-  OnCockpitPrefChanged();
+  // Falcon: apply the window style the profile asks for.
+  OnShellModeChanged();
   if (browser_->GetType() == BrowserWindowInterface::TYPE_NORMAL) {
     telemetry_edge_ =
         AddChildView(std::make_unique<falcon::TelemetryEdgeView>(browser_));
@@ -881,13 +894,22 @@ void BraveBrowserView::AddedToWidget() {
   EnsureFindBarHostViewIsLastChild();
 }
 
-void BraveBrowserView::OnCockpitPrefChanged() {
+int BraveBrowserView::GetShellMode() const {
+  return GetProfile()->GetPrefs()->GetInteger(falcon::prefs::kShellMode);
+}
+
+void BraveBrowserView::OnShellModeChanged() {
   if (!BrowserSupportsFocusMode(browser_)) {
     return;
   }
+  const bool immersive = GetShellMode() != falcon::prefs::kShellClassic;
   if (auto* controller = browser_->GetFeatures().focus_mode_controller()) {
-    controller->SetEnabled(
-        GetProfile()->GetPrefs()->GetBoolean(falcon::prefs::kCockpitMode));
+    if (controller->IsEnabled() == immersive) {
+      // Same focus-mode state, different flavour (mac <-> cockpit).
+      UpdateFocusModeState();
+    } else {
+      controller->SetEnabled(immersive);
+    }
   }
 }
 
@@ -1504,15 +1526,19 @@ void BraveBrowserView::UpdateFocusModeState() {
     InvalidateLayout();
   }
 
+  // Falcon: mac style = slim title bar; cockpit = domain in the mini toolbar.
+  const int shell_mode = GetShellMode();
+  const bool show_title_bar =
+      enabled && shell_mode == falcon::prefs::kShellMac;
   if (focus_mode_title_bar_view_) {
-    focus_mode_title_bar_view_->SetVisible(enabled);
+    focus_mode_title_bar_view_->SetVisible(show_title_bar);
     focus_mode_title_bar_view_->SetTab(
-        enabled ? browser()->tab_strip_model()->GetActiveTab() : nullptr);
+        show_title_bar ? browser()->tab_strip_model()->GetActiveTab()
+                       : nullptr);
   }
 
   const bool show_domain =
-      enabled && features::kFocusModeUrlDisplay.Get() ==
-                     features::FocusModeUrlDisplay::kMiniToolbar;
+      enabled && shell_mode == falcon::prefs::kShellCockpit;
   if (show_domain != show_active_contents_domain_) {
     show_active_contents_domain_ = show_domain;
     GetBraveMultiContentsView()->OnShowActiveContentsDomainChanged();

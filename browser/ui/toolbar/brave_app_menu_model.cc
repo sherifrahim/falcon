@@ -505,8 +505,8 @@ void BraveAppMenuModel::ExecuteCommand(int id, int event_flags) {
 
 bool BraveAppMenuModel::IsCommandIdChecked(int id) const {
   if (id == IDC_TOGGLE_FOCUS_MODE) {
-    return browser()->GetProfile()->GetPrefs()->GetBoolean(
-        falcon::prefs::kCockpitMode);
+    return browser()->GetProfile()->GetPrefs()->GetInteger(
+               falcon::prefs::kShellMode) != falcon::prefs::kShellClassic;
   }
   return AppMenuModel::IsCommandIdChecked(id);
 }

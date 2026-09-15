@@ -24,9 +24,12 @@
 #include "brave/browser/falcon/download/pref_names.h"
 #include "brave/browser/falcon/media/media_service.h"
 #include "brave/browser/falcon/ux/boost_tab_helper.h"
+#include "brave/browser/falcon/ux/mini_menu_tab_helper.h"
 #include "brave/browser/falcon/ux/mouse_gesture_tab_helper.h"
 #include "brave/browser/ui/tabs/brave_tab_prefs.h"
+#include "brave/browser/ui/color/falcon_color_mixer.h"
 #include "brave/browser/ui/views/falcon/peek_window.h"
+#include "chrome/browser/browser_process.h"
 #include "brave/browser/ui/webui/brave_webui_source.h"
 #include "brave/browser/workspaces/workspace_metadata.h"
 #include "brave/browser/workspaces/workspace_service.h"
@@ -213,7 +216,10 @@ class FalconControlMessageHandler : public content::WebUIMessageHandler {
     d.Set("roundedCorners", p->GetBoolean(kWebViewRoundedCorners));
     d.Set("mouseGestures", p->GetBoolean(falcon::prefs::kMouseGesturesEnabled));
     d.Set("peek", p->GetBoolean(falcon::prefs::kPeekEnabled));
-    d.Set("cockpit", p->GetBoolean(falcon::prefs::kCockpitMode));
+    d.Set("miniMenu", p->GetBoolean(falcon::prefs::kMiniMenuEnabled));
+    d.Set("shellMode", p->GetInteger(falcon::prefs::kShellMode));
+    d.Set("blackTheme", g_browser_process->local_state()->GetBoolean(
+                            falcon::prefs::kThemeBlack));
     d.Set("verticalTabsCollapsed",
           p->GetBoolean(brave_tabs::kVerticalTabsCollapsed));
     d.Set("videoPill", p->GetBoolean(falcon::prefs::kDownloadVideoPill));
@@ -286,8 +292,16 @@ class FalconControlMessageHandler : public content::WebUIMessageHandler {
     if (std::optional<bool> v = in.FindBool("peek")) {
       p->SetBoolean(falcon::prefs::kPeekEnabled, *v);
     }
-    if (std::optional<bool> v = in.FindBool("cockpit")) {
-      p->SetBoolean(falcon::prefs::kCockpitMode, *v);
+    if (std::optional<bool> v = in.FindBool("miniMenu")) {
+      p->SetBoolean(falcon::prefs::kMiniMenuEnabled, *v);
+    }
+    if (std::optional<int> v = in.FindInt("shellMode")) {
+      p->SetInteger(falcon::prefs::kShellMode, std::clamp(*v, 0, 2));
+    }
+    if (std::optional<bool> v = in.FindBool("blackTheme")) {
+      g_browser_process->local_state()->SetBoolean(falcon::prefs::kThemeBlack,
+                                                   *v);
+      falcon::SetBlackTheme(*v);
     }
     if (std::optional<bool> v = in.FindBool("verticalTabsCollapsed")) {
       p->SetBoolean(brave_tabs::kVerticalTabsCollapsed, *v);
@@ -350,8 +364,11 @@ class FalconControlMessageHandler : public content::WebUIMessageHandler {
 
 FalconControlUI::FalconControlUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
-  CreateAndAddWebUIDataSource(web_ui, falcon::kFalconControlHost,
-                              kFalconControlGenerated, IDR_FALCON_CONTROL_HTML);
+  content::WebUIDataSource* source = CreateAndAddWebUIDataSource(
+      web_ui, falcon::kFalconControlHost, kFalconControlGenerated,
+      IDR_FALCON_CONTROL_HTML);
+  source->AddBoolean("blackTheme", g_browser_process->local_state()->GetBoolean(
+                                       falcon::prefs::kThemeBlack));
   web_ui->AddMessageHandler(std::make_unique<FalconControlMessageHandler>());
 }
 

@@ -82,8 +82,8 @@ const Batch = styled.textarea`
   margin-bottom: 8px;
   padding: 10px 12px;
   border-radius: 10px;
-  border: 1px solid var(--leo-color-divider-subtle, #334155);
-  background: var(--leo-color-container-background, #1e293b);
+  border: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
+  background: var(--leo-color-container-background, var(--f-bg-3, #1e293b));
   color: inherit;
   font-family: ui-monospace, Consolas, monospace;
   font-size: 12px;
@@ -97,7 +97,7 @@ const Options = styled.div`
   margin-bottom: 10px;
   padding: 12px 14px;
   border-radius: 12px;
-  border: 1px solid var(--leo-color-divider-subtle, #334155);
+  border: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
   label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; opacity: 0.85; }
   label.row { flex-direction: row; align-items: center; gap: 8px; }
   input[type='text'], input[type='password'], input[type='number'], select { padding: 6px 10px; font-size: 13px; }

@@ -43,12 +43,12 @@ export interface NtpState {
 }
 
 export const GRADIENTS: Array<{ name: string; css: string }> = [
-  { name: 'Aurora', css: 'linear-gradient(135deg, #0b1220 0%, #1e3a8a 45%, #0ea5e9 100%)' },
-  { name: 'Dusk', css: 'linear-gradient(140deg, #0f172a 0%, #7c2d12 55%, #f59e0b 100%)' },
+  { name: 'Aurora', css: 'linear-gradient(135deg, var(--f-bg-0, #0b1220) 0%, #1e3a8a 45%, #0ea5e9 100%)' },
+  { name: 'Dusk', css: 'linear-gradient(140deg, var(--f-bg-1, #0f172a) 0%, #7c2d12 55%, #f59e0b 100%)' },
   { name: 'Forest', css: 'linear-gradient(135deg, #052e16 0%, #14532d 50%, #0f766e 100%)' },
   { name: 'Grape', css: 'linear-gradient(135deg, #1e1b4b 0%, #4c1d95 50%, #db2777 100%)' },
-  { name: 'Slate', css: 'linear-gradient(160deg, #0b1220 0%, #1e293b 100%)' },
-  { name: 'Mesh', css: 'radial-gradient(at 20% 20%, #1d4ed8 0px, transparent 50%), radial-gradient(at 80% 10%, #7c3aed 0px, transparent 50%), radial-gradient(at 70% 80%, #0ea5e9 0px, transparent 50%), radial-gradient(at 10% 90%, #db2777 0px, transparent 50%), #0b1220' },
+  { name: 'Slate', css: 'linear-gradient(160deg, var(--f-bg-0, #0b1220) 0%, var(--f-bg-3, #1e293b) 100%)' },
+  { name: 'Mesh', css: 'radial-gradient(at 20% 20%, #1d4ed8 0px, transparent 50%), radial-gradient(at 80% 10%, #7c3aed 0px, transparent 50%), radial-gradient(at 70% 80%, #0ea5e9 0px, transparent 50%), radial-gradient(at 10% 90%, #db2777 0px, transparent 50%), var(--f-bg-0, #0b1220)' },
   { name: 'Ocean', css: 'linear-gradient(135deg, #082f49 0%, #0e7490 60%, #22d3ee 100%)' },
   { name: 'Ember', css: 'linear-gradient(135deg, #1c1917 0%, #7f1d1d 55%, #f97316 100%)' },
 ]

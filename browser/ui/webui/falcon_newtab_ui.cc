@@ -5,6 +5,8 @@
 
 #include "brave/browser/ui/webui/falcon_newtab_ui.h"
 
+#include "brave/browser/falcon/download/pref_names.h"
+
 #include <memory>
 #include <optional>
 #include <string>
@@ -23,6 +25,7 @@
 #include "brave/browser/ui/webui/brave_webui_source.h"
 #include "brave/components/falcon_newtab_ui/resources/grit/falcon_newtab_generated_map.h"
 #include "chrome/browser/history/top_sites_factory.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
@@ -305,6 +308,8 @@ FalconNewTabUI::FalconNewTabUI(content::WebUI* web_ui)
   content::WebUIDataSource* source = CreateAndAddWebUIDataSource(
       web_ui, chrome::kChromeUINewTabHost, kFalconNewtabGenerated,
       IDR_FALCON_NEWTAB_HTML);
+  source->AddBoolean("blackTheme", g_browser_process->local_state()->GetBoolean(
+                                       falcon::prefs::kThemeBlack));
   // Wallpapers come from the web (Bing / user URLs); favicons for quick links
   // from chrome://favicon2.
   source->OverrideContentSecurityPolicy(

@@ -34,7 +34,9 @@ interface State {
   roundedCorners: boolean
   mouseGestures: boolean
   peek: boolean
-  cockpit: boolean
+  miniMenu: boolean
+  shellMode: 0 | 1 | 2 // classic, mac, cockpit
+  blackTheme: boolean
   verticalTabsCollapsed: boolean
   videoPill: boolean
   clipboardMonitor: boolean
@@ -56,8 +58,8 @@ const Page = styled.div`
 `
 
 const Card = styled.div`
-  background: var(--leo-color-container-background, #1e293b);
-  border: 1px solid var(--leo-color-divider-subtle, #334155);
+  background: var(--leo-color-container-background, var(--f-bg-3, #1e293b));
+  border: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
   border-radius: 14px;
   padding: 4px 16px;
 `
@@ -68,18 +70,18 @@ const Row = styled.label`
   justify-content: space-between;
   gap: 16px;
   padding: 12px 0;
-  border-bottom: 1px solid var(--leo-color-divider-subtle, #334155);
+  border-bottom: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
   font-size: 14px;
   cursor: pointer;
   &:last-child { border-bottom: none; }
   .sub { display: block; font-size: 12px; opacity: 0.65; margin-top: 2px; }
   input[type='checkbox'] { width: 18px; height: 18px; accent-color: #0ea5e9; }
-  select { padding: 6px 10px; border-radius: 10px; border: 1px solid #334155; background: #0f172a; color: inherit; font-size: 13px; }
+  select { padding: 6px 10px; border-radius: 10px; border: 1px solid var(--f-border, #334155); background: var(--f-bg-1, #0f172a); color: inherit; font-size: 13px; }
 `
 
 const Seg = styled.div`
   display: inline-flex;
-  border: 1px solid #334155;
+  border: 1px solid var(--f-border, #334155);
   border-radius: 999px;
   overflow: hidden;
   button { padding: 6px 14px; border: none; background: transparent; color: inherit; cursor: pointer; font-size: 13px; }
@@ -90,7 +92,7 @@ const Btn = styled.button<{ $primary?: boolean }>`
   padding: 8px 14px;
   border-radius: 10px;
   border: 1px solid transparent;
-  background: ${(p) => (p.$primary ? '#0ea5e9' : '#0f172a')};
+  background: ${(p) => (p.$primary ? '#0ea5e9' : 'var(--f-bg-1, #0f172a)')};
   color: ${(p) => (p.$primary ? '#fff' : 'inherit')};
   font-size: 13px;
   font-weight: 600;
@@ -105,7 +107,7 @@ const Editor = styled.div`
   gap: 8px;
   input[type='text'], textarea {
     width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 10px;
-    border: 1px solid #334155; background: #0f172a; color: inherit; font-size: 13px;
+    border: 1px solid var(--f-border, #334155); background: var(--f-bg-1, #0f172a); color: inherit; font-size: 13px;
   }
   textarea { min-height: 90px; font-family: Consolas, "Cascadia Mono", monospace; font-size: 12px; resize: vertical; }
   .row { display: flex; gap: 8px; align-items: center; }
@@ -120,7 +122,7 @@ const Links = styled.div`
   gap: 10px;
   a {
     display: block; padding: 14px 16px; border-radius: 14px; color: inherit; text-decoration: none;
-    background: var(--leo-color-container-background, #1e293b); border: 1px solid var(--leo-color-divider-subtle, #334155);
+    background: var(--leo-color-container-background, var(--f-bg-3, #1e293b)); border: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
   }
   a:hover { border-color: #38bdf8; }
   a b { display: block; font-size: 14px; margin-bottom: 2px; }
@@ -230,14 +232,22 @@ export function App() {
       <h2>Look</h2>
       <Card>
         <Row as="div">
-          <span>Colour scheme<span className="sub">Falcon's slate/sky palette follows this</span></span>
+          <span>Colour scheme<span className="sub">Slate/sky palette · Black is a pitch-black (OLED) dark variant</span></span>
           <Seg>
-            {([[2, 'Dark'], [1, 'Light'], [0, 'System']] as Array<[0 | 1 | 2, string]>).map(([v, l]) => (
-              <button key={v} className={s.colorScheme === v ? 'on' : ''} onClick={() => update({ colorScheme: v })}>{l}</button>
+            <button className={s.colorScheme === 2 && !s.blackTheme ? 'on' : ''} onClick={() => update({ colorScheme: 2, blackTheme: false })}>Dark</button>
+            <button className={s.colorScheme === 2 && s.blackTheme ? 'on' : ''} onClick={() => update({ colorScheme: 2, blackTheme: true })}>Black</button>
+            <button className={s.colorScheme === 1 ? 'on' : ''} onClick={() => update({ colorScheme: 1, blackTheme: false })}>Light</button>
+            <button className={s.colorScheme === 0 ? 'on' : ''} onClick={() => update({ colorScheme: 0, blackTheme: false })}>System</button>
+          </Seg>
+        </Row>
+        <Row as="div">
+          <span>Window style<span className="sub">Cockpit: no chrome, capsule on hover · Mac-style: slim title bar, toolbar on hover · Classic: Windows default</span></span>
+          <Seg>
+            {([[2, 'Cockpit'], [1, 'Mac-style'], [0, 'Classic']] as Array<[0 | 1 | 2, string]>).map(([v, l]) => (
+              <button key={v} className={s.shellMode === v ? 'on' : ''} onClick={() => update({ shellMode: v })}>{l}</button>
             ))}
           </Seg>
         </Row>
-        {bool('cockpit', 'Cockpit mode', 'No toolbar: the page fills the window. Move the mouse to the top edge or press Ctrl+L to reveal the address bar; Ctrl+Shift+F toggles')}
         {bool('verticalTabs', 'Vertical tabs', 'Tab strip on the side (Zen / Arc style)')}
         {bool('verticalTabsCollapsed', 'Dock (collapsed tabs)', 'Icon-only tab rail that expands on hover')}
         <Row as="div">
@@ -258,6 +268,7 @@ export function App() {
         </Row>
         {bool('mouseGestures', 'Mouse gestures', 'Hold right button and drag: ← back · → forward · ↑ reload · ↓ new tab · ↓→ close · ↓← reopen · ↑←/↑→ switch tab')}
         {bool('peek', 'Peek', 'Shift+click a link to preview it in a floating window (Arc-style); Esc closes, "Open in tab" keeps it')}
+        {bool('miniMenu', 'Mini menu on text selection', 'Select text with the mouse: a tiny Copy · Search pill appears by the cursor (Edge-style, no big menu)')}
         {bool('videoPill', 'Download button on videos', 'Hover any video for "Download with Falcon"')}
         {bool('clipboardMonitor', 'Watch the clipboard', 'Offer to download copied file links and magnets')}
         {bool('engineEnabled', 'Falcon download engine', 'Take over downloads from pages (off = plain Chromium downloads)')}
@@ -301,7 +312,7 @@ export function App() {
           <Card>
             <Row as="div">
               <input type="text" placeholder="session name, e.g. Work" value={sessionName} onChange={(e) => setSessionName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && saveSession()}
-                style={{ flex: 1, padding: '8px 10px', borderRadius: 10, border: '1px solid #334155', background: '#0f172a', color: 'inherit', fontSize: 13 }} />
+                style={{ flex: 1, padding: '8px 10px', borderRadius: 10, border: '1px solid var(--f-border, #334155)', background: 'var(--f-bg-1, #0f172a)', color: 'inherit', fontSize: 13 }} />
               <Btn $primary onClick={saveSession} disabled={!sessionName.trim()}>Save current session</Btn>
             </Row>
             {(sessions ?? []).map((ss) => (

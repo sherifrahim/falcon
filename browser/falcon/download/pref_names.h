@@ -55,6 +55,9 @@ inline constexpr char kEngineDuplicateAction[] =
     "falcon.engine.duplicate_action";
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+// Pitch-black dark theme (see falcon_color_mixer.h). Local state so the
+// colour mixer can be driven without a profile.
+inline constexpr char kThemeBlack[] = "falcon.theme.black";
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
 }  // namespace falcon::prefs
