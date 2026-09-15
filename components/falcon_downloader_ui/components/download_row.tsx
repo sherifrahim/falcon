@@ -19,9 +19,34 @@ const Row = styled.div<{ $open: boolean }>`
   border-radius: 14px;
   padding: 12px 14px;
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 34px 1fr auto;
   gap: 8px 14px;
+  align-items: center;
 `
+
+// Ring gauge (mock v2): progress for live rows, tick for done, cross for error.
+const RingBox = styled.svg`
+  width: 34px; height: 34px; grid-row: 1; align-self: start;
+  .track { stroke: rgba(255, 255, 255, 0.1); }
+  .arc { transition: stroke-dashoffset 0.4s ease; }
+  text { font-family: "Cascadia Mono", Consolas, "JetBrains Mono", monospace; font-size: 9px; fill: currentColor; opacity: 0.9; }
+`
+
+function Ring({ pct, status }: { pct: number; status: Aria2Status }) {
+  const r = 14, c = 2 * Math.PI * r
+  const color = status === 'error' ? '#f87171' : status === 'complete' ? '#22c55e' : status === 'paused' ? '#94a3b8' : '#38bdf8'
+  const frac = status === 'complete' ? 1 : Math.max(0, Math.min(1, pct / 100))
+  const label = status === 'complete' ? '✓' : status === 'error' ? '!' : `${Math.round(pct)}`
+  return (
+    <RingBox viewBox="0 0 34 34" title={`${Math.round(pct)}%`}>
+      <circle className="track" cx="17" cy="17" r={r} fill="none" strokeWidth="2.5" />
+      <circle className="arc" cx="17" cy="17" r={r} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round"
+        strokeDasharray={c} strokeDashoffset={c * (1 - frac)} transform="rotate(-90 17 17)"
+        style={{ filter: status === 'active' ? 'drop-shadow(0 0 3px rgba(56,189,248,0.6))' : 'none' }} />
+      <text x="17" y="17" textAnchor="middle" dominantBaseline="central">{label}</text>
+    </RingBox>
+  )
+}
 
 const Name = styled.div`
   font-size: 14px;
@@ -34,9 +59,9 @@ const Name = styled.div`
 
 const Bar = styled.div<{ $pct: number; $status: Aria2Status }>`
   grid-column: 1 / -1;
-  height: 6px;
+  height: 3px;
   border-radius: 999px;
-  background: rgba(148, 163, 184, 0.2);
+  background: rgba(148, 163, 184, 0.16);
   overflow: hidden;
   &::after {
     content: '';
@@ -314,6 +339,7 @@ export function DownloadRow({ d, scan, client, open, onToggle, refresh, setError
 
   return (
     <Row $open={open}>
+      <Ring pct={pct} status={d.status} />
       <div style={{ minWidth: 0 }}>
         {renaming ? (
           <Input
@@ -332,16 +358,15 @@ export function DownloadRow({ d, scan, client, open, onToggle, refresh, setError
             {STATUS_LABEL[d.status]}{torrent ? ' · torrent' : ''}
             {d.finishedAt ? ` · ${new Date(d.finishedAt * 1000).toLocaleString()}` : ''}
           </span>
-          <span>
+          <span className="mono">
             {fmtBytes(done)}
             {total > 0 ? ` / ${fmtBytes(total)}` : ''}
-            {total > 0 ? ` (${pct.toFixed(0)}%)` : ''}
           </span>
           {d.status === 'active' && (
             <>
-              <span>↓ {fmtSpeed(speed)}</span>
-              {torrent && <span>↑ {fmtSpeed(+d.uploadSpeed)}</span>}
-              <span>ETA {fmtEta(total - done, speed)}</span>
+              <span className="mono">↓ {fmtSpeed(speed)}</span>
+              {torrent && <span className="mono">↑ {fmtSpeed(+d.uploadSpeed)}</span>}
+              <span className="mono">ETA {fmtEta(total - done, speed)}</span>
               <span>{d.connections} conn{torrent && d.numSeeders ? ` · ${d.numSeeders} seeds` : ''}</span>
             </>
           )}

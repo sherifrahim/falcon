@@ -161,6 +161,7 @@ export const Meta = styled.div`
   display: flex;
   gap: 14px;
   flex-wrap: wrap;
+  .mono { font-family: "Cascadia Mono", Consolas, "JetBrains Mono", monospace; font-size: 11.5px; letter-spacing: 0.01em; }
 `
 
 export const ErrorText = styled.span`
