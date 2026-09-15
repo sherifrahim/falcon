@@ -19,6 +19,7 @@ import { DownloadRow, ScanResult } from './download_row'
 import { Grabber } from './grabber'
 import { MediaJob, MediaPicker, MediaRow, SniffedList, SniffedTab } from './media_panel'
 import { SettingsDrawer } from './settings_drawer'
+import { Layout, Rail, Side, Telemetry, View } from './mission'
 
 const MEDIA_AVAILABLE = loadTimeData.getBoolean('mediaAvailable')
 // Side-panel layout: narrower paddings, no page title, wrapped toolbar.
@@ -36,7 +37,7 @@ function pickerFromHash(): { url: string; referer: string } | null {
 }
 
 const Page = styled.div<{ $drag: boolean }>`
-  max-width: 1040px;
+  max-width: ${PANEL ? '1040px' : '1440px'};
   margin: 0 auto;
   padding: ${PANEL ? '12px 10px 24px' : '28px 24px 48px'};
   min-height: 100%;
@@ -210,6 +211,8 @@ export function App() {
   const lastDone = React.useRef(new Map<string, number>())
   // Per-download speed samples (last ~60 s) for the sparkline in the row.
   const speeds = React.useRef(new Map<string, number[]>())
+  // Global download speed samples for the telemetry footer.
+  const [netHistory, setNetHistory] = React.useState<number[]>([])
 
   const refresh = React.useCallback(async () => {
     if (!client.connected) return
@@ -230,6 +233,7 @@ export function App() {
       }
       setDownloads(snap.downloads)
       setStat(snap.stat)
+      setNetHistory((h) => { const n = [...h, +snap.stat.downloadSpeed]; return n.length > 90 ? n.slice(n.length - 90) : n })
     } catch {
       /* transient */
     }
@@ -386,6 +390,14 @@ export function App() {
     done: merged.filter((d) => d.status === 'complete').length + mediaJobs.filter((j) => j.status === 'done').length,
     failed: merged.filter((d) => d.status === 'error').length + mediaJobs.filter((j) => j.status === 'error').length,
   }
+  const railView: View = settingsOpen ? 'settings' : picker ? 'video' : grabber !== null ? 'grabber' : (filter as View)
+  const onRailView = (v: View) => {
+    if (v === 'video') { setPicker({ url: url.trim(), referer: '' }); return }
+    if (v === 'grabber') { setGrabber(url.trim()); return }
+    if (v === 'settings' || v === 'scheduler') { setSettingsOpen(true); return }
+    if (v === 'history') { setFilter('done'); return }
+    setPicker(null); setGrabber(null); setFilter(v as Filter)
+  }
   const anyActive = downloads.some((d) => d.status === 'active' || d.status === 'waiting')
   const anyPaused = downloads.some((d) => d.status === 'paused')
 
@@ -399,6 +411,9 @@ export function App() {
       {settingsOpen && (
         <SettingsDrawer onClose={() => { setSettingsOpen(false); if (location.hash) window.history.replaceState(null, '', ' ') }} />
       )}
+      <Layout style={PANEL ? { display: 'block' } : undefined}>
+      {!PANEL && <Rail view={railView} counts={{ all: merged.length + mediaJobs.length, ...counts, torrents: merged.filter((d) => !!d.bittorrent).length }} onView={onRailView} />}
+      <div style={{ minWidth: 0 }}>
       <Header>
         {!PANEL && <Title>Downloads</Title>}
         <Stat>
@@ -531,12 +546,13 @@ export function App() {
       {error && <Meta style={{ marginBottom: 8 }}><ErrorText>{error}</ErrorText></Meta>}
 
       <Toolbar>
-        {([['all', 'All'], ['active', `Active${counts.active ? ` ${counts.active}` : ''}`],
+        {PANEL && ([['all', 'All'], ['active', `Active${counts.active ? ` ${counts.active}` : ''}`],
            ['done', `Completed${counts.done ? ` ${counts.done}` : ''}`],
            ['failed', `Failed${counts.failed ? ` ${counts.failed}` : ''}`],
            ['torrents', 'Torrents']] as Array<[Filter, string]>).map(([f, label]) => (
           <Chip key={f} $active={filter === f} onClick={() => setFilter(f)}>{label}</Chip>
         ))}
+        {!PANEL && <span style={{ fontSize: 12, opacity: 0.6, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{({ all: 'All', active: 'Active', done: 'Completed', failed: 'Failed', torrents: 'Torrents' } as Record<string, string>)[filter]}</span>}
         <Input style={{ padding: '6px 10px', width: 180 }} placeholder="Search" value={query}
           onChange={(e) => setQuery(e.target.value)} />
         <Select value={sort} onChange={(e) => setSort(e.target.value as SortKey)}>
@@ -583,14 +599,25 @@ export function App() {
         </List>
       )}
 
-      <Footer>
-        <span>{merged.length + mediaJobs.length} downloads listed</span>
-        <span>{fmtBytes(sessionBytes.current)} received this session</span>
-        {stats && stats.totalFiles > 0 && (
-          <span>{fmtBytes(stats.totalBytes)} · {stats.totalFiles} files all-time</span>
-        )}
-        <span>Saving to {loadTimeData.getString('downloadDir') || 'default folder'}{loadTimeData.getBoolean('categoriesEnabled') ? ' (sorted by category)' : ''}</span>
-      </Footer>
+      {PANEL ? (
+        <Footer>
+          <span>{merged.length + mediaJobs.length} downloads listed</span>
+          <span>{fmtBytes(sessionBytes.current)} received this session</span>
+          {stats && stats.totalFiles > 0 && (
+            <span>{fmtBytes(stats.totalBytes)} · {stats.totalFiles} files all-time</span>
+          )}
+        </Footer>
+      ) : (
+        <Telemetry speeds={netHistory} listed={visible.length + visibleMedia.length} dir={loadTimeData.getString('downloadDir')} categories={loadTimeData.getBoolean('categoriesEnabled')} />
+      )}
+      </div>
+      {!PANEL && (
+        <Side connected={connected} down={stat ? +stat.downloadSpeed : 0} up={stat ? +stat.uploadSpeed : 0}
+          active={stat ? +stat.numActive : 0} queued={stat ? +stat.numWaiting : 0}
+          sessionBytes={sessionBytes.current} totalFiles={stats?.totalFiles ?? 0} totalBytes={stats?.totalBytes ?? 0}
+          onOpen={onRailView} />
+      )}
+      </Layout>
     </Page>
   )
 }
