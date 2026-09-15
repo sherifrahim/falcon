@@ -6,25 +6,34 @@
 # on purpose (do not add here): playlist, speedreader, tor, containers,
 # commander, request_otr, psst, widevine, text_recognition, custom_background.
 
-# Leo / AI
-enable_ai_chat = false
-enable_local_ai = false
+# Android: Brave's Java/C++ Android code assumes Leo, Ads, Rewards, Wallet,
+# News and VPN exist at build time (no buildflag guards), so the strip is
+# desktop-only for now. On Android they stay compiled in and get hidden at
+# runtime later (Phase 6 strip).
+if (!is_android) {
+  # Leo / AI
+  enable_ai_chat = false
+  enable_local_ai = false
 
-# Crypto & monetisation
-enable_brave_ads = false
-enable_brave_rewards = false
-enable_brave_wallet = false
+  # Crypto & monetisation
+  enable_brave_ads = false
+  enable_brave_rewards = false
+  enable_brave_wallet = false
 
-# Brave services
-enable_brave_news = false
-enable_brave_talk = false
-enable_brave_vpn_v1 = false
-enable_brave_vpn_v2 = false
-enable_email_aliases = false
+  # Brave services
+  enable_brave_news = false
+  enable_brave_talk = false
+  enable_brave_vpn_v1 = false
+  enable_brave_vpn_v2 = false
+  enable_email_aliases = false
 
-# Telemetry-ish
-enable_brave_stats_updater = false
-enable_web_discovery = false
+  # Telemetry-ish
+  enable_brave_stats_updater = false
+  enable_web_discovery = false
+} else {
+  enable_brave_stats_updater = false
+  enable_web_discovery = false
+}
 
 # Field-trial / Griffin seed: never fetch from Brave. A .invalid host fails
 # fast; an empty value would fall back to Google's variations server.
