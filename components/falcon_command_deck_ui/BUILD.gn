@@ -1,0 +1,23 @@
+# Copyright (c) 2026 Falcon. Personal fork of Brave.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this file,
+# You can obtain one at https://mozilla.org/MPL/2.0/.
+
+import("//brave/components/common/typescript.gni")
+
+transpile_web_ui("falcon_command_deck_ui") {
+  output_module = false
+  entry_points = [ [
+        "falcon_command_deck",
+        rebase_path("falcon_command_deck.tsx"),
+      ] ]
+
+  resource_name = "falcon_command_deck"
+  imports_from = [ "//brave/components/falcon_command_deck_ui/" ]
+}
+
+pack_web_resources("generated_resources") {
+  resource_name = "falcon_command_deck"
+  output_dir = "$root_gen_dir/brave/components/falcon_command_deck_ui/resources"
+  deps = [ ":falcon_command_deck_ui" ]
+}

@@ -46,6 +46,10 @@ class CommanderService : public CommanderFrontendDelegate,
   void Reset();
   bool IsShowing() const;
 
+  // Falcon command deck: while an external frontend is attached, Show/Hide
+  // only update state and notify observers instead of driving the omnibox.
+  void SetExternalFrontend(bool active);
+
   // CommanderFrontendDelegate:
   void Toggle() override;
   void Hide() override;
@@ -85,6 +89,7 @@ class CommanderService : public CommanderFrontendDelegate,
   std::u16string prompt_;
   std::vector<std::unique_ptr<CommandItem>> items_;
   uint32_t current_result_set_id_ = 0;
+  bool external_frontend_ = false;
   raw_ptr<BrowserWindowInterface, DanglingUntriaged> last_browser_;
   raw_ptr<Profile> profile_;
 

@@ -31,6 +31,7 @@
 #include "ui/color/color_id.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/background.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -169,12 +170,18 @@ PeekWindow::PeekWindow(BrowserWindowInterface* browser, const GURL& url)
   header->SetBetweenChildSpacing(8);
   header->SetCrossAxisAlignment(views::BoxLayout::CrossAxisAlignment::kCenter);
 
+  // Mock v2 (screen 6): back · url (mono) · Open in tab · close.
+  auto* back = header->AddChildView(MakeHeaderButton(
+      base::BindRepeating(&PeekWindow::GoBack, base::Unretained(this)),
+      u"‹", /*primary=*/false));
+  back->SetTooltipText(u"Back");
   auto* peek_label = header->AddChildView(std::make_unique<views::Label>(
       u"Peek", views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY));
   peek_label->SetEnabledColor(kSky400);
   url_label_ = header->AddChildView(std::make_unique<views::Label>(
       base::UTF8ToUTF16(url.spec()), views::style::CONTEXT_LABEL,
       views::style::STYLE_SECONDARY));
+  url_label_->SetFontList(gfx::FontList("Cascadia Mono, Consolas, 12px"));
   url_label_->SetElideBehavior(gfx::ELIDE_MIDDLE);
   url_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   header->SetFlexForView(url_label_, 1);
@@ -186,7 +193,7 @@ PeekWindow::PeekWindow(BrowserWindowInterface* browser, const GURL& url)
   open_button->SetTooltipText(u"Move this page to a real tab");
   auto* close = header->AddChildView(MakeHeaderButton(
       base::BindRepeating(&PeekWindow::Close, base::Unretained(this)),
-      u"Esc", /*primary=*/false));
+      u"×", /*primary=*/false));
   close->SetTooltipText(u"Close (Esc)");
 
   Profile* profile = browser->GetProfile();
@@ -224,6 +231,12 @@ void PeekWindow::WidgetIsZombie(views::Widget* widget) {
   // before the widget tears down; mirrors BraveOriginStartupView.
   delete this;
   delete widget;
+}
+
+void PeekWindow::GoBack() {
+  if (contents_ && contents_->GetController().CanGoBack()) {
+    contents_->GetController().GoBack();
+  }
 }
 
 void PeekWindow::Close() {

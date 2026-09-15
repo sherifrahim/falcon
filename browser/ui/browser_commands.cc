@@ -538,6 +538,12 @@ void ToggleJavascriptEnabled(Browser* browser) {
 
 #if BUILDFLAG(ENABLE_COMMANDER)
 void ToggleCommander(Browser* browser) {
+  // Falcon: the command deck (WebUI bubble) replaces the omnibox ":>" mode.
+  if (auto* view = BraveBrowserView::From(
+          BrowserView::GetBrowserViewForBrowser(browser))) {
+    view->ToggleCommandDeck();
+    return;
+  }
   if (auto* commander_service =
           commander::CommanderServiceFactory::GetForBrowserContext(
               browser->GetProfile())) {

@@ -67,6 +67,7 @@ class PeekWindow : public views::WidgetDelegate,
   ~PeekWindow() override;
 
   void OpenInTab();
+  void GoBack();
 
   // views::WidgetDelegate:
   views::View* GetContentsView() override;

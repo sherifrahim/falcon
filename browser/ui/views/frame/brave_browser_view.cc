@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/check.h"
+#include "base/strings/strcat.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/task/sequenced_task_runner.h"
@@ -30,6 +31,10 @@
 #include "brave/browser/ui/color/falcon_color_mixer.h"
 #include "brave/browser/ui/views/falcon/peek_window.h"
 #include "brave/browser/ui/views/falcon/telemetry_edge_view.h"
+#include "brave/browser/ui/webui/falcon_command_deck_ui.h"
+#include "brave/components/constants/falcon_url_constants.h"
+#include "chrome/browser/ui/views/bubble/webui_bubble_manager.h"
+#include "components/grit/brave_components_strings.h"
 #include "brave/browser/ui/page_info/features.h"
 #include "brave/browser/ui/sidebar/sidebar_controller.h"
 #include "brave/browser/ui/sidebar/sidebar_utils.h"
@@ -892,6 +897,30 @@ void BraveBrowserView::AddedToWidget() {
 
   UpdateFocusModeState();
   EnsureFindBarHostViewIsLastChild();
+}
+
+void BraveBrowserView::ToggleCommandDeck() {
+  if (command_deck_bubble_ && command_deck_bubble_->GetBubbleWidget()) {
+    command_deck_bubble_->CloseBubble();
+    return;
+  }
+  if (!command_deck_bubble_) {
+    command_deck_bubble_ = WebUIBubbleManager::Create<FalconCommandDeckUI>(
+        browser_, GURL(base::StrCat({"chrome://", falcon::kFalconCommandDeckHost,
+                                     "/"})),
+        IDS_IDC_COMMANDER, /*force_load_on_create=*/true);
+  }
+  // Anchor to a point near the top-centre of the window (mock v2: the deck
+  // hangs from the top third of the window).
+  gfx::Rect anchor = GetBoundsInScreen();
+  anchor = gfx::Rect(anchor.CenterPoint().x(), anchor.y() + 56, 1, 1);
+  command_deck_bubble_->ShowBubble(anchor, views::BubbleBorder::TOP_CENTER);
+}
+
+void BraveBrowserView::CloseCommandDeck() {
+  if (command_deck_bubble_ && command_deck_bubble_->GetBubbleWidget()) {
+    command_deck_bubble_->CloseBubble();
+  }
 }
 
 int BraveBrowserView::GetShellMode() const {

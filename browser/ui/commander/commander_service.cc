@@ -48,8 +48,10 @@ namespace commander {
 namespace {
 constexpr size_t kMaxResults = 8;
 CommandItemModel FromCommand(const std::unique_ptr<CommandItem>& item) {
-  return CommandItemModel(item->title, item->matched_ranges, item->annotation,
-                          item->score);
+  CommandItemModel model(item->title, item->matched_ranges, item->annotation,
+                         item->score);
+  model.entity = static_cast<int>(item->entity_type);
+  return model;
 }
 }  // namespace
 
@@ -217,7 +219,7 @@ void CommanderService::UpdateText(const std::u16string& text, bool force) {
     return;
   }
 
-  if (text.empty()) {
+  if (text.empty() && !external_frontend_) {
     return;
   }
 
@@ -253,6 +255,9 @@ OmniboxView* CommanderService::GetOmnibox() const {
 }
 
 bool CommanderService::IsShowing() const {
+  if (external_frontend_) {
+    return true;
+  }
   auto* omnibox = GetOmnibox();
   return omnibox && omnibox->GetText().starts_with(kCommandPrefix.data());
 }
@@ -287,7 +292,20 @@ void CommanderService::NotifyObservers() {
   }
 }
 
+void CommanderService::SetExternalFrontend(bool active) {
+  external_frontend_ = active;
+  if (!active) {
+    Reset();
+  }
+}
+
 void CommanderService::ShowCommander() {
+  if (external_frontend_) {
+    // Composite step: the deck re-renders from the new prompt/items.
+    UpdateText(last_searched_, /*force=*/true);
+    NotifyObservers();
+    return;
+  }
   if (auto* omnibox = GetOmnibox()) {
     omnibox->SetFocus(true);
 
@@ -299,6 +317,11 @@ void CommanderService::ShowCommander() {
 }
 
 void CommanderService::HideCommander() {
+  if (external_frontend_) {
+    Reset();
+    NotifyObservers();
+    return;
+  }
   // Snapshot whether we need to revert before Reset(): observers notified by
   // Reset() can touch autocomplete state such that IsShowing() no longer
   // reflects commander visibility reliably during shutdown steps.

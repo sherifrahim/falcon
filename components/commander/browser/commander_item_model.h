@@ -31,6 +31,9 @@ struct COMPONENT_EXPORT(COMMANDER_BROWSER) CommandItemModel {
   std::vector<gfx::Range> matched_ranges;
   std::u16string annotation;
   double score;
+  // Falcon: CommandItem::Entity (0 command, 1 bookmark, 2 tab, 3 window,
+  // 4 group) so the command deck can group results.
+  int entity = 0;
 };
 
 }  // namespace commander

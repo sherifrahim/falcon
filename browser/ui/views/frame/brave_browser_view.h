@@ -77,6 +77,7 @@ class BraveMultiContentsView;
 class BrowserWindowInterface;
 class FocusModeTitleBarView;
 class FocusModeTopOverlay;
+class WebUIBubbleManager;
 namespace falcon {
 class TelemetryEdgeView;
 }  // namespace falcon
@@ -185,6 +186,9 @@ class BraveBrowserView : public BrowserView,
   // Falcon: falcon.shell.mode changed (or window just created).
   void OnShellModeChanged();
   int GetShellMode() const;
+  // Falcon command deck (Ctrl+Space): WebUI bubble over the top of the window.
+  void ToggleCommandDeck();
+  void CloseCommandDeck();
 
   // True when the active content area should always display its domain in the
   // mini toolbar.
@@ -370,6 +374,7 @@ class BraveBrowserView : public BrowserView,
   raw_ptr<FocusModeTopOverlay> focus_mode_top_overlay_ = nullptr;
   // Falcon cockpit: download beam on the right edge.
   raw_ptr<falcon::TelemetryEdgeView> telemetry_edge_ = nullptr;
+  std::unique_ptr<WebUIBubbleManager> command_deck_bubble_;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Caches the PWA Shields toolbar button for this window. Note that this
