@@ -169,6 +169,23 @@ export function App() {
     if (!s) return
     saveBoosts(s.boosts.map((b) => (b.id === id ? { ...b, ...patch } : b)))
   }
+  const PRESETS: Boost[] = [
+    { id: 'preset-yt-shorts', host: 'youtube.com', name: 'YouTube: no Shorts', enabled: true, js: '',
+      css: 'ytd-rich-shelf-renderer[is-shorts], ytd-reel-shelf-renderer, ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts]), #shorts-container, ytd-guide-entry-renderer:has(a[title="Shorts"]), ytd-mini-guide-entry-renderer:has(a[title="Shorts"]) { display: none !important; }' },
+    { id: 'preset-reddit-sidebar', host: 'reddit.com', name: 'Reddit: no right sidebar / promos', enabled: true, js: '',
+      css: 'shreddit-sidebar-ad, aside[aria-label*="Sidebar" i], #right-sidebar-container, .promotedlink, shreddit-ad-post { display: none !important; }' },
+    { id: 'preset-x-trends', host: 'x.com', name: 'X: no trends / who to follow', enabled: true, js: '',
+      css: '[data-testid="sidebarColumn"] { display: none !important; } [data-testid="primaryColumn"] { max-width: 100% !important; }' },
+    { id: 'preset-cookie-banners', host: '*', name: 'Everywhere: hide common cookie banners', enabled: true, js: '',
+      css: '#onetrust-banner-sdk, #onetrust-consent-sdk, .cc-banner, .cc-window, #cookie-banner, #cookieBanner, #CybotCookiebotDialog, .qc-cmp2-container, [id*="cookie-consent" i], [class*="cookie-banner" i], [aria-label*="cookie" i][role="dialog"] { display: none !important; } body { overflow: auto !important; }' },
+  ]
+  const addPreset = (p: Boost) => {
+    if (!s) return
+    if (s.boosts.some((b) => b.id === p.id)) { setOpenBoost(p.id); return }
+    saveBoosts([...s.boosts, { ...p }])
+    setOpenBoost(p.id)
+  }
+
   const removeBoost = (id: string) => {
     if (!s) return
     saveBoosts(s.boosts.filter((b) => b.id !== id))
@@ -303,6 +320,10 @@ export function App() {
           </div>
         ))}
         <Row as="div"><span className="sub">Add a boost for a site</span><Btn $primary onClick={() => addBoost('')}>New boost</Btn></Row>
+        <Row as="div" style={{ flexWrap: 'wrap', justifyContent: 'flex-start', gap: 8 }}>
+          <span className="sub" style={{ width: '100%' }}>Presets — one click, editable afterwards</span>
+          {PRESETS.map((p) => <Btn key={p.id} onClick={() => addPreset(p)} disabled={s.boosts.some((b) => b.id === p.id)}>{p.name}</Btn>)}
+        </Row>
       </Card>
 
       {s.sessionsAvailable && (
