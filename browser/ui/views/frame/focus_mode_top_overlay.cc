@@ -26,11 +26,19 @@ namespace {
 constexpr int kHotZoneThickness = 16;
 constexpr base::TimeDelta kRevealAnimationDuration = base::Milliseconds(200);
 
+// Falcon "capsule": the revealed toolbar floats as a centred rounded bar
+// instead of a full-width strip, leaving room for the window controls.
+constexpr int kCapsuleMaxWidth = 1120;
+constexpr int kCapsuleSideInset = 24;
+constexpr int kCapsuleTopInset = 8;
+constexpr int kCapsuleControlsReserve = 150;  // caption buttons on the right
+constexpr float kCapsuleRadius = 14.0f;
+
 constexpr ViewShadow::ShadowParameters kShadow{
     .offset_x = 0,
-    .offset_y = 2,
-    .blur_radius = 8,
-    .shadow_color = SkColorSetA(SK_ColorBLACK, 0.15 * 255)};
+    .offset_y = 6,
+    .blur_radius = 22,
+    .shadow_color = SkColorSetA(SK_ColorBLACK, 0.45 * 255)};
 
 gfx::Rect GetTopHotZone(const gfx::Rect& window_bounds) {
   gfx::Rect rect(window_bounds);
@@ -76,9 +84,11 @@ class ScopedFocusRestore {
 FocusModeTopOverlay::FocusModeTopOverlay(base::PassKey<BraveBrowserView>,
                                          BrowserView* browser_view)
     : browser_view_(CHECK_DEREF(browser_view)),
-      shadow_(this, gfx::RoundedCornersF(0), kShadow) {
+      shadow_(this, gfx::RoundedCornersF(kCapsuleRadius), kShadow) {
   SetPaintToLayer();
-  layer()->SetFillsBoundsOpaquely(true);
+  layer()->SetFillsBoundsOpaquely(false);
+  layer()->SetRoundedCornerRadius(gfx::RoundedCornersF(kCapsuleRadius));
+  layer()->SetIsFastRoundedCorner(true);
 
   animation_.SetSlideDuration(kRevealAnimationDuration);
   animation_.Reset(1.0);
@@ -261,8 +271,16 @@ void FocusModeTopOverlay::UpdateBounds() {
   }
   int height = top_container->bounds().height();
   double reveal_fraction = GetRevealFraction();
-  int y_offset = -static_cast<int>((1.0 - reveal_fraction) * height);
-  SetBoundsRect(gfx::Rect(0, y_offset, parent()->width(), height));
+  // Slide in from above the window edge (plus the top inset and shadow).
+  const int hidden_offset = height + kCapsuleTopInset + 24;
+  int y_offset = kCapsuleTopInset -
+                 static_cast<int>((1.0 - reveal_fraction) * hidden_offset);
+  const int available =
+      parent()->width() - 2 * kCapsuleSideInset - kCapsuleControlsReserve;
+  const int width = std::clamp(available, 480, kCapsuleMaxWidth);
+  const int x = std::max(kCapsuleSideInset,
+                         (parent()->width() - kCapsuleControlsReserve - width) / 2);
+  SetBoundsRect(gfx::Rect(x, y_offset, width, height));
   shadow_.SetVisible(reveal_fraction > 0.0);
 }
 
