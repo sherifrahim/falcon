@@ -188,12 +188,8 @@ void BraveAppMenuModel::BuildBraveProductsSection() {
                u"Falcon Downloads");
   InsertItemAt(GetNextIndexOfBraveProductsSection(), IDC_FALCON_SHOW_CONTROL,
                u"Falcon control panel");
-#if BUILDFLAG(ENABLE_COMMANDER)
-  if (commander::IsEnabled()) {
-    InsertItemAt(GetNextIndexOfBraveProductsSection(), IDC_COMMANDER,
-                 u"Quick commands (Ctrl+Space)");
-  }
-#endif
+  // (Quick commands / IDC_COMMANDER already lives under More tools; the app
+  // menu DCHECKs on duplicate command ids.)
   if (IsCommandIdEnabled(IDC_TOGGLE_FOCUS_MODE)) {
     InsertCheckItemAt(GetNextIndexOfBraveProductsSection(),
                       IDC_TOGGLE_FOCUS_MODE,
