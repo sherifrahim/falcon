@@ -72,7 +72,8 @@ const AddRow = styled.form`
   display: flex;
   gap: 8px;
   margin-bottom: 10px;
-  flex-wrap: ${PANEL ? 'wrap' : 'nowrap'};
+  flex-wrap: wrap;
+  > input:first-child { flex: 1 1 260px; }
 `
 
 const Batch = styled.textarea`
@@ -412,7 +413,7 @@ export function App() {
 
       <AddRow onSubmit={add}>
         <Input
-          style={{ flex: 1 }}
+          style={{ flex: "1 1 260px", minWidth: 0 }}
           placeholder="Paste a URL, magnet link, or a pattern like file[01-20].zip — or drop links / .torrent files anywhere"
           value={url}
           onChange={(e) => setUrl(e.target.value)}

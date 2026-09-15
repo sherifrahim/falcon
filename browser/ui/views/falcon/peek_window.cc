@@ -33,7 +33,9 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/background.h"
-#include "ui/views/controls/button/md_text_button.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/views/border.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/box_layout.h"
@@ -53,6 +55,25 @@ void RegisterPeekPrefs(user_prefs::PrefRegistrySyncable* registry) {
 }  // namespace prefs
 
 namespace {
+
+constexpr SkColor kSky400 = SkColorSetRGB(0x38, 0xBD, 0xF8);
+constexpr SkColor kSlate800 = SkColorSetRGB(0x1E, 0x29, 0x3B);
+constexpr SkColor kSlate100 = SkColorSetRGB(0xF1, 0xF5, 0xF9);
+constexpr SkColor kSlate950 = SkColorSetRGB(0x0B, 0x12, 0x20);
+
+std::unique_ptr<views::LabelButton> MakeHeaderButton(
+    views::Button::PressedCallback callback,
+    std::u16string_view text,
+    bool primary) {
+  auto button =
+      std::make_unique<views::LabelButton>(std::move(callback), text);
+  button->SetEnabledTextColors(primary ? kSlate950 : kSlate100);
+  button->SetBackground(views::CreateRoundedRectBackground(
+      primary ? kSky400 : kSlate800, 8.0f));
+  button->SetBorder(views::CreateEmptyBorder(gfx::Insets::VH(4, 12)));
+  button->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  return button;
+}
 
 // Root view of the peek: vertical box (header + WebView) that owns the Esc
 // accelerator and forwards it to the window.
@@ -149,19 +170,22 @@ PeekWindow::PeekWindow(BrowserWindowInterface* browser, const GURL& url)
 
   auto* peek_label = header->AddChildView(std::make_unique<views::Label>(
       u"Peek", views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY));
-  peek_label->SetEnabledColor(ui::kColorAccent);
+  peek_label->SetEnabledColor(kSky400);
   url_label_ = header->AddChildView(std::make_unique<views::Label>(
       base::UTF8ToUTF16(url.spec()), views::style::CONTEXT_LABEL,
       views::style::STYLE_SECONDARY));
   url_label_->SetElideBehavior(gfx::ELIDE_MIDDLE);
   url_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   header->SetFlexForView(url_label_, 1);
-  header->AddChildView(std::make_unique<views::MdTextButton>(
+  // Plain LabelButtons with explicit colours: Brave's MdTextButton resolves
+  // Nala colour ids that come out transparent in this standalone widget.
+  auto* open_button = header->AddChildView(MakeHeaderButton(
       base::BindRepeating(&PeekWindow::OpenInTab, base::Unretained(this)),
-      u"Open in tab"));
-  auto* close = header->AddChildView(std::make_unique<views::MdTextButton>(
+      u"Open in tab", /*primary=*/true));
+  open_button->SetTooltipText(u"Move this page to a real tab");
+  auto* close = header->AddChildView(MakeHeaderButton(
       base::BindRepeating(&PeekWindow::Close, base::Unretained(this)),
-      u"Esc"));
+      u"Esc", /*primary=*/false));
   close->SetTooltipText(u"Close (Esc)");
 
   Profile* profile = browser->GetProfile();
