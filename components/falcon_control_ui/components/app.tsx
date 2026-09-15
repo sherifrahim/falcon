@@ -99,7 +99,8 @@ const Row = styled.label`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  flex-wrap: wrap;
+  gap: 10px 16px;
   padding: 12px 0;
   border-bottom: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
   font-size: 14px;
@@ -117,6 +118,7 @@ const Seg = styled.div`
   overflow: hidden;
   button { padding: 6px 14px; border: none; background: transparent; color: inherit; cursor: pointer; font-size: 13px; }
   button.on { background: rgba(56, 189, 248, 0.2); color: #e0f2fe; }
+  button { white-space: nowrap; }
 `
 
 const Btn = styled.button<{ $primary?: boolean }>`
@@ -149,7 +151,7 @@ const Editor = styled.div`
 
 const PreviewCard = styled.div`
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
+  grid-template-columns: minmax(0, 1fr) 232px;
   gap: 18px;
   align-items: start;
   @media (max-width: 860px) { grid-template-columns: 1fr; }
