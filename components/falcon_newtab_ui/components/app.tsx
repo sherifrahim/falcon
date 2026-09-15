@@ -59,7 +59,7 @@ const Dim = styled.div<{ $dim: number }>`
 `
 
 const Hint = styled.div`
-  position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 6;
+  position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 6; white-space: nowrap; max-width: 92vw; overflow: hidden;
   display: flex; align-items: center; gap: 12px; padding: 8px 12px 8px 14px;
   border-radius: 999px; font-size: 12px; color: #e2e8f0;
   background: rgba(11, 18, 32, 0.72); border: 1px solid rgba(56, 189, 248, 0.35);
