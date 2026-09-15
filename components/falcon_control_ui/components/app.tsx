@@ -291,6 +291,22 @@ export function App() {
         {bool('engineEnabled', 'Falcon download engine', 'Take over downloads from pages (off = plain Chromium downloads)')}
       </Card>
 
+      <h2>Keys</h2>
+      <Card>
+        {([
+          ['Ctrl + Space', 'Quick commands (tabs, commands, bookmarks, sessions, Falcon pages)'],
+          ['Ctrl + L  /  top edge', 'Reveal the address capsule (cockpit / mac-style)'],
+          ['Ctrl + Shift + F', 'Toggle cockpit mode (hide / show the toolbar)'],
+          ['Ctrl + J', 'Falcon Downloads'],
+          ['Ctrl + B', 'Show / hide the sidebar'],
+          ['Shift + click a link', 'Peek: floating preview (Esc closes, "Open in tab" keeps it)'],
+          ['Right-drag ← → ↑ ↓', 'Mouse gestures: back · forward · reload · new tab (↓→ close, ↓← reopen, ↑← ↑→ switch)'],
+          ['Select text', 'Mini menu: Copy · Search'],
+        ] as Array<[string, string]>).map(([k, d]) => (
+          <Row as="div" key={k}><span>{d}</span><code style={{ fontSize: 12, opacity: 0.85, whiteSpace: 'nowrap', marginLeft: 16 }}>{k}</code></Row>
+        ))}
+      </Card>
+
       <h2 id="boosts">Boosts</h2>
       <p className="hint">Arc-style per-site tweaks: your own CSS and JavaScript, applied to every page on a host (subdomains included; <code>*</code> = all sites). Right-click a page → "Boost this site…" to jump here. JS runs in an isolated world after DOMContentLoaded.</p>
       <Card>
