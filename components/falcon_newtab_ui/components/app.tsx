@@ -89,27 +89,33 @@ const Center = styled.div`
 `
 
 const Clock = styled.div`
-  font-size: clamp(64px, 11vw, 120px);
+  font-family: "Segoe UI Variable Display", "Segoe UI Light", Inter, system-ui, sans-serif;
+  font-size: clamp(72px, 12vw, 132px);
   font-weight: 200;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   line-height: 1;
-  text-shadow: 0 6px 30px rgba(0, 0, 0, 0.35);
+  text-shadow: 0 8px 40px rgba(0, 0, 0, 0.45);
   font-variant-numeric: tabular-nums;
-  span.ampm { font-size: 0.28em; font-weight: 400; margin-left: 0.2em; opacity: 0.8; }
+  span.ampm { font-size: 0.22em; font-weight: 300; margin-left: 0.25em; opacity: 0.75; letter-spacing: 0.06em; }
 `
 
 const Date_ = styled.div`
-  font-size: 18px;
-  font-weight: 400;
-  opacity: 0.9;
-  margin-top: -10px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.8;
+  margin-top: -6px;
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
 `
 
 const Greeting = styled.div`
-  font-size: 26px;
-  font-weight: 500;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+  font-family: Georgia, "Times New Roman", "Noto Serif", serif;
+  font-size: 30px;
+  font-weight: 400;
+  font-style: italic;
+  letter-spacing: 0.01em;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.4);
 `
 
 const Search = styled.form`
@@ -117,43 +123,47 @@ const Search = styled.form`
   position: relative;
   input {
     width: 100%;
-    padding: 16px 52px 16px 22px;
+    padding: 13px 48px 13px 46px;
     border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    background: rgba(15, 23, 42, 0.55);
-    backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(8, 12, 24, 0.42);
+    backdrop-filter: blur(16px);
     color: #f8fafc;
-    font-size: 17px;
+    font-size: 15px;
     outline: none;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
     transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
   }
-  input::placeholder { color: rgba(226, 232, 240, 0.55); }
+  input::placeholder { color: rgba(226, 232, 240, 0.5); }
   input:focus {
-    border-color: rgba(56, 189, 248, 0.9);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35), 0 0 0 4px rgba(56, 189, 248, 0.18);
-    background: rgba(15, 23, 42, 0.7);
+    border-color: rgba(56, 189, 248, 0.75);
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.14), 0 0 24px rgba(56, 189, 248, 0.18);
+    background: rgba(8, 12, 24, 0.6);
+  }
+  &::before {
+    content: ''; position: absolute; left: 18px; top: 50%; width: 14px; height: 14px; transform: translateY(-58%);
+    border: 1.5px solid rgba(226, 232, 240, 0.7); border-radius: 50%; box-sizing: border-box;
+    box-shadow: 5px 5px 0 -3px rgba(226, 232, 240, 0.7);
   }
   button {
     position: absolute;
-    right: 8px;
+    right: 6px;
     top: 50%;
     transform: translateY(-50%);
-    width: 40px; height: 40px;
+    width: 36px; height: 36px;
     border-radius: 50%;
     border: none;
-    background: rgba(56, 189, 248, 0.2);
-    color: #e0f2fe;
+    background: transparent;
+    color: rgba(226, 232, 240, 0.75);
     cursor: pointer;
     font-size: 16px;
   }
-  button:hover { background: rgba(56, 189, 248, 0.35); }
+  button:hover { color: #38bdf8; }
 `
 
 const Links = styled.div<{ $cols: number }>`
   display: grid;
-  grid-template-columns: repeat(${(p) => p.$cols}, 92px);
-  gap: 10px;
+  grid-template-columns: repeat(${(p) => p.$cols}, 64px);
+  gap: 14px;
   justify-content: center;
 `
 
@@ -164,17 +174,17 @@ const Tile = styled.a`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 14px 6px 10px;
-  border-radius: 16px;
-  background: rgba(15, 23, 42, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(14px);
+  gap: 7px;
+  padding: 0;
   cursor: pointer;
-  transition: transform 0.15s, background 0.15s, border-color 0.15s;
-  &:hover { transform: translateY(-2px); background: rgba(30, 41, 59, 0.6); border-color: rgba(56, 189, 248, 0.4); }
-  img { width: 28px; height: 28px; border-radius: 7px; }
-  span { font-size: 12px; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: 0.9; }
+  img {
+    width: 48px; height: 48px; padding: 12px; box-sizing: border-box; border-radius: 14px;
+    background: rgba(8, 12, 24, 0.55); border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(14px);
+    transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+  }
+  &:hover img { transform: translateY(-2px); border-color: rgba(56, 189, 248, 0.55); box-shadow: 0 0 18px rgba(56, 189, 248, 0.2); }
+  span { font-size: 11px; max-width: 64px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: 0.8; letter-spacing: 0.01em; }
   .x {
     position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 50%;
     background: rgba(2, 6, 23, 0.7); color: #fca5a5; font-size: 11px; line-height: 18px; text-align: center;
@@ -189,51 +199,54 @@ const AddTile = styled.button`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 14px 6px 10px;
-  min-height: 84px;
-  border-radius: 16px;
-  border: 1px dashed rgba(255, 255, 255, 0.22);
-  background: rgba(15, 23, 42, 0.25);
+  gap: 7px;
+  padding: 0;
+  background: transparent;
+  border: none;
   color: rgba(226, 232, 240, 0.8);
   cursor: pointer;
-  font-size: 22px;
-  &:hover { background: rgba(30, 41, 59, 0.5); border-color: rgba(56, 189, 248, 0.5); }
-  small { font-size: 11px; }
+  font-size: 20px;
+  &::before { content: '+'; display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; border: 1px dashed rgba(255, 255, 255, 0.28); background: rgba(8, 12, 24, 0.35); }
+  &:hover::before { border-color: rgba(56, 189, 248, 0.6); }
+  small { font-size: 11px; opacity: 0.8; }
 `
 
 const Quote = styled.div`
   grid-row: 3;
   align-self: end;
   text-align: center;
-  font-size: 14px;
-  opacity: 0.85;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+  font-family: Georgia, "Times New Roman", "Noto Serif", serif;
+  font-style: italic;
+  font-size: 15px;
+  opacity: 0.8;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
   max-width: 640px;
-  em { font-style: normal; opacity: 0.7; }
+  em { font-style: normal; font-family: Inter, "Segoe UI", system-ui, sans-serif; font-size: 12px; opacity: 0.7; letter-spacing: 0.06em; }
 `
 
 const Corner = styled.div`
   position: fixed;
-  right: 18px;
+  left: 18px;
   bottom: 16px;
   display: flex;
   gap: 8px;
   align-items: center;
+  opacity: 0.55;
+  transition: opacity 0.2s;
+  &:hover { opacity: 1; }
 `
 
 const IconBtn = styled.button`
-  width: 40px; height: 40px;
+  width: 34px; height: 34px;
   border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(15, 23, 42, 0.5);
+  background: rgba(8, 12, 24, 0.5);
   backdrop-filter: blur(14px);
   color: #e2e8f0;
-  font-size: 18px;
+  font-size: 15px;
   cursor: pointer;
-  opacity: 0.75;
-  transition: opacity 0.15s, transform 0.15s;
-  &:hover { opacity: 1; transform: rotate(20deg); }
+  transition: transform 0.15s;
+  &:hover { transform: rotate(20deg); }
 `
 
 const Credit = styled.a`

@@ -45,16 +45,16 @@ const Chip = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 14px 8px 10px;
+  padding: 6px 12px 6px 9px;
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(8, 12, 24, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(14px);
-  font-size: 13px;
+  font-size: 12px;
   cursor: default;
-  .big { font-size: 22px; line-height: 1; }
-  .t { font-size: 18px; font-weight: 600; }
-  .s { opacity: 0.75; font-size: 12px; }
+  .big { font-size: 18px; line-height: 1; }
+  .t { font-size: 15px; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .s { opacity: 0.7; font-size: 11px; letter-spacing: 0.02em; }
 `
 
 export async function geocode(city: string): Promise<{ name: string; latitude: number; longitude: number } | null> {
@@ -128,19 +128,19 @@ export function Weather({ settings }: { settings: WeatherSettings }) {
 const Focus = styled.div`
   position: fixed;
   z-index: 5;  /* above the page grid, which paints later in DOM order */
-  left: 18px;
+  right: 18px;
   bottom: 16px;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 12px;
+  padding: 6px 8px 6px 14px;
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(8, 12, 24, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(14px);
-  font-size: 13px;
+  font-size: 12px;
   font-variant-numeric: tabular-nums;
-  .time { font-size: 18px; font-weight: 600; min-width: 58px; text-align: center; }
+  .time { font-size: 16px; font-weight: 500; min-width: 54px; text-align: center; font-family: "Cascadia Mono", Consolas, "JetBrains Mono", monospace; }
   button {
     border: none; border-radius: 999px; padding: 6px 12px; cursor: pointer; font-size: 12px; font-weight: 600;
     background: rgba(56, 189, 248, 0.2); color: #e0f2fe;
@@ -265,14 +265,14 @@ const Sounds = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px;
+  padding: 5px 10px 5px 6px;
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(8, 12, 24, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(14px);
-  font-size: 13px;
+  font-size: 12px;
   button {
-    border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 14px;
+    border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 12px;
     background: rgba(56, 189, 248, 0.2); color: #e0f2fe;
   }
   button:hover { background: rgba(56, 189, 248, 0.35); }

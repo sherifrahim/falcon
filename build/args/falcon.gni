@@ -10,7 +10,7 @@
 # News and VPN exist at build time (no buildflag guards), so the strip is
 # desktop-only for now. On Android they stay compiled in and get hidden at
 # runtime later (Phase 6 strip).
-if (!is_android) {
+if (target_os != "android") {
   # Leo / AI
   enable_ai_chat = false
   enable_local_ai = false
