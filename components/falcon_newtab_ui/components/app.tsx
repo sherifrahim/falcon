@@ -466,7 +466,7 @@ export function App() {
                 ))}
                 {state.links.length < 40 && (
                   <AddTile onClick={() => setEditing({ index: -1, link: { title: '', url: '' } })} title="Add a shortcut">
-                    +<small>add</small>
+                    <small>add</small>
                   </AddTile>
                 )}
               </Links>

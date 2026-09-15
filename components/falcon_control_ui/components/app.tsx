@@ -8,6 +8,7 @@
 import * as React from 'react'
 import styled from 'styled-components'
 import { sendWithPromise } from 'chrome://resources/js/cr.js'
+import { ShellPreview } from './preview'
 
 export interface Boost {
   id: string
@@ -47,13 +48,43 @@ interface State {
   aria2Version: string
 }
 
-const Page = styled.div`
-  max-width: 760px;
+const Shell = styled.div`
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 32px;
+  max-width: 1080px;
   margin: 0 auto;
   padding: 36px 24px 60px;
+  @media (max-width: 860px) { grid-template-columns: 1fr; }
+`
+
+const Nav = styled.nav`
+  position: sticky;
+  top: 28px;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  .brand { display: flex; align-items: center; gap: 10px; margin: 4px 0 18px; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
+  .brand svg { width: 26px; height: 26px; }
+  .brand small { display: block; font-size: 11px; font-weight: 400; opacity: 0.55; letter-spacing: 0.08em; text-transform: uppercase; }
+  a {
+    display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 10px;
+    color: inherit; text-decoration: none; font-size: 13px; opacity: 0.75;
+    border: 1px solid transparent;
+  }
+  a:hover { opacity: 1; background: var(--f-bg-3, #1e293b); }
+  a.on { opacity: 1; background: rgba(56, 189, 248, 0.12); border-color: rgba(56, 189, 248, 0.3); color: #e0f2fe; }
+  a i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 0.5; }
+  a.on i { background: #38bdf8; opacity: 1; box-shadow: 0 0 8px #38bdf8; }
+  @media (max-width: 860px) { position: static; flex-direction: row; flex-wrap: wrap; }
+`
+
+const Page = styled.div`
+  min-width: 0;
   h1 { font-size: 28px; font-weight: 700; margin: 0 0 4px; display: flex; align-items: center; gap: 12px; }
   h1 span.sub { font-size: 13px; font-weight: 400; opacity: 0.6; }
-  h2 { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.6; margin: 28px 0 6px; }
+  h2 { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.6; margin: 28px 0 6px; scroll-margin-top: 24px; }
   p.hint { font-size: 13px; opacity: 0.7; margin: 0 0 12px; }
 `
 
@@ -116,6 +147,15 @@ const Editor = styled.div`
   .muted { font-size: 12px; opacity: 0.6; }
 `
 
+const PreviewCard = styled.div`
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 18px;
+  align-items: start;
+  @media (max-width: 860px) { grid-template-columns: 1fr; }
+  .cap { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.55; margin: 0 0 8px; }
+`
+
 const Links = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -132,6 +172,17 @@ const Links = styled.div`
 export function App() {
   const [s, setS] = React.useState<State | null>(null)
   const [updateLog, setUpdateLog] = React.useState<string | null>(null)
+  const [active, setActive] = React.useState('look')
+  React.useEffect(() => {
+    const ids = ['look', 'behaviour', 'keys', 'boosts', 'sessions', 'engines', 'about']
+    const onScroll = () => {
+      let best = 'look'
+      for (const id of ids) { const el = document.getElementById(id); if (el && el.getBoundingClientRect().top < 140) best = id }
+      setActive(best)
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
   const [updating, setUpdating] = React.useState(false)
 
   React.useEffect(() => {
@@ -234,9 +285,24 @@ export function App() {
 
   if (!s) return <Page><h1>Falcon</h1><p className="hint">Loading…</p></Page>
 
+  const sections: Array<[string, string]> = [
+    ['look', 'Look & Feel'], ['behaviour', 'Behaviour'], ['keys', 'Shortcuts'], ['boosts', 'Boosts'],
+    ...(s.sessionsAvailable ? [['sessions', 'Sessions'] as [string, string]] : []),
+    ['engines', 'Engines'], ['about', 'About'],
+  ]
   return (
+    <Shell>
+      <Nav>
+        <div className="brand">
+          <svg viewBox="0 0 24 24" fill="#38bdf8"><path d="M19.04 15.17 L18.36 15.80 L17.80 15.47 L17.46 14.39 Q17.13 12.66 15.27 12.29 Q12.20 11.57 8.03 11.28 L7.42 12.25 Q11.38 14.45 14.75 15.26 Q16.57 15.78 17.69 15.28 Z M14.47 12.23 Q12.73 8.61 12.41 2.29 L10.87 3.66 L9.96 2.25 L9.25 4.17 L7.75 3.09 Q10.09 7.53 12.55 11.51 Z M10.86 13.98 Q6.60 15.70 1.68 16.26 L2.42 14.83 L3.24 15.40 Q6.68 14.25 9.82 13.02 Z M8.03 11.28 L3.51 8.75 L3.88 10.33 L2.47 11.24 L3.83 11.63 L7.42 12.25 Z"/></svg>
+          <div>Falcon<small>control panel</small></div>
+        </div>
+        {sections.map(([id, label]) => (
+          <a key={id} href={'#' + id} className={active === id ? 'on' : ''} onClick={(e) => { e.preventDefault(); setActive(id); document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }}><i />{label}</a>
+        ))}
+      </Nav>
     <Page>
-      <h1>Falcon <span className="sub">control panel · falcon://falcon</span></h1>
+      <h1>Falcon <span className="sub">falcon://falcon</span></h1>
       <p className="hint">Everything Falcon adds on top of the browser, in one place. Brave/Chromium settings stay at <a href="chrome://settings" style={{ color: '#38bdf8' }}>settings</a>.</p>
 
       <Links>
@@ -246,7 +312,8 @@ export function App() {
         <a href="chrome://settings/appearance"><b>Appearance</b><span>Themes, fonts, toolbar, tabs</span></a>
       </Links>
 
-      <h2>Look</h2>
+      <h2 id="look">Look &amp; Feel</h2>
+      <PreviewCard>
       <Card>
         <Row as="div">
           <span>Colour scheme<span className="sub">Slate/sky palette · Black is a pitch-black (OLED) dark variant</span></span>
@@ -277,8 +344,14 @@ export function App() {
         </Row>
         {bool('roundedCorners', 'Rounded web content', 'Page area with rounded corners')}
       </Card>
+      <div>
+        <p className="cap">Live preview</p>
+        <ShellPreview shellMode={s.shellMode} verticalTabs={s.verticalTabs} collapsed={s.verticalTabsCollapsed} sidebar={s.sidebarShow} black={s.blackTheme} light={s.colorScheme === 1} rounded={s.roundedCorners} />
+        <p className="hint" style={{ marginTop: 10, fontSize: 12 }}>Changes apply to open windows immediately.</p>
+      </div>
+      </PreviewCard>
 
-      <h2>Behaviour</h2>
+      <h2 id="behaviour">Behaviour</h2>
       <Card>
         <Row as="div">
           <span>Quick commands<span className="sub">Ctrl+Space (or type <code>:&gt;</code> in the address bar): switch tabs, run any command, open bookmarks, save/restore sessions, Falcon pages</span></span>
@@ -291,7 +364,7 @@ export function App() {
         {bool('engineEnabled', 'Falcon download engine', 'Take over downloads from pages (off = plain Chromium downloads)')}
       </Card>
 
-      <h2>Keys</h2>
+      <h2 id="keys">Shortcuts</h2>
       <Card>
         {([
           ['Ctrl + Space', 'Quick commands (tabs, commands, bookmarks, sessions, Falcon pages)'],
@@ -344,7 +417,7 @@ export function App() {
 
       {s.sessionsAvailable && (
         <>
-          <h2>Sessions</h2>
+          <h2 id="sessions">Sessions</h2>
           <p className="hint">Save every open window and tab under a name; restore it later (opens in new windows). Also in Quick commands (Ctrl+Space).</p>
           <Card>
             <Row as="div">
@@ -364,7 +437,7 @@ export function App() {
         </>
       )}
 
-      <h2>Engines</h2>
+      <h2 id="engines">Engines</h2>
       <Card>
         <Row as="div">
           <span>yt-dlp<span className="sub">Site extractors change often — update when YouTube breaks. Version {s.ytDlpVersion || '?'}</span></span>
@@ -374,10 +447,11 @@ export function App() {
         <Row as="div"><span>aria2<span className="sub">Download engine</span></span><span style={{ opacity: 0.7 }}>{s.aria2Version}</span></Row>
       </Card>
 
-      <h2>About</h2>
+      <h2 id="about">About</h2>
       <Card>
         <Row as="div"><span>Falcon</span><span style={{ opacity: 0.7 }}>Brave {s.braveVersion} · Chromium {s.chromiumVersion}</span></Row>
       </Card>
     </Page>
+    </Shell>
   )
 }

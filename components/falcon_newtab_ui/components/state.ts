@@ -75,7 +75,8 @@ export function withDefaults(stored: Partial<NtpState> | null | undefined): NtpS
   const s = { ...DEFAULT_STATE, ...(stored ?? {}) }
   s.bg = { ...DEFAULT_STATE.bg, ...((stored && stored.bg) || {}) }
   s.weather = { ...DEFAULT_STATE.weather, ...((stored && stored.weather) || {}) }
-  s.links = Array.isArray(s.links) ? s.links.filter((l) => l && typeof l.url === 'string') : []
+  // Drop error pages that older builds seeded from history ('429 Too Many Requests').
+  s.links = Array.isArray(s.links) ? s.links.filter((l) => l && typeof l.url === 'string' && !/^\d{3} /.test(String(l.title || ''))) : []
   return s
 }
 
