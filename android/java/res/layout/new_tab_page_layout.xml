@@ -97,6 +97,9 @@
         android:orientation="vertical"
         android:visibility="gone">
 
+            <!-- Falcon: space header + ambient clock (docs/design/android/mock-v6.html). -->
+            <include layout="@layout/falcon_ntp_header" />
+
             <!-- Search box -->
             <ViewStub
                 android:id="@+id/search_box_stub"
@@ -150,6 +153,9 @@
                 android:layout_marginLeft="@dimen/mvt_container_lateral_margin"
                 android:layout_marginRight="@dimen/mvt_container_lateral_margin"
                 android:layout="@layout/mv_tiles_layout" />
+
+            <!-- Falcon: the space's open tabs. -->
+            <include layout="@layout/falcon_ntp_today" />
 
             <!-- Spacer for when there is no search provider logo. -->
             <View

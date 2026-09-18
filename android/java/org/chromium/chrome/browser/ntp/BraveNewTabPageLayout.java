@@ -251,6 +251,9 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
                     .registerOnSharedPreferenceChangeListener(mPreferenceListener);
         }
         setNtpViews();
+        if (mActivity != null) {
+            org.chromium.chrome.browser.falcon.ntp.FalconNtp.bind(this, mActivity, mTab);
+        }
 
         // Show recent tabs dialog for variants B, C, and D if NTP was shown after inactivity
         maybeShowRecentTabsDialog();

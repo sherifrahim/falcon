@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--* Copyright (c) 2026 The Falcon Authors. All rights reserved.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<!-- Space home header (mock v6 screen 1): space name, meta, the ambient clock. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/falcon_ntp_header"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="24dp"
+    android:paddingEnd="24dp"
+    android:paddingTop="28dp"
+    android:paddingBottom="8dp">
+
+    <TextView
+        android:id="@+id/falcon_space_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="sans-serif-black"
+        android:includeFontPadding="false"
+        android:letterSpacing="-0.04"
+        android:text="@string/falcon_space_personal"
+        android:textColor="@color/falcon_ink"
+        android:textSize="44sp" />
+
+    <TextView
+        android:id="@+id/falcon_space_meta"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:textColor="@color/falcon_ink_2"
+        android:textSize="12sp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:gravity="bottom"
+        android:orientation="horizontal">
+
+        <TextClock
+            android:id="@+id/falcon_clock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-medium"
+            android:format12Hour="h:mm"
+            android:format24Hour="HH:mm"
+            android:includeFontPadding="false"
+            android:letterSpacing="-0.05"
+            android:textColor="@color/falcon_ink"
+            android:textSize="56sp" />
+
+        <TextView
+            android:id="@+id/falcon_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="8dp"
+            android:textColor="@color/falcon_ink_2"
+            android:textSize="13sp" />
+    </LinearLayout>
+</LinearLayout>

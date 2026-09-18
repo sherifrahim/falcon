@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--* Copyright (c) 2026 The Falcon Authors. All rights reserved.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="46dp"
+    android:background="?attr/selectableItemBackground"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="10dp"
+    android:paddingEnd="10dp">
+
+    <TextView
+        android:id="@+id/falcon_tab_row_icon"
+        android:layout_width="26dp"
+        android:layout_height="26dp"
+        android:background="@drawable/falcon_bg_pill"
+        android:fontFamily="sans-serif-black"
+        android:gravity="center"
+        android:textColor="@color/falcon_ink"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/falcon_tab_row_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:fontFamily="sans-serif-medium"
+        android:maxLines="1"
+        android:textColor="@color/falcon_ink"
+        android:textSize="15sp" />
+
+    <TextView
+        android:id="@+id/falcon_tab_row_age"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:fontFamily="monospace"
+        android:textColor="@color/falcon_ink_3"
+        android:textSize="11sp" />
+</LinearLayout>

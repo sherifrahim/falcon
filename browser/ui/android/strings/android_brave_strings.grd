@@ -1710,6 +1710,15 @@ Are you sure you want to do this?
       <message name="IDS_FALCON_CLEAR_FINISHED" desc="Menu">
         Clear finished
       </message>
+      <message name="IDS_FALCON_SPACE_PERSONAL" desc="Default space name">
+        Personal
+      </message>
+      <message name="IDS_FALCON_TODAY" desc="Open tabs section">
+        Today
+      </message>
+      <message name="IDS_FALCON_ALL_TABS" desc="Opens the tab switcher">
+        All tabs
+      </message>
       <message name="IDS_FALCON_SETTINGS" desc="Falcon settings title">
         Falcon
       </message>
