@@ -74,7 +74,8 @@ export const Box = styled.div`
       font-size: 11px;
       letter-spacing: 0.14em;
       text-transform: uppercase;
-      svg { width: 22px; height: 22px; }
+      /* reset.css paints svg fills; these are 1.5 px stroke glyphs */
+      svg { width: 22px; height: 22px; fill: none; stroke: currentColor; }
     }
     h2 {
       margin: 14px 0 8px;
