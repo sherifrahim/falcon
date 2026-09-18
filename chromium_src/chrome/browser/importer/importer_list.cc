@@ -132,13 +132,37 @@ void DetectChromeProfiles(
       user_data_importer::TYPE_OPERA);
 #endif
 
-#if BUILDFLAG(IS_BRAVE_ORIGIN_BRANDED)
-  AddChromeToProfiles(
-      profiles,
-      GetChromeSourceProfiles(GetBraveUserDataFolder().Append(
-          base::FilePath::StringType(FILE_PATH_LITERAL("Local State")))),
-      GetBraveUserDataFolder(), kBraveBrowser, user_data_importer::TYPE_BRAVE);
-#endif
+  // Falcon: import from any Brave channel installed next to us (the
+  // "Brave" importer type reads Chromium-layout profiles, extensions
+  // included). Windows / macOS / Linux folder names.
+  struct BraveChannel {
+    const char* dir_suffix;
+    const char* name;
+  };
+  static constexpr BraveChannel kBraveChannels[] = {
+      {"", "Brave"},
+      {"-Beta", "Brave Beta"},
+      {"-Nightly", "Brave Nightly"},
+      {"-Dev", "Brave Dev"},
+  };
+  for (const BraveChannel& channel : kBraveChannels) {
+    base::FilePath folder = GetBraveUserDataFolder();
+    if (*channel.dir_suffix) {
+      // .../BraveSoftware/Brave-Browser/User Data ->
+      // .../BraveSoftware/Brave-Browser<suffix>/User Data
+      const base::FilePath user_data = folder.BaseName();
+      const base::FilePath product = folder.DirName();
+      folder = product.DirName()
+                   .Append(product.BaseName().InsertBeforeExtensionASCII(
+                       channel.dir_suffix))
+                   .Append(user_data);
+    }
+    AddChromeToProfiles(
+        profiles,
+        GetChromeSourceProfiles(folder.Append(
+            base::FilePath::StringType(FILE_PATH_LITERAL("Local State")))),
+        folder, channel.name, user_data_importer::TYPE_BRAVE);
+  }
 }
 
 }  // namespace
