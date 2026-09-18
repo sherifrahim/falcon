@@ -6,7 +6,9 @@
 # Both jobs share one concurrency group so they never build at the same time
 # (one laptop). Each job works inside its existing checkout; nothing is cloned.
 # The Windows runner has only Windows PowerShell 5.1 (no pwsh) and a Restricted
-# execution policy, hence the explicit shell template.
+# execution policy, hence the explicit shell template. pnpm comes via corepack:
+# global npm installs made from inside the Claude desktop app live in its MSIX
+# sandbox (AppData virtualisation) and do not exist for the runner.
 name: Falcon release
 
 on:
@@ -47,29 +49,16 @@ jobs:
     outputs:
       version: ${{ steps.ver.outputs.version }}
     steps:
-      - name: Runner environment (diagnostic)
-        run: |
-          whoami
-          "PATHEXT=$env:PATHEXT"
-          "PSVersion=$($PSVersionTable.PSVersion)"
-          "Path=$env:Path"
-          Test-Path 'C:\Users\sheri\AppData\Roaming\npm\pnpm.cmd'
-          Get-ChildItem 'C:\Users\sheri\AppData\Roaming\npm' | Select-Object -First 5 | Format-Table Name,Length
-          $env:Path = 'C:\Users\sheri\AppData\Roaming\npm;C:\Program Files\nodejs;' + $env:Path
-          "Path2=$env:Path"
-          Get-Command pnpm, node, git -ErrorAction SilentlyContinue | Format-Table Name,Source
-          cmd /c where pnpm
-          cmd /c "pnpm --version"
-          & 'C:\Users\sheri\AppData\Roaming\npm\pnpm.cmd' --version
       - name: Sync brave-core to the requested ref
         run: |
-          # The runner session (Task Scheduler) cannot see the user PATH (pnpm, node, gh): name the dirs.
+          # The runner session sees the real user profile, where nothing npm-global installed from inside
+          # the Claude desktop app exists (MSIX virtualises AppData): use Node's corepack for pnpm.
           $env:Path = 'C:\Users\sheri\AppData\Roaming\npm;C:\Program Files\nodejs;C:\Program Files\GitHub CLI;' + $env:Path + ';' + [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
           if (git status --porcelain) { throw "Working tree at D:\falcon\bb\src\brave is not clean; commit or stash before releasing." }
           git fetch --tags origin
           git checkout --detach ${{ env.FALCON_REF }}
           git log --oneline -1
-          pnpm install --frozen-lockfile
+          corepack pnpm@12.4.1 install --frozen-lockfile
 
       - name: Read Falcon version
         id: ver
