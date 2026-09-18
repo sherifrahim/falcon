@@ -47,6 +47,20 @@ jobs:
     outputs:
       version: ${{ steps.ver.outputs.version }}
     steps:
+      - name: Runner environment (diagnostic)
+        run: |
+          whoami
+          "PATHEXT=$env:PATHEXT"
+          "PSVersion=$($PSVersionTable.PSVersion)"
+          "Path=$env:Path"
+          Test-Path 'C:\Users\sheri\AppData\Roaming\npm\pnpm.cmd'
+          Get-ChildItem 'C:\Users\sheri\AppData\Roaming\npm' | Select-Object -First 5 | Format-Table Name,Length
+          $env:Path = 'C:\Users\sheri\AppData\Roaming\npm;C:\Program Files\nodejs;' + $env:Path
+          "Path2=$env:Path"
+          Get-Command pnpm, node, git -ErrorAction SilentlyContinue | Format-Table Name,Source
+          cmd /c where pnpm
+          cmd /c "pnpm --version"
+          & 'C:\Users\sheri\AppData\Roaming\npm\pnpm.cmd' --version
       - name: Sync brave-core to the requested ref
         run: |
           # The runner session (Task Scheduler) cannot see the user PATH (pnpm, node, gh): name the dirs.
