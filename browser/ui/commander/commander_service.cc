@@ -47,6 +47,7 @@
 namespace commander {
 namespace {
 constexpr size_t kMaxResults = 8;
+constexpr size_t kMaxResultsExternal = 24;
 CommandItemModel FromCommand(const std::unique_ptr<CommandItem>& item) {
   CommandItemModel model(item->title, item->matched_ranges, item->annotation,
                          item->score);
@@ -274,9 +275,13 @@ void CommanderService::UpdateCommands() {
     }
   }
 
-  ranker_.Rank(items, kMaxResults);
-  if (items.size() > kMaxResults) {
-    items.resize(kMaxResults);
+  // The omnibox dropdown only has room for a few rows; the Falcon command
+  // deck scrolls, so it gets a larger, grouped result set.
+  const size_t max_results =
+      external_frontend_ ? kMaxResultsExternal : kMaxResults;
+  ranker_.Rank(items, max_results);
+  if (items.size() > max_results) {
+    items.resize(max_results);
   }
   items_ = std::move(items);
 

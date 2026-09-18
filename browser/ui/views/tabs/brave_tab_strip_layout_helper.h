@@ -32,6 +32,21 @@ namespace tabs {
 
 inline constexpr int kVerticalTabHeight = 32;
 inline constexpr int kVerticalTabMinWidth = kVerticalTabHeight;
+
+// Falcon dock: unpinned vertical tabs become two-line cards (title + site)
+// once the rail is wider than kVerticalTabCardMinWidth. Pinned tabs and the
+// collapsed rail keep the compact kVerticalTabHeight.
+inline constexpr int kVerticalTabCardHeight = 46;
+inline constexpr int kVerticalTabCardMinWidth = 140;
+inline constexpr int kVerticalTabCardRadius = 10;
+bool DockCardsEnabled();
+void SetDockCardsEnabled(bool enabled);
+// Height of an unpinned vertical tab laid out in a rail |available_width|
+// wide (nullopt = the tab's own preferred width, i.e. expanded).
+int GetVerticalTabHeight(std::optional<int> available_width);
+// True when |tab| is currently laid out as a dock card (vertical, unpinned,
+// card height).
+bool IsDockCardTab(const Tab& tab);
 inline constexpr int kVerticalTabsSpacing = 4;
 inline constexpr int kMarginForVerticalTabContainers = kVerticalTabsSpacing;
 inline constexpr int kPinnedUnpinnedSeparatorHeight = 1;

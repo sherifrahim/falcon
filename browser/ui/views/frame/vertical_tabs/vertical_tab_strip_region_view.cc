@@ -31,6 +31,8 @@
 #include "brave/browser/ui/views/tabs/brave_new_tab_button.h"
 #include "brave/browser/ui/views/tabs/brave_tab_container.h"
 #include "brave/browser/ui/views/tabs/brave_tab_strip_layout_helper.h"
+#include "brave/browser/ui/views/workspaces/workspaces_bubble_controller.h"
+#include "brave/browser/workspaces/features.h"
 #include "brave/components/constants/pref_names.h"
 #include "brave/components/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/profile.h"
@@ -65,6 +67,9 @@
 #include "ui/views/accessibility/accessibility_paint_checks.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/controls/highlight_path_generator.h"
+#include "base/strings/string_number_conversions.h"
+#include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/resize_area.h"
 #include "ui/views/layout/box_layout.h"
@@ -280,7 +285,71 @@ TabStripPlacementCoordinator* GetPlacementCoordinator(
       ->tab_strip_placement_coordinator();
 }
 
+constexpr int kDockHeaderHeight = 30;
+
 }  // namespace
+
+// Falcon dock header (Arc-style): a "Spaces" opener for the saved-session
+// bubble on the left and the live tab count on the right. Only laid out when
+// the rail is expanded wide enough for tab cards.
+class FalconDockHeader : public views::View {
+  METADATA_HEADER(FalconDockHeader, views::View)
+ public:
+  explicit FalconDockHeader(base::RepeatingClosure on_spaces) {
+    SetLayoutManager(std::make_unique<views::FlexLayout>())
+        ->SetOrientation(views::LayoutOrientation::kHorizontal)
+        .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
+        .SetInteriorMargin(gfx::Insets::VH(0, 6));
+
+    spaces_ = AddChildView(
+        std::make_unique<views::LabelButton>(std::move(on_spaces), u"Spaces"));
+    spaces_->SetImageModel(
+        views::Button::STATE_NORMAL,
+        ui::ImageModel::FromVectorIcon(
+            kLeoSpacesIcon, kColorBraveVerticalTabNTBIconColor, 16));
+    spaces_->SetImageLabelSpacing(8);
+    spaces_->SetEnabledTextColors(kColorBraveVerticalTabNTBTextColor);
+    spaces_->SetBorder(views::CreateEmptyBorder(gfx::Insets::VH(4, 6)));
+    spaces_->SetTooltipText(u"Spaces: save or restore a set of windows");
+    spaces_->GetViewAccessibility().SetName(u"Spaces");
+    spaces_->SetProperty(
+        views::kFlexBehaviorKey,
+        views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
+                                 views::MaximumFlexSizeRule::kPreferred));
+
+    auto* spacer = AddChildView(std::make_unique<views::View>());
+    spacer->SetProperty(
+        views::kFlexBehaviorKey,
+        views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+                                 views::MaximumFlexSizeRule::kUnbounded));
+
+    count_ = AddChildView(std::make_unique<views::Label>());
+    count_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
+    const auto count_font = count_->font_list();
+    count_->SetFontList(
+        count_font.DeriveWithSizeDelta(11 - count_font.GetFontSize()));
+    count_->SetEnabledColor(kColorBraveVerticalTabNTBTextColor);
+    count_->SetProperty(views::kMarginsKey, gfx::Insets::TLBR(0, 0, 0, 6));
+    count_->SetProperty(
+        views::kFlexBehaviorKey,
+        views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+                                 views::MaximumFlexSizeRule::kPreferred));
+  }
+  ~FalconDockHeader() override = default;
+
+  void SetTabCount(int count) {
+    count_->SetText(base::NumberToString16(count) +
+                    (count == 1 ? u" tab" : u" tabs"));
+  }
+  views::View* spaces_button() { return spaces_; }
+
+ private:
+  raw_ptr<views::LabelButton> spaces_ = nullptr;
+  raw_ptr<views::Label> count_ = nullptr;
+};
+
+BEGIN_METADATA(FalconDockHeader)
+END_METADATA
 
 BraveVerticalTabStripRegionView::BraveVerticalTabStripRegionView(
     BrowserView* browser_view,
@@ -309,6 +378,13 @@ BraveVerticalTabStripRegionView::BraveVerticalTabStripRegionView(
 
   // The default state is kExpanded, so reset animation state to 1.0.
   width_animation_.Reset(1.0);
+
+  if (base::FeatureList::IsEnabled(features::kWorkspaces)) {
+    dock_header_ = AddChildView(std::make_unique<FalconDockHeader>(
+        base::BindRepeating(&BraveVerticalTabStripRegionView::OnSpacesPressed,
+                            base::Unretained(this))));
+    dock_header_->SetVisible(false);
+  }
 
   region_view_container_ = AddChildView(std::make_unique<views::View>());
   region_view_container_->SetLayoutManager(
@@ -683,7 +759,21 @@ void BraveVerticalTabStripRegionView::Layout(PassKey) {
     return;
   }
 
-  const auto contents_bounds = GetContentsBounds();
+  auto contents_bounds = GetContentsBounds();
+
+  // Falcon dock header: only in the expanded rail (tab-card width).
+  if (dock_header_) {
+    const bool show_header =
+        state_ != State::kCollapsed && tabs::DockCardsEnabled() &&
+        contents_bounds.width() >= tabs::kVerticalTabCardMinWidth;
+    dock_header_->SetVisible(show_header);
+    if (show_header) {
+      dock_header_->SetTabCount(browser_->tab_strip_model()->count());
+      dock_header_->SetBounds(contents_bounds.x(), contents_bounds.y(),
+                              contents_bounds.width(), kDockHeaderHeight);
+      contents_bounds.Inset(gfx::Insets::TLBR(kDockHeaderHeight, 0, 0, 0));
+    }
+  }
 
   constexpr int kNewTabButtonHeight = tabs::kVerticalTabHeight;
   const int contents_view_max_height =
@@ -723,6 +813,14 @@ void BraveVerticalTabStripRegionView::Layout(PassKey) {
   resize_area_->SetBounds(
       *vertical_tab_on_right_ ? 0 : width() - kResizeAreaWidth,
       contents_bounds.y(), kResizeAreaWidth, contents_bounds.height());
+}
+
+void BraveVerticalTabStripRegionView::OnSpacesPressed() {
+  auto* controller = browser_->GetFeatures().workspaces_bubble_controller();
+  if (controller && dock_header_) {
+    controller->ShowBubble(dock_header_->spaces_button(),
+                           browser_->GetProfile());
+  }
 }
 
 void BraveVerticalTabStripRegionView::OnShowVerticalTabsPrefChanged() {

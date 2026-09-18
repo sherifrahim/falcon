@@ -167,6 +167,20 @@ class BraveTab : public Tab
 
   bool IsAtMinWidthForVerticalTabStrip() const;
 
+  // Falcon dock cards: unpinned vertical tabs in the expanded rail are two
+  // lines — title over site. Tab::Layout centres the title in the full tab
+  // height; these re-stack it with |subtitle_| (and undo that when the tab is
+  // compact again).
+  void LayoutDockCard();
+  void UpdateSubtitle();
+  void UpdateSubtitleColor();
+  raw_ptr<views::Label> subtitle_ = nullptr;
+
+  // gfx::AnimationDelegate (Tab drives the title slide; re-stack after it):
+  void AnimationEnded(const gfx::Animation* animation) override;
+  void AnimationProgressed(const gfx::Animation* animation) override;
+  void OnThemeChanged() override;
+
   // Initializes the tree toggle button.
   void InitTreeToggleButton();
 

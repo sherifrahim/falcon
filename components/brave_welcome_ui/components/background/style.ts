@@ -5,114 +5,46 @@
 
 import styled from 'styled-components'
 
-import hillBgUrl from 'gen/brave/components/brave_welcome_ui/hill.webp'
-import pyramidBgUrl from 'gen/brave/components/brave_welcome_ui/pyramid.webp'
-
 export const Box = styled.div`
-  .content-box {
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    z-index: 999;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(900px 520px at 50% -10%, rgba(56, 189, 248, 0.16), transparent 70%),
+    linear-gradient(180deg, #0b1220 0%, #070b16 100%);
+  color: #e2e8f0;
 
+  .glow {
+    position: absolute;
+    left: 50%;
+    top: -260px;
+    width: 1100px;
+    height: 620px;
+    transform: translateX(-50%);
+    background: radial-gradient(closest-side, rgba(56, 189, 248, 0.10), transparent);
+    filter: blur(30px);
+    pointer-events: none;
+  }
+
+  .stars {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    i {
+      position: absolute;
+      display: block;
+      border-radius: 50%;
+      background: #e2e8f0;
+    }
+  }
+
+  .content-box {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: auto;
   }
-
-  .background-img {
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-    object-fit: cover;
-    opacity: 0;
-    transition: opacity .2s ease-in;
-
-    &.is-visible {
-      opacity: 1;
-    }
-  }
-
-  .hills-container {
-    position: fixed;
-    width: 100vw;
-    height: 100%;
-    z-index: 2;
-    opacity: 0;
-  }
-
-  .stars-container {
-    position: fixed;
-    width: 100vw;
-    height: 100%;
-    z-index: 50;
-    opacity: 0;
-
-    svg {
-      width: 100%;
-      height: auto;
-      position: absolute;
-      transform-origin: center;
-    }
-
-    .stars01 {
-      bottom: 0;
-      transform: scale(1.14);
-      filter: blur(3px);
-    }
-
-    .stars02 {
-      top: 10%;
-    }
-
-    .stars03 {
-      top: 15%;
-    }
-
-    .stars04 {
-      top: 30%;
-      transform: scale(0.8);
-      opacity: 0;
-    }
-  }
-
-  .hills-base {
-    width: 100%;
-    height: 100%;
-    background: url(${hillBgUrl}) no-repeat;
-    background-size: contain;
-    background-position-y: bottom;
-    position: absolute;
-    top: 0;
-
-    &.hills01 {
-      z-index: 4;
-      transform-origin: bottom;
-      background-position-x: -320px;
-      transform: scale(1.5);
-    }
-
-    &.hills02 {
-      z-index: 3;
-      transform-origin: bottom right;
-    }
-
-    &.hills03 {
-      z-index: 2;
-      transform-origin: bottom right;
-    }
-  }
-
-  .pyramid {
-    width: 100%;
-    height: 100%;
-    background: url(${pyramidBgUrl}) no-repeat;
-    background-size: 20%;
-    background-position: bottom right;
-    position: absolute;
-    top: 0;
-    z-index: 1;
-    transform: translateX(20%);
-   }
 `

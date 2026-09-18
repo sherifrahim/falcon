@@ -19,7 +19,7 @@ import { DownloadRow, ScanResult } from './download_row'
 import { Grabber } from './grabber'
 import { MediaJob, MediaPicker, MediaRow, SniffedList, SniffedTab } from './media_panel'
 import { SettingsDrawer } from './settings_drawer'
-import { Layout, Rail, Side, Telemetry, View } from './mission'
+import { Inspector, Layout, Rail, Side, Telemetry, View, useInspector } from './mission'
 
 const MEDIA_AVAILABLE = loadTimeData.getBoolean('mediaAvailable')
 // Side-panel layout: narrower paddings, no page title, wrapped toolbar.
@@ -191,6 +191,7 @@ export function App() {
   const [batchText, setBatchText] = React.useState('')
   const [error, setError] = React.useState<string | null>(null)
   const [openGid, setOpenGid] = React.useState<string | null>(null)
+  const [inspector, toggleInspector] = useInspector()
   const [settingsOpen, setSettingsOpen] = React.useState(
     () => location.hash === '#settings',
   )
@@ -411,7 +412,7 @@ export function App() {
       {settingsOpen && (
         <SettingsDrawer onClose={() => { setSettingsOpen(false); if (location.hash) window.history.replaceState(null, '', ' ') }} />
       )}
-      <Layout style={PANEL ? { display: 'block' } : undefined}>
+      <Layout $side={!PANEL && inspector} style={PANEL ? { display: 'block' } : undefined}>
       {!PANEL && <Rail view={railView} counts={{ all: merged.length + mediaJobs.length, ...counts, torrents: merged.filter((d) => !!d.bittorrent).length }} onView={onRailView} />}
       <div style={{ minWidth: 0 }}>
       <Header>
@@ -426,6 +427,7 @@ export function App() {
             &nbsp; · {stat.numActive} active{+stat.numWaiting > 0 ? ` · ${stat.numWaiting} queued` : ''}
           </Stat>
         )}
+        {!PANEL && <Inspector on={inspector} onToggle={toggleInspector} />}
         <Button $small={PANEL} onClick={() => setSettingsOpen(true)} title="Engine settings">⚙ Settings</Button>
         {PANEL && <Button $small onClick={() => window.open('chrome://downloader', '_blank')} title="Open as a full page">⤢</Button>}
       </Header>
@@ -611,7 +613,7 @@ export function App() {
         <Telemetry speeds={netHistory} listed={visible.length + visibleMedia.length} dir={loadTimeData.getString('downloadDir')} categories={loadTimeData.getBoolean('categoriesEnabled')} />
       )}
       </div>
-      {!PANEL && (
+      {!PANEL && inspector && (
         <Side connected={connected} down={stat ? +stat.downloadSpeed : 0} up={stat ? +stat.uploadSpeed : 0}
           active={stat ? +stat.numActive : 0} queued={stat ? +stat.numWaiting : 0}
           sessionBytes={sessionBytes.current} totalFiles={stats?.totalFiles ?? 0} totalBytes={stats?.totalBytes ?? 0}

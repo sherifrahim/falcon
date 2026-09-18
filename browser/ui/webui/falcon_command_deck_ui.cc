@@ -59,6 +59,9 @@ class FalconCommandDeckHandler
     web_ui()->RegisterMessageCallback(
         "deck.close", base::BindRepeating(&FalconCommandDeckHandler::Close,
                                           base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "deck.hidden", base::BindRepeating(&FalconCommandDeckHandler::Hidden,
+                                           base::Unretained(this)));
   }
 
   void OnJavascriptDisallowed() override { Detach(); }
@@ -71,20 +74,27 @@ class FalconCommandDeckHandler
     attached_ = nullptr;
   }
 
-  // args: [] — page mounted: take over the commander, show the bubble.
+  // args: [] — page mounted or re-shown (the contents are cached between
+  // opens): take over the commander afresh and ask the bubble to show.
   void Ready(const base::ListValue& args) {
     AllowJavascript();
-    auto* s = service();
-    if (s && !observation_.IsObserving()) {
+    Detach();
+    if (auto* s = service()) {
       attached_ = s;
       s->SetExternalFrontend(true);
       observation_.Observe(s);  // AddObserver fires OnCommanderUpdated once
-      s->UpdateText(std::u16string(commander::kCommandPrefix) + u" ");
+      // force: the empty query equals the freshly-reset last search, and we
+      // want the default set (open tabs, New window, …) right away.
+      s->ForceUpdateText(std::u16string(commander::kCommandPrefix) + u" ");
     }
     if (auto embedder = controller_->embedder()) {
       embedder->ShowUI();
     }
   }
+
+  // args: [] — bubble went away (Esc handled by Views, click outside, tab
+  // switch): give the commander back to the omnibox.
+  void Hidden(const base::ListValue& args) { Detach(); }
 
   // args: [text]
   void Query(const base::ListValue& args) {

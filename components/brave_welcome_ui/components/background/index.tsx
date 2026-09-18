@@ -3,21 +3,15 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // you can obtain one at https://mozilla.org/MPL/2.0/.
 
+// Falcon: the welcome backdrop is the cockpit surface (deep navy, one soft
+// sky glow, a faint star field) instead of Brave's animated hills. The
+// interface is unchanged so the import steps keep working: `onLoad` fires
+// once we are mounted and `scenes` are no-ops.
+
 import * as React from 'react'
 import * as S from './style'
-import classnames from '$web-common/classnames'
-
 import WebAnimationPlayer from '../../api/web_animation_player'
 import DataContext from '../../state/context'
-import { shouldPlayAnimations } from '../../state/hooks'
-
-import Stars01 from '../svg/stars01'
-import Stars02 from '../svg/stars02'
-import Stars03 from '../svg/stars03'
-import Stars04 from '../svg/stars04'
-import fullCompositeBgUrl
-  from 'gen/brave/components/brave_welcome_ui/background@2x.webp'
-import skyBgUrl from 'gen/brave/components/brave_welcome_ui/sky.webp'
 
 interface BackgroundProps {
   children?: JSX.Element
@@ -25,119 +19,36 @@ interface BackgroundProps {
   onLoad?: () => void
 }
 
+// Deterministic star positions so the field does not shimmer between renders.
+const STARS = Array.from({ length: 70 }, (_, i) => {
+  const a = Math.sin(i * 12.9898) * 43758.5453
+  const b = Math.sin(i * 78.233) * 43758.5453
+  const x = a - Math.floor(a)
+  const y = b - Math.floor(b)
+  return { x: x * 100, y: y * 62, s: 1 + ((i * 7) % 3) * 0.5, o: 0.25 + ((i * 13) % 5) * 0.12 }
+})
+
 function Background (props: BackgroundProps) {
-  const ref = React.useRef<HTMLDivElement>(null)
   const { setScenes } = React.useContext(DataContext)
-  const [hasLoaded, setHasLoaded] = React.useState(false)
-  const isReadyForAnimation = hasLoaded && !props.static
-  let shouldShowStars = isReadyForAnimation
-  // <if expr="is_brave_origin_branded">
-  shouldShowStars = false
-  // </if>
 
   React.useEffect(() => {
-    if (!ref.current) return
-    if (!isReadyForAnimation) return
-
-    const s1 = new WebAnimationPlayer()
-    const s2 = new WebAnimationPlayer()
-
-    const hill01 = ref.current.querySelector('.hills01')
-    const hill02 = ref.current.querySelector('.hills02')
-    const hills03 = ref.current.querySelector('.hills03')
-    const pyramid = ref.current.querySelector('.pyramid')
-
-    s1.to(hill01, { transform: 'translateX(-650px) scale(2.5)', filter: 'blur(3px)' })
-      .to(hill02, { transform: 'scale(1.5)' })
-    if (shouldShowStars) {
-      const stars01 = ref.current.querySelector('.stars01')
-      const stars02 = ref.current.querySelector('.stars02')
-      const stars03 = ref.current.querySelector('.stars03')
-      const stars04 = ref.current.querySelector('.stars04')
-
-      s1.to(stars01, { transform: 'scale(2.5)' })
-        .to(stars02, { transform: 'scale(3.5)', filter: 'blur(3px)' })
-        .to(stars03, { transform: 'scale(2.5)' })
-        .to(stars04, { opacity: 1, transform: 'scale(1)' })
-    }
-
-    s2.to(hill01, { transform: 'translateX(-120%)' })
-      .to(hill02, { transform: 'translateX(-500px) scale(4.0)', filter: 'blur(3px)' })
-      .to(hills03, { transform: 'scale(2.5)' })
-      .to(pyramid, { transform: 'translateX(0px)', backgroundSize: '40%', filter: 'blur(3px)' })
-    if (shouldShowStars) {
-      const stars02 = ref.current.querySelector('.stars02')
-      const stars03 = ref.current.querySelector('.stars03')
-      const stars04 = ref.current.querySelector('.stars04')
-
-      s2.to(stars02, { transform: 'scale(5.0)' })
-        .to(stars03, { transform: 'scale(3.5)', filter: 'blur(3px)' })
-        .to(stars04, { transform: 'scale(1.5)' })
-    }
-
-    setScenes({ s1, s2 })
-  }, [isReadyForAnimation, shouldShowStars])
-
-  React.useEffect(() => {
-    if (!ref.current) return
-    if (!isReadyForAnimation) return
-
-    const s1 = new WebAnimationPlayer()
-    const hillsContainer = ref.current.querySelector('.hills-container')
-
-    // <if expr="is_brave_origin_branded">
-    s1.to(hillsContainer, { opacity: 1 }, { delay: 250 })
-    // <else>
-    const starsContainer = ref.current.querySelector('.stars-container')
-    s1.to(starsContainer, { opacity: 1 }, { delay: 250 })
-      .to(hillsContainer, { opacity: 1 }, { delay: 250 })
-    // </if>
-
-    const lastAnimationEl = s1.animations[s1.animations.length - 1]
-    lastAnimationEl.addEventListener('finish', () => props.onLoad?.())
-
-    s1.play()
-  }, [isReadyForAnimation])
-
-  const handleImgLoad = () => {
-    setHasLoaded(true)
-
-    // When animations are disabled, we trigger onLoad instantly
-    if (!shouldPlayAnimations) {
-      props.onLoad?.()
-    }
-  }
+    // The import steps call scenes?.s1.play() / s2.play(); give them players
+    // with nothing scheduled so those calls stay harmless.
+    setScenes({ s1: new WebAnimationPlayer(), s2: new WebAnimationPlayer() })
+    props.onLoad?.()
+  }, [])
 
   return (
-    <S.Box ref={isReadyForAnimation ? ref : null}>
-      {shouldShowStars && (
-        <div className="stars-container">
-          <Stars01 />
-          <Stars02 />
-          <Stars03 />
-          <Stars04 />
-        </div>
-      )}
+    <S.Box>
+      <div className="glow" />
+      <div className="stars" aria-hidden="true">
+        {STARS.map((st, i) => (
+          <i key={i} style={{ left: `${st.x}%`, top: `${st.y}%`, width: st.s, height: st.s, opacity: st.o }} />
+        ))}
+      </div>
       <div className="content-box">
         {props.children}
       </div>
-      <img
-        // We animate the background image via CSS only.
-        className={classnames({
-          'background-img': true,
-          'is-visible': hasLoaded
-        })}
-        src={!props.static ? skyBgUrl : fullCompositeBgUrl}
-        onLoad={handleImgLoad}
-      />
-      {isReadyForAnimation && (
-        <div className="hills-container">
-          <div className="hills-base hills03"></div>
-          <div className="hills-base hills02"></div>
-          <div className="hills-base hills01"></div>
-          <div className="pyramid"></div>
-        </div>
-      )}
     </S.Box>
   )
 }

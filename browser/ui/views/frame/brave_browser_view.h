@@ -185,6 +185,7 @@ class BraveBrowserView : public BrowserView,
 
   // Falcon: falcon.shell.mode changed (or window just created).
   void OnShellModeChanged();
+  void OnDockCardsChanged();
   int GetShellMode() const;
   // Falcon command deck (Ctrl+Space): WebUI bubble over the top of the window.
   void ToggleCommandDeck();

@@ -5,6 +5,7 @@
 
 #include "brave/browser/ui/views/frame/focus_mode_title_bar_view.h"
 
+#include <array>
 #include <string>
 
 #include "base/functional/bind.h"
@@ -20,7 +21,14 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/background.h"
+#include "cc/paint/paint_flags.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/rect_f.h"
+#include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/view_class_properties.h"
+#include "ui/views/widget/widget.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "url/gurl.h"
@@ -38,6 +46,100 @@ gfx::FontList GetLabelFont() {
   return base.DeriveWithSizeDelta(kLabelFontSize - base.GetFontSize());
 }
 
+// macOS window controls, drawn: 12 px discs, 8 px apart, glyph on hover.
+constexpr int kLightSize = 12;
+constexpr int kLightGap = 8;
+constexpr int kLightsLeftInset = 12;
+constexpr SkColor kLightClose = SkColorSetRGB(0xFF, 0x5F, 0x57);
+constexpr SkColor kLightMin = SkColorSetRGB(0xFE, 0xBC, 0x2E);
+constexpr SkColor kLightZoom = SkColorSetRGB(0x28, 0xC8, 0x40);
+constexpr SkColor kLightInactive = SkColorSetRGB(0x5A, 0x5F, 0x6A);
+
+class TrafficLight : public views::Button {
+  METADATA_HEADER(TrafficLight, views::Button)
+ public:
+  // |which|: 0 close, 1 minimise, 2 zoom.
+  TrafficLight(int which, PressedCallback callback)
+      : views::Button(std::move(callback)), which_(which) {
+    SetPreferredSize(gfx::Size(kLightSize, kLightSize));
+    SetFocusBehavior(FocusBehavior::NEVER);
+    static constexpr std::array<const char16_t*, 3> kNames = {
+        u"Close window", u"Minimise window", u"Zoom window"};
+    SetTooltipText(kNames.at(which));
+    GetViewAccessibility().SetName(kNames.at(which));
+  }
+  ~TrafficLight() override = default;
+
+  void PaintButtonContents(gfx::Canvas* canvas) override {
+    const gfx::RectF b(GetContentsBounds());
+    const bool active = GetWidget() && GetWidget()->IsActive();
+    static constexpr std::array<SkColor, 3> kColors = {kLightClose, kLightMin,
+                                                       kLightZoom};
+    cc::PaintFlags fill;
+    fill.setAntiAlias(true);
+    fill.setColor(active ? kColors.at(which_) : kLightInactive);
+    canvas->DrawCircle(b.CenterPoint(), kLightSize / 2.0f, fill);
+
+    // Hovering any light shows all glyphs (parent repaints siblings).
+    if (!(parent() && parent()->IsMouseHovered())) {
+      return;
+    }
+    cc::PaintFlags line;
+    line.setAntiAlias(true);
+    line.setStyle(cc::PaintFlags::kStroke_Style);
+    line.setStrokeWidth(1.5f);
+    line.setStrokeCap(cc::PaintFlags::kRound_Cap);
+    line.setColor(SkColorSetA(SK_ColorBLACK, 0xA0));
+    const gfx::PointF c = b.CenterPoint();
+    const float r = 2.6f;
+    if (which_ == 0) {
+      canvas->DrawLine(gfx::PointF(c.x() - r, c.y() - r),
+                       gfx::PointF(c.x() + r, c.y() + r), line);
+      canvas->DrawLine(gfx::PointF(c.x() - r, c.y() + r),
+                       gfx::PointF(c.x() + r, c.y() - r), line);
+    } else if (which_ == 1) {
+      canvas->DrawLine(gfx::PointF(c.x() - r - 0.5f, c.y()),
+                       gfx::PointF(c.x() + r + 0.5f, c.y()), line);
+    } else {
+      // Two small triangles (macOS "zoom"): draw as a diagonal with arrow tips.
+      canvas->DrawLine(gfx::PointF(c.x() - r, c.y() + r),
+                       gfx::PointF(c.x() + r, c.y() - r), line);
+      canvas->DrawLine(gfx::PointF(c.x() + r, c.y() - r),
+                       gfx::PointF(c.x() + 0.2f, c.y() - r), line);
+      canvas->DrawLine(gfx::PointF(c.x() + r, c.y() - r),
+                       gfx::PointF(c.x() + r, c.y() + 0.2f), line);
+      canvas->DrawLine(gfx::PointF(c.x() - r, c.y() + r),
+                       gfx::PointF(c.x() - 0.2f, c.y() + r), line);
+      canvas->DrawLine(gfx::PointF(c.x() - r, c.y() + r),
+                       gfx::PointF(c.x() - r, c.y() - 0.2f), line);
+    }
+  }
+
+ private:
+  const int which_;
+};
+
+BEGIN_METADATA(TrafficLight)
+END_METADATA
+
+// Hosts the three lights; repaints them together on hover so the glyphs
+// appear as a set, like macOS.
+class TrafficLights : public views::View {
+  METADATA_HEADER(TrafficLights, views::View)
+ public:
+  TrafficLights() {
+    SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kHorizontal, gfx::Insets(), kLightGap));
+    SetNotifyEnterExitOnChild(true);
+  }
+  ~TrafficLights() override = default;
+  void OnMouseEntered(const ui::MouseEvent&) override { SchedulePaint(); }
+  void OnMouseExited(const ui::MouseEvent&) override { SchedulePaint(); }
+};
+
+BEGIN_METADATA(TrafficLights)
+END_METADATA
+
 }  // namespace
 
 FocusModeTitleBarView::FocusModeTitleBarView() {
@@ -51,6 +153,14 @@ FocusModeTitleBarView::FocusModeTitleBarView() {
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
   SetPreferredSize(gfx::Size(0, kTitleBarHeight));
+
+  lights_ = AddChildView(std::make_unique<TrafficLights>());
+  lights_->SetProperty(views::kViewIgnoredByLayoutKey, true);
+  for (int i = 0; i < 3; ++i) {
+    lights_->AddChildView(std::make_unique<TrafficLight>(
+        i, base::BindRepeating(&FocusModeTitleBarView::OnTrafficLight,
+                               base::Unretained(this), i)));
+  }
 
   favicon_image_ = AddChildView(std::make_unique<views::ImageView>());
   favicon_image_->SetImageSize(gfx::Size(kFaviconSize, kFaviconSize));
@@ -73,6 +183,35 @@ FocusModeTitleBarView::FocusModeTitleBarView() {
 }
 
 FocusModeTitleBarView::~FocusModeTitleBarView() = default;
+
+void FocusModeTitleBarView::Layout(PassKey) {
+  LayoutSuperclass<views::View>(this);
+  const gfx::Size size = lights_->GetPreferredSize();
+  lights_->SetBounds(kLightsLeftInset, (height() - size.height()) / 2,
+                     size.width(), size.height());
+}
+
+void FocusModeTitleBarView::OnTrafficLight(int which) {
+  views::Widget* widget = GetWidget();
+  if (!widget) {
+    return;
+  }
+  switch (which) {
+    case 0:
+      widget->Close();
+      break;
+    case 1:
+      widget->Minimize();
+      break;
+    default:
+      if (widget->IsMaximized()) {
+        widget->Restore();
+      } else {
+        widget->Maximize();
+      }
+      break;
+  }
+}
 
 void FocusModeTitleBarView::SetTab(tabs::TabInterface* tab) {
   tab_ui_updated_subscription_ = {};

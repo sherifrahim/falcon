@@ -49,6 +49,11 @@ class CommanderService : public CommanderFrontendDelegate,
   // Falcon command deck: while an external frontend is attached, Show/Hide
   // only update state and notify observers instead of driving the omnibox.
   void SetExternalFrontend(bool active);
+  // Re-runs the search even when |text| equals the last query (the deck's
+  // initial, empty query).
+  void ForceUpdateText(const std::u16string& text) {
+    UpdateText(text, /*force=*/true);
+  }
 
   // CommanderFrontendDelegate:
   void Toggle() override;

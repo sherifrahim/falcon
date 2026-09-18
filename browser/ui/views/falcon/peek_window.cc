@@ -36,6 +36,7 @@
 #include "ui/views/background.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/border.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/webview/webview.h"
@@ -52,6 +53,7 @@ namespace prefs {
 void RegisterPeekPrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(kPeekEnabled, true);
   registry->RegisterIntegerPref(kShellMode, kShellCockpit);
+  registry->RegisterBooleanPref(kDockCards, true);
 }
 
 }  // namespace prefs
@@ -175,6 +177,7 @@ PeekWindow::PeekWindow(BrowserWindowInterface* browser, const GURL& url)
       base::BindRepeating(&PeekWindow::GoBack, base::Unretained(this)),
       u"‹", /*primary=*/false));
   back->SetTooltipText(u"Back");
+  back->GetViewAccessibility().SetName(u"Back");
   auto* peek_label = header->AddChildView(std::make_unique<views::Label>(
       u"Peek", views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY));
   peek_label->SetEnabledColor(kSky400);
@@ -195,6 +198,7 @@ PeekWindow::PeekWindow(BrowserWindowInterface* browser, const GURL& url)
       base::BindRepeating(&PeekWindow::Close, base::Unretained(this)),
       u"×", /*primary=*/false));
   close->SetTooltipText(u"Close (Esc)");
+  close->GetViewAccessibility().SetName(u"Close peek");
 
   Profile* profile = browser->GetProfile();
   contents_ = content::WebContents::Create(

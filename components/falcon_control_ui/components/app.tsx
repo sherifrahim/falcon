@@ -39,6 +39,7 @@ interface State {
   shellMode: 0 | 1 | 2 // classic, mac, cockpit
   blackTheme: boolean
   verticalTabsCollapsed: boolean
+  dockCards: boolean
   videoPill: boolean
   clipboardMonitor: boolean
   engineEnabled: boolean
@@ -336,6 +337,7 @@ export function App() {
         </Row>
         {bool('verticalTabs', 'Vertical tabs', 'Tab strip on the side (Zen / Arc style)')}
         {bool('verticalTabsCollapsed', 'Dock (collapsed tabs)', 'Icon-only tab rail that expands on hover')}
+        {bool('dockCards', 'Tab cards', 'Two-line tabs in the expanded dock: title over site (Arc-style)')}
         <Row as="div">
           <span>Sidebar<span className="sub">Bookmarks, reading list, downloads, panels</span></span>
           <Seg>

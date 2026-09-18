@@ -397,7 +397,13 @@ void BraveTabContainer::StartInsertTabAnimation(int model_index) {
 
   auto* new_tab = GetTabAtModelIndex(model_index);
   gfx::Rect bounds = new_tab->bounds();
-  bounds.set_height(tabs::kVerticalTabHeight);
+  bounds.set_height(
+      IsPinned(new_tab)
+          ? tabs::kVerticalTabHeight
+          : tabs::GetVerticalTabHeight(
+                available_width_callback_.is_null()
+                    ? std::nullopt
+                    : std::optional<int>(available_width_callback_.Run())));
   const auto tab_width = IsPinned(new_tab) ? tabs::kVerticalTabMinWidth
                                            : tab_style_->GetStandardWidth(true);
   bounds.set_width(tab_width);

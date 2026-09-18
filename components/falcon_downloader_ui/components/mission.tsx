@@ -8,21 +8,62 @@
 // list/add/row logic stays in app.tsx; this file is layout + status only.
 
 import * as React from 'react'
-import styled from 'styled-components'
+import styled, { keyframes } from 'styled-components'
 import { sendWithPromise } from 'chrome://resources/js/cr.js'
 import { loadTimeData } from '$web-common/loadTimeData'
 import { fmtBytes, fmtSpeed } from './common'
 
 export type View = 'all' | 'active' | 'done' | 'failed' | 'torrents' | 'video' | 'grabber' | 'scheduler' | 'history' | 'settings'
 
-export const Layout = styled.div`
+// The details column (engine / security / scheduler / session) is an
+// inspector: hidden by default, toggled from the header, remembered.
+export const Layout = styled.div<{ $side?: boolean }>`
   display: grid;
-  grid-template-columns: 200px minmax(0, 1fr) 260px;
+  grid-template-columns: 200px minmax(0, 1fr)${(p) => (p.$side ? ' 260px' : '')};
   gap: 22px;
   align-items: start;
   @media (max-width: 1180px) { grid-template-columns: 200px minmax(0, 1fr); .side { display: none; } }
   @media (max-width: 860px) { grid-template-columns: 1fr; .rail { display: none; } }
 `
+
+const SIDE_KEY = 'falcon.downloader.inspector'
+export function useInspector(): [boolean, () => void] {
+  const [open, setOpen] = React.useState<boolean>(() => {
+    try { return localStorage.getItem(SIDE_KEY) === '1' } catch { return false }
+  })
+  const toggle = React.useCallback(() => setOpen((o) => {
+    try { localStorage.setItem(SIDE_KEY, o ? '0' : '1') } catch {}
+    return !o
+  }), [])
+  return [open, toggle]
+}
+
+export const InspectorButton = styled.button<{ $on: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid ${(p) => (p.$on ? 'rgba(56, 189, 248, 0.45)' : 'var(--f-border, #334155)')};
+  background: ${(p) => (p.$on ? 'rgba(56, 189, 248, 0.12)' : 'transparent')};
+  color: ${(p) => (p.$on ? '#7dd3fc' : 'inherit')};
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+  &:hover { background: rgba(255, 255, 255, 0.06); }
+  svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+`
+
+export function Inspector({ on, onToggle }: { on: boolean; onToggle: () => void }) {
+  return (
+    <InspectorButton $on={on} onClick={onToggle} title={on ? 'Hide details (engine, security, scheduler, session)' : 'Show details (engine, security, scheduler, session)'} aria-pressed={on}>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3" /><path d="M15 4v16M17.5 8.5h1M17.5 11.5h1" /></svg>
+      Details
+    </InspectorButton>
+  )
+}
 
 const RailBox = styled.nav`
   position: sticky;
@@ -68,12 +109,18 @@ export function Rail({ view, counts, onView }: { view: View; counts: Record<stri
   )
 }
 
+const slideIn = keyframes`
+  from { opacity: 0; transform: translateX(12px); }
+  to { opacity: 1; transform: translateX(0); }
+`
+
 const SideBox = styled.aside`
   position: sticky;
   top: 20px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  animation: ${slideIn} 200ms ease-out both;
 `
 
 const Panel = styled.div`

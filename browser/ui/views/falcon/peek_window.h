@@ -40,6 +40,8 @@ inline constexpr char kPeekEnabled[] = "falcon.peek.enabled";
 // toolbar capsule on hover). 1 and 2 ride on Brave's Focus Mode.
 inline constexpr char kShellMode[] = "falcon.shell.mode";
 enum ShellMode { kShellClassic = 0, kShellMac = 1, kShellCockpit = 2 };
+// Dock tab cards: two-line (title + site) tabs in the expanded vertical rail.
+inline constexpr char kDockCards[] = "falcon.dock.cards";
 void RegisterPeekPrefs(user_prefs::PrefRegistrySyncable* registry);
 }  // namespace prefs
 

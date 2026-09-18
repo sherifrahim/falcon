@@ -15,6 +15,7 @@
 #include "brave/browser/ui/containers/container_model.h"
 #include "brave/browser/ui/tabs/public/vertical_tab_controller.h"
 #include "brave/browser/ui/views/frame/brave_browser_view.h"
+#include "brave/browser/ui/views/tabs/brave_tab_strip_layout_helper.h"
 #include "brave/browser/ui/views/frame/vertical_tabs/vertical_tab_strip_container_view.h"
 #include "brave/browser/ui/views/frame/vertical_tabs/vertical_tab_strip_region_view.h"
 #include "brave/browser/ui/views/tabs/accent_color/brave_tab_accent_color_palette.h"
@@ -29,7 +30,10 @@
 #include "chrome/browser/ui/views/tabs/hovercard/hover_card_anchor_target.h"
 #include "chrome/browser/ui/views/tabs/tab/alert_indicator_button.h"
 #include "chrome/browser/ui/views/tabs/tab/tab_close_button.h"
+#include "chrome/browser/ui/views/tabs/tab/tab_title.h"
 #include "chrome/browser/ui/views/tabs/tab_slot_controller.h"
+#include "brave/browser/ui/brave_scheme_utils.h"
+#include "components/url_formatter/url_formatter.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
@@ -200,6 +204,13 @@ BraveTab::BraveTab(tabs::TabHandle handle, TabSlotController* controller)
     InitTreeToggleButton();
   }
 
+  subtitle_ = AddChildView(std::make_unique<views::Label>());
+  subtitle_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  subtitle_->SetElideBehavior(gfx::ELIDE_TAIL);
+  subtitle_->SetAutoColorReadabilityEnabled(false);
+  subtitle_->SetCanProcessEventsWithinSubtree(false);
+  subtitle_->SetVisible(false);
+
 #if BUILDFLAG(ENABLE_CONTAINERS)
   small_accent_icon_view_ =
       AddChildView(std::make_unique<SmallAccentIconView>());
@@ -336,6 +347,7 @@ int BraveTab::GetWidthOfLargestSelectableRegion() const {
 
 void BraveTab::ActiveStateChanged() {
   Tab::ActiveStateChanged();
+  UpdateSubtitleColor();
 
   // This should be called whenever the active state changes
   // see comment on UpdateEnabledForMuteToggle();
@@ -628,6 +640,80 @@ void BraveTab::Layout(PassKey) {
 
   LayoutTreeToggleButton();
   LayoutSmallTabAccentIcon();
+  LayoutDockCard();
+}
+
+void BraveTab::LayoutDockCard() {
+  const bool card = tabs::IsDockCardTab(*this) &&
+                    !IsAtMinWidthForVerticalTabStrip() && title_->GetVisible();
+  if (!card) {
+    subtitle_->SetVisible(false);
+    // Tab::Layout only re-applies the title rect when its target changes, so
+    // put the (possibly re-stacked) title back where upstream wants it.
+    if (!title_animation_.is_animating() &&
+        title_->bounds() != target_title_bounds_) {
+      title_->SetBoundsRect(target_title_bounds_);
+    }
+    return;
+  }
+
+  constexpr int kTitleHeight = 18;
+  constexpr int kSubtitleHeight = 15;
+  const gfx::Rect title = title_->bounds();
+  const int top = (height() - kTitleHeight - kSubtitleHeight) / 2;
+  title_->SetBoundsRect(gfx::Rect(title.x(), top, title.width(), kTitleHeight));
+  subtitle_->SetFontList(title_->font_list().DeriveWithSizeDelta(-1));
+  UpdateSubtitleColor();
+  subtitle_->SetBoundsRect(gfx::Rect(title.x(), top + kTitleHeight,
+                                     title.width(), kSubtitleHeight));
+  subtitle_->SetVisible(!subtitle_->GetText().empty());
+}
+
+void BraveTab::UpdateSubtitle() {
+  if (!subtitle_) {
+    return;
+  }
+  const GURL& url = data().visible_url.is_valid() ? data().visible_url
+                                                  : data().last_committed_url;
+  std::u16string text;
+  if (url.is_valid() && data().should_display_url) {
+    text = url_formatter::FormatUrl(
+        url,
+        (url_formatter::kFormatUrlOmitDefaults &
+         ~url_formatter::kFormatUrlOmitHTTP) |
+            url_formatter::kFormatUrlOmitTrivialSubdomains |
+            url_formatter::kFormatUrlOmitHTTPS |
+            url_formatter::kFormatUrlTrimAfterHost,
+        base::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
+    brave_utils::ReplaceChromeToBraveScheme(text);
+  }
+  if (text != subtitle_->GetText()) {
+    subtitle_->SetText(text);
+    if (subtitle_->GetVisible() != (!text.empty() && tabs::IsDockCardTab(*this))) {
+      InvalidateLayout();
+    }
+  }
+}
+
+void BraveTab::UpdateSubtitleColor() {
+  if (subtitle_ && title_) {
+    subtitle_->SetEnabledColor(SkColorSetA(title_->GetEnabledColor(), 0x99));
+  }
+}
+
+void BraveTab::AnimationEnded(const gfx::Animation* animation) {
+  Tab::AnimationEnded(animation);
+  LayoutDockCard();
+}
+
+void BraveTab::AnimationProgressed(const gfx::Animation* animation) {
+  Tab::AnimationProgressed(animation);
+  LayoutDockCard();
+}
+
+void BraveTab::OnThemeChanged() {
+  Tab::OnThemeChanged();
+  UpdateSubtitleColor();
 }
 
 void BraveTab::MaybeAdjustLeftForPinnedTab(gfx::Rect* bounds,
@@ -698,6 +784,7 @@ void BraveTab::OnTabDataChanged(TabChangeType tab_change_type,
                                 const tabs::TabData& tab_data) {
   const bool data_changed = tab_data != data_;
   Tab::OnTabDataChanged(tab_change_type, std::move(tab_data));
+  UpdateSubtitle();
 
   // Our vertical tab uses CompoundTabContainer.
   // When tab is moved from the group by pinning, it's moved to

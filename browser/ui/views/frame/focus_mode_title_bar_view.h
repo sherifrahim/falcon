@@ -38,13 +38,19 @@ class FocusModeTitleBarView : public views::View {
   bool IsFaviconVisibleForTesting() const;
   const views::Label* domain_label_for_testing() const { return domain_label_; }
 
+  // views::View:
+  void Layout(PassKey) override;
+
  private:
   void Update();
+  // Falcon Mac-style: close / minimise / zoom "traffic lights" on the left.
+  void OnTrafficLight(int which);
   void OnTabWillDetach(tabs::TabInterface* tab,
                        tabs::TabInterface::DetachReason reason);
 
   base::CallbackListSubscription tab_will_detach_subscription_;
   base::CallbackListSubscription tab_ui_updated_subscription_;
+  raw_ptr<views::View> lights_ = nullptr;
   raw_ptr<views::ImageView> favicon_image_ = nullptr;
   raw_ptr<views::Label> title_label_ = nullptr;
   raw_ptr<views::Label> domain_label_ = nullptr;

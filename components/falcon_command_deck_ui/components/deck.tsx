@@ -120,8 +120,22 @@ export function Deck() {
       setItems((p.items || []).map((it, index) => ({ ...it, index })))
       setSel(0)
     })
-    chrome.send('deck.ready')
-    setTimeout(() => input.current?.focus(), 30)
+    // The page is cached between opens (top-chrome WebUI): every time the
+    // bubble re-shows the document becomes visible again, so (re)attach to the
+    // commander and ask the embedder to show us; on hide, detach.
+    const ready = () => {
+      setQuery('')
+      setPrompt('')
+      chrome.send('deck.ready')
+      setTimeout(() => input.current?.focus(), 30)
+    }
+    const onVis = () => {
+      if (document.visibilityState === 'visible') ready()
+      else chrome.send('deck.hidden')
+    }
+    document.addEventListener('visibilitychange', onVis)
+    ready()
+    return () => document.removeEventListener('visibilitychange', onVis)
   }, [])
 
   // Ordered flat list for keyboard navigation follows the grouped rendering.

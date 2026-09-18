@@ -33,6 +33,7 @@ class MenuRunner;
 
 class BraveNewTabButton;
 class BrowserView;
+class FalconDockHeader;
 class BrowserWindowInterface;
 class FullscreenController;
 class TabStyle;
@@ -205,6 +206,7 @@ class BraveVerticalTabStripRegionView : public views::View,
   std::u16string GetShortcutTextForNewTabButton(BrowserView* browser_view);
 
   void OnMenuClosed();
+  void OnSpacesPressed();
 
   // Subscription to `RegisterBrowserDidClose`. We use this event to handle the
   // lifetime of `menu_runner_`.
@@ -231,6 +233,9 @@ class BraveVerticalTabStripRegionView : public views::View,
 
   // New tab button created for vertical tabs
   raw_ptr<BraveNewTabButton> new_tab_button_ = nullptr;
+
+  // Falcon dock header ("Spaces" + tab count); null when workspaces are off.
+  raw_ptr<FalconDockHeader> dock_header_ = nullptr;
 
   raw_ptr<views::View> resize_area_ = nullptr;
   std::optional<int> resize_offset_;

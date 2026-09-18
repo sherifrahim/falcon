@@ -12,12 +12,14 @@
 
 #include "base/check.h"
 #include "base/check_op.h"
+#include "brave/browser/ui/tabs/public/vertical_tab_controller.h"
 #include "brave/browser/ui/views/tabs/brave_tab_group_header.h"
 #include "brave/browser/ui/views/tabs/brave_tab_strip.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/features.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
 #include "chrome/browser/ui/tabs/tab_types.h"
+#include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_container.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_layout.h"
@@ -121,8 +123,9 @@ void CalculateVerticalLayout(const std::vector<TabWidthConstraints>& tabs,
       rect.set_width(rect.width() - offset);
     }
 
-    rect.set_height(tab.state().open() == TabOpen::kOpen ? kVerticalTabHeight
-                                                         : 0);
+    rect.set_height(tab.state().open() == TabOpen::kOpen
+                        ? GetVerticalTabHeight(width)
+                        : 0);
     result->push_back(rect);
 
     // Update rect for the next tab.
@@ -134,7 +137,43 @@ void CalculateVerticalLayout(const std::vector<TabWidthConstraints>& tabs,
 
 }  // namespace
 
+namespace {
+bool g_dock_cards_enabled = true;
+}  // namespace
+
+bool DockCardsEnabled() {
+  return g_dock_cards_enabled;
+}
+
+void SetDockCardsEnabled(bool enabled) {
+  g_dock_cards_enabled = enabled;
+}
+
+int GetVerticalTabHeight(std::optional<int> available_width) {
+  if (!g_dock_cards_enabled) {
+    return kVerticalTabHeight;
+  }
+  if (available_width.has_value() &&
+      *available_width < kVerticalTabCardMinWidth) {
+    return kVerticalTabHeight;
+  }
+  return kVerticalTabCardHeight;
+}
+
+bool IsDockCardTab(const Tab& tab) {
+  if (!g_dock_cards_enabled || tab.data().pinned ||
+      tab.height() < kVerticalTabCardHeight || !tab.controller()) {
+    return false;
+  }
+  auto* vtc = VerticalTabController::FromBrowser(
+      tab.controller()->GetBrowserWindowInterface());
+  return vtc && vtc->ShouldShowBraveVerticalTabs();
+}
+
 int GetTabCornerRadius(const Tab& tab) {
+  if (IsDockCardTab(tab)) {
+    return kVerticalTabCardRadius;
+  }
   if (!tabs::HorizontalTabsUpdateEnabled()) {
     return tab.data().pinned ? 8 : 4;
   }

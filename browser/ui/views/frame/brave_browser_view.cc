@@ -50,6 +50,8 @@
 #include "brave/browser/ui/views/frame/tab_strip_placement_coordinator.h"
 #include "brave/browser/ui/views/frame/vertical_tabs/vertical_tab_strip_container_view.h"
 #include "brave/browser/ui/views/frame/vertical_tabs/vertical_tab_strip_region_view.h"
+#include "brave/browser/ui/views/tabs/brave_tab_strip.h"
+#include "brave/browser/ui/views/tabs/brave_tab_strip_layout_helper.h"
 #include "brave/browser/ui/views/location_bar/brave_location_bar_view.h"
 #include "brave/browser/ui/views/omnibox/brave_omnibox_view_views.h"
 #include "brave/browser/ui/views/side_panel/brave_side_panel_resize_area.h"
@@ -401,6 +403,13 @@ BraveBrowserView::BraveBrowserView(Browser* browser) : BrowserView(browser) {
   pref_change_registrar_.Add(
       falcon::prefs::kShellMode,
       base::BindRepeating(&BraveBrowserView::OnShellModeChanged,
+                          base::Unretained(this)));
+  // Dock tab cards: process-wide flag read by the vertical tab layout.
+  tabs::SetDockCardsEnabled(
+      GetProfile()->GetPrefs()->GetBoolean(falcon::prefs::kDockCards));
+  pref_change_registrar_.Add(
+      falcon::prefs::kDockCards,
+      base::BindRepeating(&BraveBrowserView::OnDockCardsChanged,
                           base::Unretained(this)));
 
 #if BUILDFLAG(ENABLE_BRAVE_VPN)
@@ -925,6 +934,22 @@ void BraveBrowserView::CloseCommandDeck() {
 
 int BraveBrowserView::GetShellMode() const {
   return GetProfile()->GetPrefs()->GetInteger(falcon::prefs::kShellMode);
+}
+
+void BraveBrowserView::OnDockCardsChanged() {
+  tabs::SetDockCardsEnabled(
+      GetProfile()->GetPrefs()->GetBoolean(falcon::prefs::kDockCards));
+  auto* strip = horizontal_tab_strip_region_view_
+                    ? views::AsViewClass<BraveTabStrip>(
+                          horizontal_tab_strip_region_view_->GetTabStripView())
+                    : nullptr;
+  if (strip) {
+    for (int i = 0; i < strip->GetTabCount(); ++i) {
+      strip->tab_at(i)->InvalidateLayout();
+      strip->tab_at(i)->SchedulePaint();
+    }
+    strip->InvalidateTabContainerLayout();
+  }
 }
 
 void BraveBrowserView::OnShellModeChanged() {

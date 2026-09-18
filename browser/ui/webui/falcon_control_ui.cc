@@ -222,6 +222,7 @@ class FalconControlMessageHandler : public content::WebUIMessageHandler {
                             falcon::prefs::kThemeBlack));
     d.Set("verticalTabsCollapsed",
           p->GetBoolean(brave_tabs::kVerticalTabsCollapsed));
+    d.Set("dockCards", p->GetBoolean(falcon::prefs::kDockCards));
     d.Set("videoPill", p->GetBoolean(falcon::prefs::kDownloadVideoPill));
     d.Set("clipboardMonitor",
           p->GetBoolean(falcon::prefs::kDownloadClipboardMonitor));
@@ -305,6 +306,9 @@ class FalconControlMessageHandler : public content::WebUIMessageHandler {
     }
     if (std::optional<bool> v = in.FindBool("verticalTabsCollapsed")) {
       p->SetBoolean(brave_tabs::kVerticalTabsCollapsed, *v);
+    }
+    if (std::optional<bool> v = in.FindBool("dockCards")) {
+      p->SetBoolean(falcon::prefs::kDockCards, *v);
     }
     if (std::optional<bool> v = in.FindBool("videoPill")) {
       p->SetBoolean(falcon::prefs::kDownloadVideoPill, *v);
