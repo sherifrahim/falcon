@@ -5,6 +5,7 @@
 #
 # Both jobs share one concurrency group so they never build at the same time
 # (one laptop). Each job works inside its existing checkout; nothing is cloned.
+# The Windows runner has only Windows PowerShell 5.1 (no pwsh).
 name: Falcon release
 
 on:
@@ -40,7 +41,7 @@ jobs:
     concurrency: { group: falcon-build, cancel-in-progress: false }
     defaults:
       run:
-        shell: pwsh
+        shell: powershell
         working-directory: D:\falcon\bb\src\brave
     outputs:
       version: ${{ steps.ver.outputs.version }}
@@ -111,7 +112,7 @@ jobs:
     runs-on: [self-hosted, windows, falcon]
     defaults:
       run:
-        shell: pwsh
+        shell: powershell
     steps:
       - name: Collect artifacts
         uses: actions/download-artifact@v4
@@ -129,7 +130,9 @@ jobs:
           $files = Get-ChildItem $stage -Recurse -File | Where-Object { $_.Name -match '\.(exe|zip|apk)$' -or $_.Name -like 'SHA256SUMS*' } | ForEach-Object { $_.FullName }
           $notes = Get-ChildItem $stage -Recurse -Filter RELEASE_NOTES.md | Select-Object -First 1
           $notesArg = if ($notes) { @('--notes-file', $notes.FullName) } else { @('--notes', "Falcon $tag") }
-          $exists = (gh release view $tag --repo ${{ github.repository }} 2>$null) -ne $null
+          # Windows PowerShell 5.1 turns redirected native stderr into a terminating error; probe via cmd.
+          cmd /c "gh release view $tag --repo ${{ github.repository }} >nul 2>&1"
+          $exists = ($LASTEXITCODE -eq 0)
           if (-not $exists) {
             gh release create $tag --repo ${{ github.repository }} --target ${{ env.FALCON_REF }} --title "Falcon $tag" --latest @notesArg $files
           } else {
