@@ -1,0 +1,95 @@
+# Falcon release: builds the Windows installer on the self-hosted runner (the
+# dev laptop — GitHub-hosted runners cannot build Chromium) and publishes it as
+# a GitHub Release. Trigger by pushing a tag `v<semver>` (must match
+# components/constants/falcon_version.h) or manually from the Actions tab.
+#
+# The runner works inside the existing checkout (D:\falcon\bb\src\brave); it
+# does not clone. Static config = non-component, non-official build: no PGO /
+# LTO, so it fits the laptop (~3-4 h the first time, incremental afterwards).
+name: Falcon release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Branch, tag or commit of brave-core (falcon) to build
+        default: falcon
+        required: true
+      publish:
+        description: Publish a GitHub Release (otherwise only upload the artifact)
+        type: boolean
+        default: false
+      config:
+        description: Build config (Static = distributable, Component = dev)
+        default: Static
+        required: true
+
+concurrency:
+  group: falcon-build   # one build slot on the laptop
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: [self-hosted, windows, falcon]
+    timeout-minutes: 600
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: D:\falcon\bb\src\brave
+    env:
+      FALCON_CONFIG: ${{ github.event.inputs.config || 'Static' }}
+      FALCON_REF: ${{ github.event.inputs.ref || github.ref_name }}
+    steps:
+      - name: Sync brave-core to the requested ref
+        run: |
+          if (git status --porcelain) { throw "Working tree at D:\falcon\bb\src\brave is not clean; commit or stash before releasing." }
+          git fetch --tags origin
+          git checkout --detach ${{ env.FALCON_REF }}
+          git log --oneline -1
+          pnpm install --frozen-lockfile
+
+      - name: Read Falcon version
+        id: ver
+        run: |
+          $h = Get-Content components/constants/falcon_version.h -Raw
+          $v = [regex]::Match($h, 'kFalconVersion\[\] = "([^"]+)"').Groups[1].Value
+          "version=$v" >> $env:GITHUB_OUTPUT
+          Write-Host "Falcon version $v"
+          if ('${{ github.ref_type }}' -eq 'tag' -and '${{ github.ref_name }}' -ne "v$v") {
+            throw "Tag ${{ github.ref_name }} does not match falcon_version.h (v$v)"
+          }
+
+      - name: Build + package
+        run: |
+          D:\falcon\tools\package.ps1 -Config $env:FALCON_CONFIG -Version ${{ steps.ver.outputs.version }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: falcon-windows-x64-${{ steps.ver.outputs.version }}
+          path: D:\falcon\dist\*
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Publish GitHub Release
+        if: github.ref_type == 'tag' || github.event.inputs.publish == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = if ('${{ github.ref_type }}' -eq 'tag') { '${{ github.ref_name }}' } else { 'v${{ steps.ver.outputs.version }}' }
+          $files = Get-ChildItem D:\falcon\dist\* -Include *.exe,*.zip,SHA256SUMS.txt | ForEach-Object { $_.FullName }
+          $exists = (gh release view $tag --repo ${{ github.repository }} 2>$null) -ne $null
+          if (-not $exists) {
+            gh release create $tag --repo ${{ github.repository }} --title "Falcon $tag" --notes-file D:\falcon\dist\RELEASE_NOTES.md --latest $files
+          } else {
+            gh release upload $tag --repo ${{ github.repository }} --clobber $files
+          }
+
+      - name: Return the checkout to the falcon branch
+        if: always()
+        run: git checkout falcon

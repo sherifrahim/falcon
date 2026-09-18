@@ -74,12 +74,12 @@ const wchar_t kCleanupRegistryKey[] =
 
 // The path to the key containing each app's Clients registry key.
 // No trailing slash on this one because the app's GUID is not appended.
-const wchar_t kClientsKeyBase[] = L"Software\\Brave-Browser-Development";
+const wchar_t kClientsKeyBase[] = L"Software\\Falcon";
 // The path to the key containing each app's Client State registry key.
 // No trailing slash on this one because the app's GUID is not appended.
-const wchar_t kClientStateKeyBase[] = L"Software\\Brave-Browser-Development";
+const wchar_t kClientStateKeyBase[] = L"Software\\Falcon";
 // The path to the key in which kCleanupRegistryValue is found.
-const wchar_t kCleanupRegistryKey[] = L"Software\\Brave-Browser-Development";
+const wchar_t kCleanupRegistryKey[] = L"Software\\Falcon";
 
 #endif
 

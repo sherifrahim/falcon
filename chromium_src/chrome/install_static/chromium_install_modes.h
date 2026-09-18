@@ -23,7 +23,9 @@ namespace install_static {
 
 // The brand-specific company name to be included as a component of the install
 // and user data directory paths. May be empty if no such dir is to be used.
-inline constexpr wchar_t kCompanyPathName[] = L"BraveSoftware";
+// Falcon: its own install / user-data identity (%LOCALAPPDATA%\Falcon\Falcon)
+// so a Falcon install never touches a Brave install on the same machine.
+inline constexpr wchar_t kCompanyPathName[] = L"Falcon";
 
 // The brand-specific product name to be included as a component of the install
 // and user data directory paths.
@@ -38,7 +40,7 @@ inline constexpr wchar_t kProductPathName[] = L"Brave-Browser";
 #else
 // If you change this, then you also need to change occurrences of this string
 // in mini_installer_constants.cc.
-inline constexpr wchar_t kProductPathName[] = L"Brave-Browser-Development";
+inline constexpr wchar_t kProductPathName[] = L"Falcon";
 #endif
 
 // The brand-specific safe browsing client name.
@@ -465,31 +467,31 @@ inline constexpr auto kInstallModes = std::to_array<InstallConstants>({
         .logo_suffix = L"",  // No logo suffix for the primary install mode.
         .app_guid =
             L"",  // Empty app_guid since no integraion with Brave Update.
-        .base_app_name = L"Brave Development",     // A distinct base_app_name.
-        .base_app_id = L"BraveDevelopment",        // A distinct base_app_id.
-        .browser_prog_id_prefix = L"BraveDevHTM",  // Browser ProgID prefix.
+        .base_app_name = L"Falcon",               // A distinct base_app_name.
+        .base_app_id = L"Falcon",                 // A distinct base_app_id.
+        .browser_prog_id_prefix = L"FalconHTM",   // Browser ProgID prefix.
         .browser_prog_id_description =
-            L"Brave Development HTML Document",  // Browser ProgID description.
-        .direct_launch_url_scheme = "brave-browser-development",
-        .pdf_prog_id_prefix = L"BraveDevPDF",  // PDF ProgID prefix.
+            L"Falcon HTML Document",  // Browser ProgID description.
+        .direct_launch_url_scheme = "falcon-browser",
+        .pdf_prog_id_prefix = L"FalconPDF",  // PDF ProgID prefix.
         .pdf_prog_id_description =
-            L"Brave Development PDF Document",  // PDF ProgID description.
+            L"Falcon PDF Document",  // PDF ProgID description.
         .active_setup_guid =
-            L"{D6527C63-5CDD-4EF3-9299-1504E17CBD18}",  // Active Setup GUID.
-        .toast_activator_clsid = {0xeb41c6e8,
-                                  0xba35,
-                                  0x4c06,
-                                  {0x96, 0xe8, 0x6f, 0x30, 0xf1, 0x8c, 0xa5,
-                                   0x5c}},  // Toast activator CLSID.
-        .elevator_clsid = {0x5693e62d,
-                           0xd6,
-                           0x4421,
-                           {0xaf, 0xe8, 0x58, 0xf3, 0xc9, 0x47, 0x43,
-                            0x6a}},  // Elevator CLSID.
-        .elevator_iid = {0x17239bf1,
-                         0xa1dc,
-                         0x4642,
-                         {0x84, 0x6c, 0x1b, 0xac, 0x85, 0xf9, 0x6a, 0x10}},
+            L"{0C82D7E2-EC44-4652-B5C8-8704A309469C}",  // Active Setup GUID.
+        .toast_activator_clsid = {0x0f3ac38b,
+                                  0xa746,
+                                  0x4f4b,
+                                  {0x86, 0x48, 0x03, 0xa8, 0xca, 0xb2, 0xb0,
+                                   0xce}},  // Toast activator CLSID.
+        .elevator_clsid = {0xb369ce7a,
+                           0x8bb5,
+                           0x4281,
+                           {0xb4, 0x42, 0xab, 0xdb, 0x1f, 0x56, 0x9a,
+                            0x41}},  // Elevator CLSID.
+        .elevator_iid = {0x420829dc,
+                         0xdf5b,
+                         0x4f04,
+                         {0x9a, 0xf7, 0xe7, 0x72, 0x00, 0x1e, 0xb6, 0x1d}},
         .default_channel_name =
             L"",  // Empty default channel name since no update integration.
         .channel_strategy = ChannelStrategy::UNSUPPORTED,

@@ -39,6 +39,7 @@
 #include "brave/components/constants/webui_url_constants.h"
 #include "brave/components/falcon_control_ui/resources/grit/falcon_control_generated_map.h"
 #include "brave/components/sidebar/browser/pref_names.h"
+#include "brave/components/constants/falcon_version.h"
 #include "brave/components/version_info/version_info.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -47,6 +48,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace {
@@ -234,6 +236,8 @@ class FalconControlMessageHandler : public content::WebUIMessageHandler {
           !!WorkspaceServiceFactory::GetForProfile(profile()));
     d.Set("chromiumVersion", std::string(version_info::GetVersionNumber()));
     d.Set("braveVersion", version_info::GetBraveVersionNumberForDisplay());
+    d.Set("falconVersion", falcon::kFalconVersion);
+    d.Set("falconRepo", falcon::kFalconRepo);
     d.Set("ytDlpVersion", yt_dlp_version_);
     d.Set("aria2Version", "1.37.0");
     return d;
@@ -378,6 +382,10 @@ FalconControlUI::FalconControlUI(content::WebUI* web_ui)
       IDR_FALCON_CONTROL_HTML);
   source->AddBoolean("blackTheme", g_browser_process->local_state()->GetBoolean(
                                        falcon::prefs::kThemeBlack));
+  // About > "Check for updates" asks GitHub Releases directly from the page.
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ConnectSrc,
+      "connect-src 'self' https://api.github.com;");
   web_ui->AddMessageHandler(std::make_unique<FalconControlMessageHandler>());
 }
 

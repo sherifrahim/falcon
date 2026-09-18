@@ -46,6 +46,8 @@ interface State {
   engineEnabled: boolean
   chromiumVersion: string
   braveVersion: string
+  falconVersion: string
+  falconRepo: string
   ytDlpVersion: string
   aria2Version: string
 }
@@ -172,6 +174,50 @@ const Links = styled.div`
   a b { display: block; font-size: 14px; margin-bottom: 2px; }
   a span { font-size: 12px; opacity: 0.65; }
 `
+
+// About > Check for updates: compares the running Falcon version with the
+// newest GitHub release tag (v<semver>) and offers the Windows installer.
+function cmpVer(a: string, b: string): number {
+  const pa = a.replace(/^v/, '').split('.').map((n) => parseInt(n, 10) || 0)
+  const pb = b.replace(/^v/, '').split('.').map((n) => parseInt(n, 10) || 0)
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const d = (pa[i] || 0) - (pb[i] || 0)
+    if (d) return d
+  }
+  return 0
+}
+
+function UpdateCheck({ version, repo }: { version: string; repo: string }) {
+  const [state, setState] = React.useState<{ kind: 'idle' | 'busy' | 'latest' | 'update' | 'error'; tag?: string; url?: string; page?: string; msg?: string }>({ kind: 'idle' })
+  const check = async () => {
+    setState({ kind: 'busy' })
+    try {
+      const r = await fetch(`https://api.github.com/repos/${repo}/releases/latest`, { headers: { Accept: 'application/vnd.github+json' } })
+      if (!r.ok) throw new Error(r.status === 404 ? 'No releases published yet' : `GitHub said ${r.status}`)
+      const j = await r.json()
+      const tag: string = j.tag_name || ''
+      const asset = (j.assets || []).find((a: any) => /Setup.*\.exe$/i.test(a.name)) || (j.assets || []).find((a: any) => /\.exe$/i.test(a.name)) || (j.assets || [])[0]
+      if (cmpVer(tag, version) > 0) setState({ kind: 'update', tag, url: asset?.browser_download_url, page: j.html_url })
+      else setState({ kind: 'latest', tag })
+    } catch (e: any) {
+      setState({ kind: 'error', msg: String(e?.message || e) })
+    }
+  }
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+      {state.kind === 'update' && (
+        <span style={{ color: '#7dd3fc' }}>
+          Falcon {(state.tag || '').replace(/^v/, '')} is available ·{' '}
+          <a href={state.url || state.page} target="_blank" rel="noopener">Download</a>
+          {state.page && state.url && <> · <a href={state.page} target="_blank" rel="noopener">notes</a></>}
+        </span>
+      )}
+      {state.kind === 'latest' && <span style={{ opacity: 0.7 }}>Up to date{state.tag ? ` (latest ${state.tag})` : ''}</span>}
+      {state.kind === 'error' && <span style={{ opacity: 0.7 }}>{state.msg}</span>}
+      <Seg><button onClick={check} disabled={state.kind === 'busy'}>{state.kind === 'busy' ? 'Checking…' : 'Check for updates'}</button></Seg>
+    </span>
+  )
+}
 
 export function App() {
   const [s, setS] = React.useState<State | null>(null)
@@ -462,7 +508,7 @@ export function App() {
 
       <h2 id="about">About</h2>
       <Card>
-        <Row as="div"><span>Falcon</span><span style={{ opacity: 0.7 }}>Brave {s.braveVersion} · Chromium {s.chromiumVersion}</span></Row>
+        <Row as="div"><span>Falcon {s.falconVersion}<span className="sub">Brave {s.braveVersion} · Chromium {s.chromiumVersion}</span></span><UpdateCheck version={s.falconVersion} repo={s.falconRepo} /></Row>
       </Card>
     </Page>
     </Shell>

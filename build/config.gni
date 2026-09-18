@@ -168,6 +168,10 @@ if (is_win) {
 
   brave_product_dir_name =
       "BraveSoftware/Brave-$_product_brand$brave_product_dir_name_suffix"
+  if (!is_official_build) {
+    # Falcon: matches install_static's kCompanyPathName / kProductPathName.
+    brave_product_dir_name = "Falcon/Falcon"
+  }
 
   if (base_sparkle_update_url == "") {
     base_sparkle_update_url =
