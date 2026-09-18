@@ -140,9 +140,15 @@ export function Deck() {
 
   // Ordered flat list for keyboard navigation follows the grouped rendering.
   const groups = GROUP_ORDER.map((e) => ({ entity: e, items: items.filter((i) => i.entity === e) })).filter((g) => g.items.length)
-  const flat = groups.flatMap((g) => g.items)
+  // Arc-style: the deck doubles as the new-tab box. A URL-ish query gets an
+  // "Open" row first; anything else gets a "Search" row after the matches.
+  const q = query.trim()
+  const urlish = !!q && !prompt && !/\s/.test(q) && (/:\/\//.test(q) || /^localhost/.test(q) || /^[^.]+\.[^.]+/.test(q))
+  const go: Item | null = q && !prompt ? { title: urlish ? `Open ${q}` : `Search for “${q}”`, annotation: urlish ? 'new tab' : 'web', entity: -1, ranges: [], index: -1 } : null
+  const flat = go ? (urlish ? [go, ...groups.flatMap((g) => g.items)] : [...groups.flatMap((g) => g.items), go]) : groups.flatMap((g) => g.items)
   const close = () => chrome.send('deck.close')
   const choose = async (it: Item) => {
+    if (it.entity === -1) { chrome.send('deck.navigate', [q]); return }
     try {
       const r: { prompt?: string } = await sendWithPromise('deck.select', it.index, setId)
       if (r && r.prompt) { setQuery(''); setPrompt(r.prompt); input.current?.focus() } else close()
@@ -157,15 +163,25 @@ export function Deck() {
   const onChange = (v: string) => { setQuery(v); chrome.send('deck.query', [v]) }
 
   let cursor = 0
+  const GoRow = ({ idx }: { idx: number }) => go ? (
+    <Row $on={idx === sel} onMouseEnter={() => setSel(idx)} onClick={() => choose(go)}>
+      <span className="ico">{urlish ? '↗' : '⌕'}</span>
+      <span className="t">{go.title}</span>
+      <span className="k">{go.annotation}</span>
+    </Row>
+  ) : null
+  const goFirst = !!go && urlish
+  const goLast = !!go && !urlish
   return (
     <Root onKeyDown={onKey}>
       <InputRow>
         <span className="glyph" />
         {prompt && <span className="prompt">{prompt}</span>}
-        <input ref={input} value={query} placeholder={prompt ? 'Type to filter…' : 'Search tabs, commands, bookmarks, sessions…'} onChange={(e) => onChange(e.target.value)} spellCheck={false} autoComplete="off" />
+        <input ref={input} value={query} placeholder={prompt ? 'Type to filter…' : 'Search tabs, commands, bookmarks, sessions — or type a URL'} onChange={(e) => onChange(e.target.value)} spellCheck={false} autoComplete="off" />
         <button className="close" onClick={close} title="Close (Esc)">✕</button>
       </InputRow>
       <Body>
+        {goFirst && <Group><div className="h">Go</div><GoRow idx={cursor++} /></Group>}
         {groups.map((g) => (
           <Group key={g.entity}>
             <div className="h">{GROUP[g.entity]} ({g.items.length})</div>
@@ -181,7 +197,8 @@ export function Deck() {
             })}
           </Group>
         ))}
-        {flat.length === 0 && <div style={{ padding: '18px 12px', fontSize: 13, opacity: 0.55 }}>{query ? 'Nothing matches.' : 'Type to search tabs, commands, bookmarks and sessions.'}</div>}
+        {goLast && <Group><div className="h">Web</div><GoRow idx={cursor++} /></Group>}
+        {flat.length === 0 && <div style={{ padding: '18px 12px', fontSize: 13, opacity: 0.55 }}>{query ? 'Nothing matches.' : 'Type to search tabs, commands, bookmarks and sessions — or a URL.'}</div>}
       </Body>
       <Foot><span><kbd>↑</kbd> <kbd>↓</kbd> to navigate</span><span><kbd>Enter</kbd> to select</span><span><kbd>Esc</kbd> to close</span></Foot>
     </Root>

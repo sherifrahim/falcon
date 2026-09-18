@@ -14,6 +14,7 @@
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
+#include "base/strings/escape.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -25,6 +26,16 @@
 #include "brave/components/commander/common/constants.h"
 #include "brave/components/falcon_command_deck_ui/resources/grit/falcon_command_deck_generated_map.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
+#include "chrome/browser/ui/browser_window/public/profile_browser_collection.h"
+#include "chrome/browser/ui/navigator/browser_navigator.h"
+#include "chrome/browser/ui/navigator/browser_navigator_params.h"
+#include "components/search_engines/template_url_service.h"
+#include "components/url_formatter/url_fixer.h"
+#include "ui/base/page_transition_types.h"
+#include "ui/base/window_open_disposition.h"
+#include "url/gurl.h"
 #include "components/grit/brave_components_resources.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -62,6 +73,10 @@ class FalconCommandDeckHandler
     web_ui()->RegisterMessageCallback(
         "deck.hidden", base::BindRepeating(&FalconCommandDeckHandler::Hidden,
                                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "deck.navigate",
+        base::BindRepeating(&FalconCommandDeckHandler::Navigate,
+                            base::Unretained(this)));
   }
 
   void OnJavascriptDisallowed() override { Detach(); }
@@ -95,6 +110,54 @@ class FalconCommandDeckHandler
   // args: [] — bubble went away (Esc handled by Views, click outside, tab
   // switch): give the commander back to the omnibox.
   void Hidden(const base::ListValue& args) { Detach(); }
+
+  // args: [text] — Arc-style: the deck is also the "new tab" box. A URL-ish
+  // string opens in a new tab, anything else searches the default engine.
+  void Navigate(const base::ListValue& args) {
+    CHECK_EQ(1U, args.size());
+    if (!args[0].is_string()) {
+      return;
+    }
+    const std::string text = args[0].GetString();
+    Profile* profile = Profile::FromWebUI(web_ui());
+    BrowserWindowInterface* browser =
+        ProfileBrowserCollection::GetForProfile(profile)->GetLastActiveBrowser();
+    if (!browser || text.empty()) {
+      return;
+    }
+    GURL url = LooksLikeUrl(text) ? url_formatter::FixupURL(text, std::string())
+                                  : GURL();
+    ui::PageTransition transition = ui::PAGE_TRANSITION_TYPED;
+    if (!url.is_valid() || !url.has_host()) {
+      transition = ui::PAGE_TRANSITION_GENERATED;
+      url = GURL();
+      if (auto* service = TemplateURLServiceFactory::GetForProfile(profile)) {
+        url = service->GenerateSearchURLForDefaultSearchProvider(
+            base::UTF8ToUTF16(text));
+      }
+      if (!url.is_valid()) {
+        url = GURL(base::StrCat({"https://www.google.com/search?q=",
+                                 base::EscapeQueryParamValue(text, true)}));
+      }
+    }
+    NavigateParams params(profile, url, transition);
+    params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+    params.browser = browser;
+    ::Navigate(&params);
+    Close(args);
+  }
+
+  static bool LooksLikeUrl(const std::string& text) {
+    if (text.find(' ') != std::string::npos) {
+      return false;
+    }
+    if (text.find("://") != std::string::npos ||
+        text.starts_with("localhost")) {
+      return true;
+    }
+    const size_t dot = text.find('.');
+    return dot != std::string::npos && dot > 0 && dot + 1 < text.size();
+  }
 
   // args: [text]
   void Query(const base::ListValue& args) {
