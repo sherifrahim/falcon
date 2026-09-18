@@ -323,8 +323,8 @@ void CommanderService::ShowCommander() {
 
 void CommanderService::HideCommander() {
   if (external_frontend_) {
-    Reset();
-    NotifyObservers();
+    // The omnibox blurring (focus moving into the deck bubble) must not
+    // clear the deck; the deck detaches itself when it goes away.
     return;
   }
   // Snapshot whether we need to revert before Reset(): observers notified by

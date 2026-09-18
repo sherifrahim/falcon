@@ -419,7 +419,9 @@ void BraveBrowserCommandController::UpdateCommandsForFullscreenMode() {
 }
 
 void BraveBrowserCommandController::UpdateCommandForBraveRewards() {
-  UpdateCommandEnabled(IDC_SHOW_BRAVE_REWARDS, true);
+  // Falcon: Rewards is stripped; keep the command off so the command deck and
+  // shortcuts page don't offer it.
+  UpdateCommandEnabled(IDC_SHOW_BRAVE_REWARDS, false);
 }
 
 void BraveBrowserCommandController::UpdateCommandForWebcompatReporter() {

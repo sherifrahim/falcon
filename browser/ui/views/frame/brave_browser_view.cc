@@ -52,6 +52,8 @@
 #include "brave/browser/ui/views/frame/vertical_tabs/vertical_tab_strip_region_view.h"
 #include "brave/browser/falcon/ux/tab_archiver.h"
 #include "brave/browser/ui/views/tabs/brave_tab_strip.h"
+#include "content/public/common/url_constants.h"
+#include "url/url_constants.h"
 #include "brave/browser/ui/views/tabs/brave_tab_strip_layout_helper.h"
 #include "brave/browser/ui/views/location_bar/brave_location_bar_view.h"
 #include "brave/browser/ui/views/omnibox/brave_omnibox_view_views.h"
@@ -1623,7 +1625,21 @@ bool BraveBrowserView::ShouldDisableFocusModeForActiveTab() const {
     return true;
   }
   auto level = model->GetSecurityLevel();
-  return level != security_state::SecurityLevel::SECURE;
+  if (level == security_state::SecurityLevel::SECURE) {
+    return false;
+  }
+  // Falcon: internal pages (falcon://, chrome://, about:, file:, the NTP)
+  // carry no security state; keep the immersive shell there. Only real pages
+  // that are not secure (http, warnings, dangerous) force the toolbar back.
+  if (level == security_state::SecurityLevel::NONE) {
+    const GURL url = model->GetURL();
+    if (url.is_empty() || url.SchemeIs(content::kChromeUIScheme) ||
+        url.SchemeIs("falcon") || url.SchemeIs(url::kAboutScheme) ||
+        url.SchemeIs(url::kFileScheme)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 void BraveBrowserView::StartTabCycling() {

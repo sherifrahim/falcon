@@ -10,12 +10,16 @@
 #include <utility>
 #include <vector>
 
+#include <algorithm>
+
 #include "base/functional/bind.h"
+#include "base/time/time.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "brave/browser/falcon/ux/mouse_gesture_tab_helper.h"
+#include "brave/browser/ui/brave_scheme_utils.h"
 #include "brave/browser/ui/commander/fuzzy_finder.h"
 #include "brave/browser/ui/tabs/brave_tab_prefs.h"
 #include "brave/browser/ui/views/falcon/peek_window.h"
@@ -26,6 +30,11 @@
 #include "chrome/browser/ui/navigator/browser_navigator.h"
 #include "chrome/browser/ui/navigator/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "components/sessions/content/session_tab_helper.h"
+#include "components/url_formatter/url_formatter.h"
+#include "content/public/browser/web_contents.h"
+#include "ui/base/base_window.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
@@ -43,6 +52,44 @@ std::unique_ptr<CommandItem> ItemForTitle(const std::u16string& title,
     return std::make_unique<CommandItem>(title, score, ranges);
   }
   return nullptr;
+}
+
+// Deck "Tabs" group: switch to an open tab of this window (upstream's
+// commander only reaches tabs through composite commands).
+void SwitchToTab(base::WeakPtr<BrowserWindowInterface> browser,
+                 int index,
+                 int session_id) {
+  if (!browser) {
+    return;
+  }
+  TabStripModel* model = browser->GetTabStripModel();
+  if (index < 0 || index >= model->count()) {
+    return;
+  }
+  content::WebContents* contents = model->GetWebContentsAt(index);
+  if (!contents ||
+      sessions::SessionTabHelper::IdForTab(contents).id() != session_id) {
+    return;
+  }
+  model->ActivateTabAt(index);
+  browser->GetWindow()->Activate();
+}
+
+std::u16string HostForDisplay(content::WebContents* contents) {
+  const GURL& url = contents->GetVisibleURL();
+  if (!url.is_valid()) {
+    return std::u16string();
+  }
+  std::u16string host = url_formatter::FormatUrl(
+      url,
+      (url_formatter::kFormatUrlOmitDefaults &
+       ~url_formatter::kFormatUrlOmitHTTP) |
+          url_formatter::kFormatUrlOmitTrivialSubdomains |
+          url_formatter::kFormatUrlOmitHTTPS |
+          url_formatter::kFormatUrlTrimAfterHost,
+      base::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
+  brave_utils::ReplaceChromeToBraveScheme(host);
+  return host;
 }
 
 void OpenPage(base::WeakPtr<BrowserWindowInterface> browser, const GURL& url) {
@@ -149,6 +196,53 @@ CommandSource::CommandResults FalconCommandSource::GetCommands(
   FuzzyFinder finder(input);
   std::vector<gfx::Range> ranges;
   base::WeakPtr<BrowserWindowInterface> weak = browser->GetWeakPtr();
+
+  // Open tabs (all but the active one), so the deck's "Tabs" group is live.
+  // Empty query: most recently active first.
+  {
+    TabStripModel* model = browser->GetTabStripModel();
+    std::vector<std::pair<base::TimeTicks, int>> order;
+    for (int i = 0; i < model->count(); ++i) {
+      if (i == model->active_index()) {
+        continue;
+      }
+      if (content::WebContents* c = model->GetWebContentsAt(i)) {
+        order.emplace_back(c->GetLastActiveTimeTicks(), i);
+      }
+    }
+    std::sort(order.begin(), order.end(),
+              [](const auto& a, const auto& b) { return a.first > b.first; });
+    double recency = 0.98;
+    for (const auto& [time, i] : order) {
+      content::WebContents* c = model->GetWebContentsAt(i);
+      const std::u16string title = c->GetTitle();
+      const std::u16string host = HostForDisplay(c);
+      std::unique_ptr<CommandItem> item;
+      if (input.empty()) {
+        item = std::make_unique<CommandItem>(title, recency,
+                                             std::vector<gfx::Range>());
+        recency *= 0.97;
+      } else {
+        double score = finder.Find(title, ranges);
+        if (score <= 0 && !host.empty()) {
+          std::vector<gfx::Range> host_ranges;
+          if (finder.Find(host, host_ranges) > 0) {
+            score = 0.5;
+            ranges.clear();
+          }
+        }
+        if (score <= 0) {
+          continue;
+        }
+        item = std::make_unique<CommandItem>(title, score, ranges);
+      }
+      item->entity_type = CommandItem::Entity::kTab;
+      item->annotation = host;
+      item->command = base::BindOnce(
+          &SwitchToTab, weak, i, sessions::SessionTabHelper::IdForTab(c).id());
+      results.push_back(std::move(item));
+    }
+  }
 
   struct Page {
     const char16_t* title;
