@@ -49,8 +49,8 @@ jobs:
     steps:
       - name: Sync brave-core to the requested ref
         run: |
-          # The runner session (Task Scheduler) lacks the user PATH (pnpm, node, gh).
-          $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
+          # The runner session (Task Scheduler) cannot see the user PATH (pnpm, node, gh): name the dirs.
+          $env:Path = 'C:\Users\sheri\AppData\Roaming\npm;C:\Program Files\nodejs;C:\Program Files\GitHub CLI;' + $env:Path + ';' + [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
           if (git status --porcelain) { throw "Working tree at D:\falcon\bb\src\brave is not clean; commit or stash before releasing." }
           git fetch --tags origin
           git checkout --detach ${{ env.FALCON_REF }}
@@ -126,7 +126,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
+          $env:Path = 'C:\Users\sheri\AppData\Roaming\npm;C:\Program Files\nodejs;C:\Program Files\GitHub CLI;' + $env:Path + ';' + [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
           $ver = '${{ needs.windows.outputs.version }}'
           if (-not $ver) { $h = Get-Content D:\falcon\bb\src\brave\components\constants\falcon_version.h -Raw; $ver = [regex]::Match($h, 'kFalconVersion\[\] = "([^"]+)"').Groups[1].Value }
           $tag = if ('${{ github.ref_type }}' -eq 'tag') { '${{ github.ref_name }}' } else { "v$ver" }
