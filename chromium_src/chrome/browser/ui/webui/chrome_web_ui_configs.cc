@@ -30,14 +30,14 @@
 #if BUILDFLAG(ENABLE_BRAVE_WALLET)
 #include "brave/browser/ui/webui/brave_wallet/wallet_page/wallet_page_ui.h"
 #if !BUILDFLAG(IS_ANDROID)
-#include "brave/browser/ui/webui/falcon_command_deck_ui.h"
-#include "brave/browser/ui/webui/falcon_control_ui.h"
-#include "brave/browser/ui/webui/falcon_downloader_ui.h"
 #include "brave/browser/ui/webui/brave_wallet/wallet_panel/wallet_panel_ui.h"
 #endif
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
+#include "brave/browser/ui/webui/falcon_command_deck_ui.h"
+#include "brave/browser/ui/webui/falcon_control_ui.h"
+#include "brave/browser/ui/webui/falcon_downloader_ui.h"
 #include "brave/browser/ui/webui/brave_account/brave_account_ui_desktop.h"
 #if BUILDFLAG(ENABLE_BRAVE_REWARDS)
 #include "brave/browser/ui/webui/brave_rewards/rewards_page_top_ui.h"
