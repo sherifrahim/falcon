@@ -1,11 +1,10 @@
-# Falcon release: builds the Windows installer on the self-hosted runner (the
-# dev laptop — GitHub-hosted runners cannot build Chromium) and publishes it as
-# a GitHub Release. Trigger by pushing a tag `v<semver>` (must match
+# Falcon release: Windows installer + Android APK, built on the two self-hosted
+# runners on the dev laptop (Windows host + WSL) — GitHub-hosted runners cannot
+# build Chromium (disk/time). Trigger by pushing a tag `v<semver>` (must match
 # components/constants/falcon_version.h) or manually from the Actions tab.
 #
-# The runner works inside the existing checkout (D:\falcon\bb\src\brave); it
-# does not clone. Static config = non-component, non-official build: no PGO /
-# LTO, so it fits the laptop (~3-4 h the first time, incremental afterwards).
+# Both jobs share one concurrency group so they never build at the same time
+# (one laptop). Each job works inside its existing checkout; nothing is cloned.
 name: Falcon release
 
 on:
@@ -17,33 +16,34 @@ on:
         description: Branch, tag or commit of brave-core (falcon) to build
         default: falcon
         required: true
+      platforms:
+        description: What to build
+        type: choice
+        options: [both, windows, android]
+        default: both
       publish:
-        description: Publish a GitHub Release (otherwise only upload the artifact)
+        description: Publish a GitHub Release (otherwise only upload artifacts)
         type: boolean
         default: false
-      config:
-        description: Build config (Static = distributable, Component = dev)
-        default: Static
-        required: true
-
-concurrency:
-  group: falcon-build   # one build slot on the laptop
-  cancel-in-progress: false
 
 permissions:
   contents: write
 
+env:
+  FALCON_REF: ${{ github.event.inputs.ref || github.ref_name }}
+
 jobs:
   windows:
+    if: github.event_name == 'push' || github.event.inputs.platforms != 'android'
     runs-on: [self-hosted, windows, falcon]
     timeout-minutes: 600
+    concurrency: { group: falcon-build, cancel-in-progress: false }
     defaults:
       run:
         shell: pwsh
         working-directory: D:\falcon\bb\src\brave
-    env:
-      FALCON_CONFIG: ${{ github.event.inputs.config || 'Static' }}
-      FALCON_REF: ${{ github.event.inputs.ref || github.ref_name }}
+    outputs:
+      version: ${{ steps.ver.outputs.version }}
     steps:
       - name: Sync brave-core to the requested ref
         run: |
@@ -64,32 +64,75 @@ jobs:
             throw "Tag ${{ github.ref_name }} does not match falcon_version.h (v$v)"
           }
 
-      - name: Build + package
-        run: |
-          D:\falcon\tools\package.ps1 -Config $env:FALCON_CONFIG -Version ${{ steps.ver.outputs.version }}
+      - name: Build + package (Static)
+        run: D:\falcon\tools\package.ps1 -Config Static -Version ${{ steps.ver.outputs.version }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: falcon-windows-x64-${{ steps.ver.outputs.version }}
-          path: D:\falcon\dist\*
+          name: falcon-windows-x64
+          path: |
+            D:\falcon\dist\*.exe
+            D:\falcon\dist\*.zip
+            D:\falcon\dist\SHA256SUMS.txt
+            D:\falcon\dist\RELEASE_NOTES.md
           if-no-files-found: error
           retention-days: 14
-
-      - name: Publish GitHub Release
-        if: github.ref_type == 'tag' || github.event.inputs.publish == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          $tag = if ('${{ github.ref_type }}' -eq 'tag') { '${{ github.ref_name }}' } else { 'v${{ steps.ver.outputs.version }}' }
-          $files = Get-ChildItem D:\falcon\dist\* -Include *.exe,*.zip,SHA256SUMS.txt | ForEach-Object { $_.FullName }
-          $exists = (gh release view $tag --repo ${{ github.repository }} 2>$null) -ne $null
-          if (-not $exists) {
-            gh release create $tag --repo ${{ github.repository }} --title "Falcon $tag" --notes-file D:\falcon\dist\RELEASE_NOTES.md --latest $files
-          } else {
-            gh release upload $tag --repo ${{ github.repository }} --clobber $files
-          }
 
       - name: Return the checkout to the falcon branch
         if: always()
         run: git checkout falcon
+
+  android:
+    if: github.event_name == 'push' || github.event.inputs.platforms != 'windows'
+    runs-on: [self-hosted, linux, falcon-android]
+    timeout-minutes: 900
+    concurrency: { group: falcon-build, cancel-in-progress: false }
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Build + package (arm64 APK)
+        run: bash /mnt/d/falcon/tools/wsl-android-package.sh "${FALCON_REF}"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: falcon-android-arm64
+          path: |
+            /mnt/d/falcon/dist-android/*.apk
+            /mnt/d/falcon/dist-android/SHA256SUMS-android.txt
+          if-no-files-found: error
+          retention-days: 14
+
+  release:
+    needs: [windows, android]
+    if: always() && (github.ref_type == 'tag' || github.event.inputs.publish == 'true') && contains(needs.*.result, 'success') && !contains(needs.*.result, 'failure')
+    runs-on: [self-hosted, windows, falcon]
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Collect artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: D:\falcon\release-stage
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ver = '${{ needs.windows.outputs.version }}'
+          if (-not $ver) { $h = Get-Content D:\falcon\bb\src\brave\components\constants\falcon_version.h -Raw; $ver = [regex]::Match($h, 'kFalconVersion\[\] = "([^"]+)"').Groups[1].Value }
+          $tag = if ('${{ github.ref_type }}' -eq 'tag') { '${{ github.ref_name }}' } else { "v$ver" }
+          $stage = 'D:\falcon\release-stage'
+          $files = Get-ChildItem $stage -Recurse -File | Where-Object { $_.Name -match '\.(exe|zip|apk)$' -or $_.Name -like 'SHA256SUMS*' } | ForEach-Object { $_.FullName }
+          $notes = Get-ChildItem $stage -Recurse -Filter RELEASE_NOTES.md | Select-Object -First 1
+          $notesArg = if ($notes) { @('--notes-file', $notes.FullName) } else { @('--notes', "Falcon $tag") }
+          $exists = (gh release view $tag --repo ${{ github.repository }} 2>$null) -ne $null
+          if (-not $exists) {
+            gh release create $tag --repo ${{ github.repository }} --title "Falcon $tag" --latest @notesArg $files
+          } else {
+            gh release upload $tag --repo ${{ github.repository }} --clobber $files
+          }
+          Remove-Item -Recurse -Force $stage
