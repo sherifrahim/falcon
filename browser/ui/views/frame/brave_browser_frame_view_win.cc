@@ -10,6 +10,7 @@
 #include "brave/browser/ui/tabs/public/vertical_tab_controller.h"
 #include "brave/browser/ui/views/frame/brave_browser_view.h"
 #include "brave/browser/ui/views/frame/brave_non_client_hit_test_helper.h"
+#include "brave/browser/ui/views/falcon/peek_window.h"
 #include "brave/browser/ui/views/frame/brave_window_frame_graphic.h"
 #include "brave/browser/ui/views/frame/focus_mode_top_overlay.h"
 #include "brave/browser/ui/views/toolbar/brave_toolbar_view.h"
@@ -45,6 +46,10 @@ BraveBrowserFrameViewWin::BraveBrowserFrameViewWin(
       brave_tabs::kVerticalTabsShowTitleOnWindow, prefs,
       base::BindRepeating(&BraveBrowserFrameViewWin::OnVerticalTabsPrefsChanged,
                           base::Unretained(this)));
+  shell_mode_.Init(falcon::prefs::kShellMode, prefs,
+                   base::BindRepeating(
+                       &BraveBrowserFrameViewWin::OnShellModeChanged,
+                       base::Unretained(this)));
 
   if (auto* controller = browser->GetFeatures().focus_mode_controller()) {
     focus_mode_observation_.Observe(controller);
@@ -167,13 +172,27 @@ int BraveBrowserFrameViewWin::NonClientHitTest(const gfx::Point& point) {
 
 void BraveBrowserFrameViewWin::OnTopOverlayRevealFractionChanged(
     double reveal_fraction) {
+  last_reveal_fraction_ = reveal_fraction;
   if (!caption_button_container_ || !caption_button_container_->layer()) {
     return;
   }
-
+  // Mac-style: the traffic lights in the title bar are the window controls;
+  // keep the Windows buttons parked above the window.
+  if (IsMacShell()) {
+    reveal_fraction = 0.0;
+  }
   const int height = caption_button_container_->height();
   caption_button_container_->layer()->SetTransform(
       gfx::Transform::MakeTranslation(0, -height * (1.0 - reveal_fraction)));
+}
+
+bool BraveBrowserFrameViewWin::IsMacShell() const {
+  return !shell_mode_.GetPrefName().empty() &&
+         shell_mode_.GetValue() == falcon::prefs::kShellMac;
+}
+
+void BraveBrowserFrameViewWin::OnShellModeChanged() {
+  OnTopOverlayRevealFractionChanged(last_reveal_fraction_);
 }
 
 bool BraveBrowserFrameViewWin::ShouldShowWindowTitle(TitlebarType type) const {

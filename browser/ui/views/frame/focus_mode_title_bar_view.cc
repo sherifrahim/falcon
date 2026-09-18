@@ -191,6 +191,21 @@ void FocusModeTitleBarView::Layout(PassKey) {
                      size.width(), size.height());
 }
 
+void FocusModeTitleBarView::AddedToWidget() {
+  if (views::Widget* widget = GetWidget(); widget && !widget_observation_.IsObserving()) {
+    widget_observation_.Observe(widget);
+  }
+}
+
+void FocusModeTitleBarView::RemovedFromWidget() {
+  widget_observation_.Reset();
+}
+
+void FocusModeTitleBarView::OnWidgetActivationChanged(views::Widget* widget,
+                                                      bool active) {
+  lights_->SchedulePaint();
+}
+
 void FocusModeTitleBarView::OnTrafficLight(int which) {
   views::Widget* widget = GetWidget();
   if (!widget) {

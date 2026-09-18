@@ -11,7 +11,10 @@
 #include "components/tabs/public/tab_interface.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/text_constants.h"
+#include "base/scoped_observation.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace views {
 class ImageView;
@@ -21,7 +24,8 @@ class Label;
 // Small title bar shown at the top of the browser window when Focus Mode is
 // enabled. Displays the active tab's favicon followed by the formatted host
 // (omits https://, trivial subdomains, and trims after the host).
-class FocusModeTitleBarView : public views::View {
+class FocusModeTitleBarView : public views::View,
+                              public views::WidgetObserver {
   METADATA_HEADER(FocusModeTitleBarView, views::View)
 
  public:
@@ -40,6 +44,11 @@ class FocusModeTitleBarView : public views::View {
 
   // views::View:
   void Layout(PassKey) override;
+  void AddedToWidget() override;
+  void RemovedFromWidget() override;
+
+  // views::WidgetObserver:
+  void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
 
  private:
   void Update();
@@ -51,6 +60,8 @@ class FocusModeTitleBarView : public views::View {
   base::CallbackListSubscription tab_will_detach_subscription_;
   base::CallbackListSubscription tab_ui_updated_subscription_;
   raw_ptr<views::View> lights_ = nullptr;
+  base::ScopedObservation<views::Widget, views::WidgetObserver>
+      widget_observation_{this};
   raw_ptr<views::ImageView> favicon_image_ = nullptr;
   raw_ptr<views::Label> title_label_ = nullptr;
   raw_ptr<views::Label> domain_label_ = nullptr;

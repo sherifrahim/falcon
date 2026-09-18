@@ -45,10 +45,16 @@ class BraveBrowserFrameViewWin : public BrowserFrameViewWin,
   // FocusModeController::Observer:
   void OnFocusModeToggled(bool enabled) override;
 
+  // Falcon: Mac-style window style hides the Windows caption buttons.
+  bool IsMacShell() const;
+  void OnShellModeChanged();
+
   std::unique_ptr<BraveWindowFrameGraphic> frame_graphic_;
 
   BooleanPrefMember using_vertical_tabs_;
   BooleanPrefMember showing_window_title_for_vertical_tabs_;
+  IntegerPrefMember shell_mode_;
+  double last_reveal_fraction_ = 0.0;
 
   base::ScopedObservation<FocusModeController, FocusModeController::Observer>
       focus_mode_observation_{this};

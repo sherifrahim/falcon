@@ -47,6 +47,7 @@
 #include "brave/browser/ui/views/frame/focus_mode_top_overlay.h"
 #include "brave/browser/ui/views/frame/split_view/brave_contents_container_view.h"
 #include "brave/browser/ui/views/frame/split_view/brave_multi_contents_view.h"
+#include "brave/browser/ui/views/frame/brave_non_client_hit_test_helper.h"
 #include "brave/browser/ui/views/frame/tab_strip_placement_coordinator.h"
 #include "brave/browser/ui/views/frame/vertical_tabs/vertical_tab_strip_container_view.h"
 #include "brave/browser/ui/views/frame/vertical_tabs/vertical_tab_strip_region_view.h"
@@ -475,6 +476,10 @@ BraveBrowserView::BraveBrowserView(Browser* browser) : BrowserView(browser) {
     focus_mode_title_bar_view_ =
         AddChildView(std::make_unique<FocusModeTitleBarView>());
     focus_mode_title_bar_view_->SetVisible(false);
+    // Mac-style: the slim title bar drags the window like a macOS title bar
+    // (and double-click zooms); the traffic lights inside stay clickable.
+    browser_->GetFeatures().brave_non_client_hit_test_helper()->RegisterCaptionArea(
+        focus_mode_title_bar_view_);
 
     focus_mode_top_overlay_ =
         AddChildView(std::make_unique<FocusModeTopOverlay>(
