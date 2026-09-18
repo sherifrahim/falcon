@@ -96,18 +96,6 @@ public class BottomToolbarConfiguration {
      * Falcon: writes the toolbar position that goes with a bottom bar mode. Called when the
      * mode changes in settings and once at startup so a fresh install starts in Reach.
      */
-    private static final String FALCON_BOTTOM_BAR_APPLIED_KEY = "falcon_bottom_bar_applied";
-
-    /** Applies the default Falcon mode exactly once per install. */
-    public static void applyFalconBottomBarModeOnce() {
-        if (ChromeSharedPreferences.getInstance()
-                .readBoolean(FALCON_BOTTOM_BAR_APPLIED_KEY, false)) {
-            return;
-        }
-        ChromeSharedPreferences.getInstance().writeBoolean(FALCON_BOTTOM_BAR_APPLIED_KEY, true);
-        applyFalconBottomBarMode(FalconPrefs.getBottomBarMode());
-    }
-
     public static void applyFalconBottomBarMode(@FalconPrefs.BottomBarMode int mode) {
         boolean top = mode == FalconPrefs.BottomBarMode.CLASSIC;
         if (AddressBarPreference.isToolbarConfiguredToShowOnTop() != top) {

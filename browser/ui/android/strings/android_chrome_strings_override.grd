@@ -114,6 +114,10 @@ CHAR_LIMIT guidelines:
   </translations>
   <release seq="1">
     <messages fallback_to_english="true">
+      <!-- Falcon: Chromium's page preview sheet is Falcon's Peek. -->
+      <message name="IDS_CONTEXTMENU_OPEN_IN_EPHEMERAL_TAB" desc="Context menu item that opens a link as a Peek sheet over the current page. [CHAR_LIMIT=30]">
+        Peek <ph name="BEGIN_NEW">&lt;new&gt;</ph>New<ph name="END_NEW">&lt;/new&gt;</ph>
+      </message>
       <message name="IDS_NOTIFICATION_CATEGORY_INCOGNITO" desc="Label for notification that indicates Private mode is active, within a list of notification categories. [CHAR_LIMIT=32]">
         Private
       </message>

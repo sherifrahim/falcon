@@ -28,6 +28,7 @@ brave_java_sources = [
   "../../brave/android/java/org/chromium/chrome/browser/BraveAppHooks.java",
   "../../brave/android/java/org/chromium/chrome/browser/BraveApplicationImplBase.java",
   "../../brave/android/java/org/chromium/chrome/browser/BraveConstants.java",
+  "../../brave/android/java/org/chromium/chrome/browser/falcon/FalconDefaults.java",
   "../../brave/android/java/org/chromium/chrome/browser/falcon/FalconPrefs.java",
   "../../brave/android/java/org/chromium/chrome/browser/falcon/download/DownloadItem.java",
   "../../brave/android/java/org/chromium/chrome/browser/falcon/download/FalconDownloadBridge.java",
