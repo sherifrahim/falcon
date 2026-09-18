@@ -131,7 +131,7 @@ jobs:
           $notesArg = if ($notes) { @('--notes-file', $notes.FullName) } else { @('--notes', "Falcon $tag") }
           $exists = (gh release view $tag --repo ${{ github.repository }} 2>$null) -ne $null
           if (-not $exists) {
-            gh release create $tag --repo ${{ github.repository }} --title "Falcon $tag" --latest @notesArg $files
+            gh release create $tag --repo ${{ github.repository }} --target ${{ env.FALCON_REF }} --title "Falcon $tag" --latest @notesArg $files
           } else {
             gh release upload $tag --repo ${{ github.repository }} --clobber $files
           }
