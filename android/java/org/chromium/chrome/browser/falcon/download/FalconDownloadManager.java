@@ -13,7 +13,6 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
@@ -470,58 +469,33 @@ public final class FalconDownloadManager {
         if (f.exists()) f.delete();
     }
 
-    /** Copies the finished file into the device's Downloads and returns its content URI. */
-    @SuppressWarnings("deprecation") // getExternalStoragePublicDirectory: pre-Q fallback only.
+    /**
+     * Copies the finished file into the device's Downloads collection (MediaStore, which
+     * de-duplicates names itself) and returns its content URI.
+     */
     private String exportToDownloads(DownloadItem item, File partFile) throws IOException {
-        String name = uniqueName(item.fileName);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            ContentResolver resolver = mContext.getContentResolver();
-            ContentValues values = new ContentValues();
-            values.put(MediaStore.Downloads.DISPLAY_NAME, name);
-            values.put(
-                    MediaStore.Downloads.MIME_TYPE,
-                    TextUtils.isEmpty(item.mimeType) ? "application/octet-stream" : item.mimeType);
-            values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
-            values.put(MediaStore.Downloads.IS_PENDING, 1);
-            Uri uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
-            if (uri == null) return "";
-            try (InputStream in = new FileInputStream(partFile);
-                    OutputStream out = resolver.openOutputStream(uri)) {
-                if (out == null) throw new IOException("no output stream");
-                copy(in, out);
-            } catch (IOException e) {
-                resolver.delete(uri, null, null);
-                throw e;
-            }
-            values.clear();
-            values.put(MediaStore.Downloads.IS_PENDING, 0);
-            resolver.update(uri, values, null, null);
-            return uri.toString();
-        }
-        File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        if (!dir.exists()) dir.mkdirs();
-        File target = new File(dir, name);
+        ContentResolver resolver = mContext.getContentResolver();
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Downloads.DISPLAY_NAME, item.fileName);
+        values.put(
+                MediaStore.Downloads.MIME_TYPE,
+                TextUtils.isEmpty(item.mimeType) ? "application/octet-stream" : item.mimeType);
+        values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+        values.put(MediaStore.Downloads.IS_PENDING, 1);
+        Uri uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+        if (uri == null) return "";
         try (InputStream in = new FileInputStream(partFile);
-                OutputStream out = new FileOutputStream(target)) {
+                OutputStream out = resolver.openOutputStream(uri)) {
+            if (out == null) throw new IOException("no output stream");
             copy(in, out);
+        } catch (IOException e) {
+            resolver.delete(uri, null, null);
+            throw e;
         }
-        return Uri.fromFile(target).toString();
-    }
-
-    @SuppressWarnings("deprecation")
-    private String uniqueName(String fileName) {
-        // MediaStore de-duplicates names itself on Q+; keep the pre-Q path honest.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) return fileName;
-        File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        if (!new File(dir, fileName).exists()) return fileName;
-        int dot = fileName.lastIndexOf('.');
-        String base = dot > 0 ? fileName.substring(0, dot) : fileName;
-        String ext = dot > 0 ? fileName.substring(dot) : "";
-        for (int i = 1; i < 1000; i++) {
-            String candidate = String.format(Locale.US, "%s (%d)%s", base, i, ext);
-            if (!new File(dir, candidate).exists()) return candidate;
-        }
-        return fileName;
+        values.clear();
+        values.put(MediaStore.Downloads.IS_PENDING, 0);
+        resolver.update(uri, values, null, null);
+        return uri.toString();
     }
 
     private static void copy(InputStream in, OutputStream out) throws IOException {

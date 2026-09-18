@@ -13,7 +13,6 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ServiceInfo;
-import android.os.Build;
 import android.os.IBinder;
 
 import androidx.core.app.NotificationCompat;
@@ -40,7 +39,6 @@ public class FalconDownloadService extends Service implements FalconDownloadMana
     static final String ACTION_PAUSE = "falcon.download.PAUSE";
     static final String ACTION_RESUME = "falcon.download.RESUME";
     static final String ACTION_CANCEL = "falcon.download.CANCEL";
-    static final String ACTION_OPEN = "falcon.download.OPEN";
     static final String EXTRA_ID = "id";
 
     private static boolean sRunning;
@@ -148,12 +146,7 @@ public class FalconDownloadService extends Service implements FalconDownloadMana
     }
 
     private void goForeground(int id, Notification n) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            ServiceCompat.startForeground(
-                    this, id, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
-        } else {
-            super.startForeground(id, n);
-        }
+        ServiceCompat.startForeground(this, id, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
     }
 
     private Notification buildSummary(FalconDownloadManager manager) {
