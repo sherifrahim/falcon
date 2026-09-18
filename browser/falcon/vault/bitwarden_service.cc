@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/json/json_reader.h"
@@ -149,8 +150,10 @@ std::unique_ptr<BitwardenService::CliResult> RunCli(
   base::FilePath out_path;
   base::CreateTemporaryFileInDir(VaultDir(), &out_path);
   {
-    base::File out(out_path, base::File::FLAG_OPEN_ALWAYS |
-                                 base::File::FLAG_WRITE | base::File::FLAG_APPEND);
+    // Fresh temp file: plain write (FLAG_APPEND may not be combined with
+    // FLAG_WRITE on Windows).
+    base::File out(out_path,
+                   base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_WRITE);
     base::LaunchOptions options;
     options.environment = CliEnvironment(session);
     options.current_directory = CliExe().DirName();
@@ -220,6 +223,16 @@ std::unique_ptr<BitwardenService::LaunchResult> LaunchServe(
   return result;
 }
 
+// Deletes temp files a crashed or killed previous run may have left in the
+// vault directory (CLI output captures and password files).
+void SweepTempFiles() {
+  base::FileEnumerator it(VaultDir(), false, base::FileEnumerator::FILES,
+                          FILE_PATH_LITERAL("*.tmp"));
+  for (base::FilePath f = it.Next(); !f.empty(); f = it.Next()) {
+    base::DeleteFile(f);
+  }
+}
+
 base::FilePath WritePasswordFile(const std::string& password) {
   base::CreateDirectory(VaultDir());
   base::FilePath path;
@@ -268,7 +281,11 @@ BitwardenService* BitwardenService::Get() {
   return instance.get();
 }
 
-BitwardenService::BitwardenService() = default;
+BitwardenService::BitwardenService() {
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&SweepTempFiles));
+}
 BitwardenService::~BitwardenService() = default;
 
 bool BitwardenService::IsConfigured() const {
@@ -362,6 +379,7 @@ void BitwardenService::Connect(const std::string& email,
       base::BindOnce(
           [](std::string email, std::string password, std::string totp,
              std::string server) {
+            SweepTempFiles();
             // A previous account may be logged in: log out first (ignored
             // if not).
             RunCli({"logout"}, std::string(), base::FilePath());
@@ -568,6 +586,10 @@ void BitwardenService::GetStatus(StatusCallback callback) {
 void BitwardenService::Unlock(const std::string& master_password,
                               ResultCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!IsConfigured()) {
+    std::move(callback).Run(false, "Connect your Bitwarden account first.");
+    return;
+  }
   if (!serving_) {
     EnsureServing();
     std::move(callback).Run(false, "Vault sidecar is starting; try again.");
