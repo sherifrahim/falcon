@@ -50,6 +50,7 @@
 #include "brave/browser/ui/views/frame/tab_strip_placement_coordinator.h"
 #include "brave/browser/ui/views/frame/vertical_tabs/vertical_tab_strip_container_view.h"
 #include "brave/browser/ui/views/frame/vertical_tabs/vertical_tab_strip_region_view.h"
+#include "brave/browser/falcon/ux/tab_archiver.h"
 #include "brave/browser/ui/views/tabs/brave_tab_strip.h"
 #include "brave/browser/ui/views/tabs/brave_tab_strip_layout_helper.h"
 #include "brave/browser/ui/views/location_bar/brave_location_bar_view.h"
@@ -404,6 +405,12 @@ BraveBrowserView::BraveBrowserView(Browser* browser) : BrowserView(browser) {
       falcon::prefs::kShellMode,
       base::BindRepeating(&BraveBrowserView::OnShellModeChanged,
                           base::Unretained(this)));
+  // Arc-style auto-archive of idle tabs (off unless falcon.tabs.archive_hours).
+  if (browser_->GetType() == BrowserWindowInterface::Type::TYPE_NORMAL) {
+    tab_archiver_ = std::make_unique<falcon::TabArchiver>(
+        browser_->tab_strip_model(), GetProfile()->GetPrefs());
+  }
+
   // Dock tab cards: process-wide flag read by the vertical tab layout.
   tabs::SetDockCardsEnabled(
       GetProfile()->GetPrefs()->GetBoolean(falcon::prefs::kDockCards));

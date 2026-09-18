@@ -40,6 +40,7 @@ interface State {
   blackTheme: boolean
   verticalTabsCollapsed: boolean
   dockCards: boolean
+  archiveHours: number
   videoPill: boolean
   clipboardMonitor: boolean
   engineEnabled: boolean
@@ -363,6 +364,14 @@ export function App() {
         {bool('mouseGestures', 'Mouse gestures', 'Hold right button and drag: ← back · → forward · ↑ reload · ↓ new tab · ↓→ close · ↓← reopen · ↑←/↑→ switch tab')}
         {bool('peek', 'Peek', 'Shift+click a link to preview it in a floating window (Arc-style); Esc closes, "Open in tab" keeps it')}
         {bool('miniMenu', 'Mini menu on text selection', 'Select text with the mouse: a tiny Copy · Search pill appears by the cursor (Edge-style, no big menu)')}
+        <Row as="div">
+          <span>Auto-archive idle tabs<span className="sub">Arc-style: background tabs untouched for this long are closed (they stay in Recently closed · Ctrl+Shift+T); pinned and playing tabs are kept</span></span>
+          <Seg>
+            {([[0, 'Off'], [12, '12 h'], [24, '1 day'], [72, '3 days'], [168, '1 week']] as Array<[number, string]>).map(([v, l]) => (
+              <button key={v} className={s.archiveHours === v ? 'on' : ''} onClick={() => update({ archiveHours: v })}>{l}</button>
+            ))}
+          </Seg>
+        </Row>
         {bool('videoPill', 'Download button on videos', 'Hover any video for "Download with Falcon"')}
         {bool('clipboardMonitor', 'Watch the clipboard', 'Offer to download copied file links and magnets')}
         {bool('engineEnabled', 'Falcon download engine', 'Take over downloads from pages (off = plain Chromium downloads)')}

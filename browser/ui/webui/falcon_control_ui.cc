@@ -25,6 +25,7 @@
 #include "brave/browser/falcon/media/media_service.h"
 #include "brave/browser/falcon/ux/boost_tab_helper.h"
 #include "brave/browser/falcon/ux/mini_menu_tab_helper.h"
+#include "brave/browser/falcon/ux/tab_archiver.h"
 #include "brave/browser/falcon/ux/mouse_gesture_tab_helper.h"
 #include "brave/browser/ui/tabs/brave_tab_prefs.h"
 #include "brave/browser/ui/color/falcon_color_mixer.h"
@@ -223,6 +224,7 @@ class FalconControlMessageHandler : public content::WebUIMessageHandler {
     d.Set("verticalTabsCollapsed",
           p->GetBoolean(brave_tabs::kVerticalTabsCollapsed));
     d.Set("dockCards", p->GetBoolean(falcon::prefs::kDockCards));
+    d.Set("archiveHours", p->GetInteger(falcon::prefs::kTabArchiveHours));
     d.Set("videoPill", p->GetBoolean(falcon::prefs::kDownloadVideoPill));
     d.Set("clipboardMonitor",
           p->GetBoolean(falcon::prefs::kDownloadClipboardMonitor));
@@ -309,6 +311,9 @@ class FalconControlMessageHandler : public content::WebUIMessageHandler {
     }
     if (std::optional<bool> v = in.FindBool("dockCards")) {
       p->SetBoolean(falcon::prefs::kDockCards, *v);
+    }
+    if (std::optional<int> v = in.FindInt("archiveHours")) {
+      p->SetInteger(falcon::prefs::kTabArchiveHours, std::clamp(*v, 0, 24 * 30));
     }
     if (std::optional<bool> v = in.FindBool("videoPill")) {
       p->SetBoolean(falcon::prefs::kDownloadVideoPill, *v);

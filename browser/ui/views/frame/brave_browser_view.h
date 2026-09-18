@@ -78,6 +78,10 @@ class BrowserWindowInterface;
 class FocusModeTitleBarView;
 class FocusModeTopOverlay;
 class WebUIBubbleManager;
+
+namespace falcon {
+class TabArchiver;
+}  // namespace falcon
 namespace falcon {
 class TelemetryEdgeView;
 }  // namespace falcon
@@ -376,6 +380,7 @@ class BraveBrowserView : public BrowserView,
   // Falcon cockpit: download beam on the right edge.
   raw_ptr<falcon::TelemetryEdgeView> telemetry_edge_ = nullptr;
   std::unique_ptr<WebUIBubbleManager> command_deck_bubble_;
+  std::unique_ptr<falcon::TabArchiver> tab_archiver_;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Caches the PWA Shields toolbar button for this window. Note that this

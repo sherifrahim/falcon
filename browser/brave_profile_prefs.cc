@@ -144,6 +144,7 @@
 #include "brave/browser/falcon/ux/boost_tab_helper.h"
 #include "brave/browser/falcon/ux/mini_menu_tab_helper.h"
 #include "brave/browser/falcon/ux/mouse_gesture_tab_helper.h"
+#include "brave/browser/falcon/ux/tab_archiver.h"
 #include "brave/browser/ui/views/falcon/peek_window.h"
 #include "brave/browser/ui/webui/falcon_newtab_ui.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -433,6 +434,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   falcon::prefs::RegisterPeekPrefs(registry);
   falcon::prefs::RegisterBoostPrefs(registry);
   falcon::prefs::RegisterMiniMenuPrefs(registry);
+  falcon::prefs::RegisterTabArchiverPrefs(registry);
 #endif
 
   brave_perf_predictor::PerfPredictorTabHelper::RegisterProfilePrefs(registry);

@@ -12,6 +12,8 @@ brave_browser_falcon_ux_sources = [
   "//brave/browser/falcon/ux/mini_menu_tab_helper.h",
   "//brave/browser/falcon/ux/mouse_gesture_tab_helper.cc",
   "//brave/browser/falcon/ux/mouse_gesture_tab_helper.h",
+  "//brave/browser/falcon/ux/tab_archiver.cc",
+  "//brave/browser/falcon/ux/tab_archiver.h",
 ]
 
 brave_browser_falcon_ux_deps = [
