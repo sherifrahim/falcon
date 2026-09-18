@@ -68,6 +68,13 @@
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "base/strings/string_number_conversions.h"
+#include "cc/paint/paint_flags.h"
+#include "ui/color/color_provider.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/skia_paint_util.h"
+#include "ui/views/background.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/image_view.h"
@@ -287,6 +294,30 @@ TabStripPlacementCoordinator* GetPlacementCoordinator(
 
 constexpr int kDockHeaderHeight = 30;
 
+// Arc-style dock surface: the toolbar colour fading into a whisper of the
+// accent towards the bottom, so the rail reads as its own panel rather than a
+// flat strip of chrome. Follows the colour provider (dark / black / light).
+class DockGradientBackground : public views::Background {
+ public:
+  DockGradientBackground() = default;
+  ~DockGradientBackground() override = default;
+
+  void Paint(gfx::Canvas* canvas, views::View* view) const override {
+    const auto* provider = view->GetColorProvider();
+    if (!provider) {
+      return;
+    }
+    const SkColor top = provider->GetColor(kColorToolbar);
+    const SkColor accent = provider->GetColor(kColorToolbarButtonActivated);
+    const SkColor bottom = color_utils::AlphaBlend(accent, top, 0.07f);
+    cc::PaintFlags flags;
+    flags.setShader(gfx::CreateGradientShader(
+        gfx::Point(0, 0), gfx::Point(0, std::max(1, view->height())), top,
+        bottom));
+    canvas->DrawRect(gfx::RectF(view->GetLocalBounds()), flags);
+  }
+};
+
 }  // namespace
 
 // Falcon dock header (Arc-style): a "Spaces" opener for the saved-session
@@ -404,7 +435,7 @@ BraveVerticalTabStripRegionView::BraveVerticalTabStripRegionView(
       GetShortcutTextForNewTabButton(browser_view), browser_));
 
   resize_area_ = AddChildView(std::make_unique<ResettableResizeArea>(this));
-  SetBackground(views::CreateSolidBackground(kColorToolbar));
+  SetBackground(std::make_unique<DockGradientBackground>());
 
   auto* prefs = browser_->GetProfile()->GetPrefs();
 
