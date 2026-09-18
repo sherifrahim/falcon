@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--* Copyright (c) 2026 The Falcon Authors. All rights reserved.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<!-- Falcon design tokens (docs/design/android/mock-v6.html): one accent, three containers. -->
+<resources>
+    <color name="falcon_ink">#FFFFFFFF</color>
+    <color name="falcon_ink_2">#A3FFFFFF</color>
+    <color name="falcon_ink_3">#66FFFFFF</color>
+    <color name="falcon_accent">#FF38BDF8</color>
+    <color name="falcon_accent_ink">#FF04111C</color>
+    <color name="falcon_ok">#FF22C55E</color>
+    <color name="falcon_warn">#FFF59E0B</color>
+    <color name="falcon_hair">#1FFFFFFF</color>
+    <color name="falcon_hair_2">#38FFFFFF</color>
+    <color name="falcon_surface">#09FFFFFF</color>
+    <color name="falcon_glass">#AD080C16</color>
+    <color name="falcon_glass_solid">#FF0D1322</color>
+    <color name="falcon_selection">#2438BDF8</color>
+    <color name="falcon_selection_line">#8C38BDF8</color>
+    <color name="falcon_bg">#FF05070C</color>
+    <color name="falcon_bg_2">#FF070A12</color>
+    <!-- the Downloads space: indigo field fading into ink -->
+    <color name="falcon_space_downloads">#FF2B3A8F</color>
+    <color name="falcon_space_downloads_2">#FF0B1030</color>
+    <color name="falcon_segment_idle">#1FFFFFFF</color>
+    <color name="falcon_segment_done">#FF38BDF8</color>
+    <color name="falcon_segment_done_dim">#66FFFFFF</color>
+</resources>

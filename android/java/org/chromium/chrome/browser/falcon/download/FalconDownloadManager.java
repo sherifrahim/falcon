@@ -175,6 +175,29 @@ public final class FalconDownloadManager {
         return item;
     }
 
+    /** A download typed or pasted by the user; |sha256| may be empty. */
+    public DownloadItem enqueueManual(String url, String fileName, String sha256) {
+        DownloadItem item = enqueue(url, "", "", "", fileName, "", -1);
+        item.sha256Expected = sha256 == null ? "" : sha256;
+        save();
+        return item;
+    }
+
+    /** Starts a cancelled or failed download again from the beginning. */
+    public void retry(String id) {
+        DownloadItem item = mItems.get(id);
+        if (item == null || mTasks.containsKey(id)) return;
+        deletePart(item);
+        item.setSegments(new ArrayList<>());
+        item.resumable = false;
+        item.etag = "";
+        item.error = "";
+        item.sha256Actual = "";
+        item.state = State.QUEUED;
+        schedule();
+        notifyChanged();
+    }
+
     public void pause(String id) {
         DownloadItem item = mItems.get(id);
         if (item == null) return;

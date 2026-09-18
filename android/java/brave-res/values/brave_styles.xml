@@ -747,4 +747,31 @@
         <item name="android:textStyle">bold</item>
         <item name="android:textColor">@android:color/white</item>
     </style>
+
+    <!-- Falcon: dark-glass surfaces (docs/design/android/mock-v6.html). -->
+    <style name="Theme.Falcon.Downloads" parent="Theme.Chromium.Activity">
+        <item name="android:windowBackground">@color/falcon_bg</item>
+        <item name="android:statusBarColor">@color/falcon_space_downloads</item>
+        <item name="android:navigationBarColor">@color/falcon_bg</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:textColorPrimary">@color/falcon_ink</item>
+        <item name="android:textColorSecondary">@color/falcon_ink_2</item>
+        <item name="colorAccent">@color/falcon_accent</item>
+        <item name="colorControlActivated">@color/falcon_accent</item>
+    </style>
+
+    <style name="Theme.Falcon.BottomSheet" parent="Theme.Design.Light.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/Falcon.BottomSheet.Modal</item>
+        <item name="android:windowSoftInputMode">adjustResize</item>
+        <item name="android:textColorPrimary">@color/falcon_ink</item>
+        <item name="android:textColorSecondary">@color/falcon_ink_2</item>
+        <item name="colorAccent">@color/falcon_accent</item>
+        <item name="colorControlActivated">@color/falcon_accent</item>
+    </style>
+
+    <style name="Falcon.BottomSheet.Modal" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@android:color/transparent</item>
+    </style>
+
 </resources>

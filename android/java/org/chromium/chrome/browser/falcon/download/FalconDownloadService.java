@@ -169,6 +169,7 @@ public class FalconDownloadService extends Service implements FalconDownloadMana
                 .setOngoing(active > 0)
                 .setGroup(CHANNEL_ID)
                 .setGroupSummary(true)
+                .setContentIntent(openPage())
                 .build();
     }
 
@@ -205,6 +206,7 @@ public class FalconDownloadService extends Service implements FalconDownloadMana
                         .setOnlyAlertOnce(true)
                         .setOngoing(item.state == State.ACTIVE)
                         .setGroup(CHANNEL_ID)
+                        .setContentIntent(openPage())
                         .setProgress(100, item.progressPercent(), indeterminate && item.isActive());
         if (item.state == State.ACTIVE) {
             b.addAction(0, "Pause", action(ACTION_PAUSE, item.id));
@@ -234,6 +236,14 @@ public class FalconDownloadService extends Service implements FalconDownloadMana
                             PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
         }
         return b.build();
+    }
+
+    private PendingIntent openPage() {
+        Intent intent =
+                new Intent(this, org.chromium.chrome.browser.falcon.download.ui.FalconDownloadsActivity.class)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        return PendingIntent.getActivity(
+                this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
     private PendingIntent action(String action, String id) {

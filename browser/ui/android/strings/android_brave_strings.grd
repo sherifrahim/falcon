@@ -1611,6 +1611,105 @@ Are you sure you want to do this?
       <message name="IDS_MONTHS_3" desc="Tab title text">
         3 Months
       </message>
+      <message name="IDS_FALCON_BACK" desc="Back button">
+        Back
+      </message>
+      <message name="IDS_FALCON_MENU" desc="Menu button">
+        Menu
+      </message>
+      <message name="IDS_FALCON_PAUSE_ALL" desc="Pause every download">
+        Pause all
+      </message>
+      <message name="IDS_FALCON_RESUME_ALL" desc="Resume every paused download">
+        Resume all
+      </message>
+      <message name="IDS_FALCON_SEARCH_DOWNLOADS" desc="Search field hint">
+        Search downloads
+      </message>
+      <message name="IDS_FALCON_DOWNLOADS_EMPTY" desc="Empty list">
+        Nothing here yet. Files you download land here, with pause, resume and a speed graph.
+      </message>
+      <message name="IDS_FALCON_NEW_DOWNLOAD" desc="Add sheet title">
+        New download
+      </message>
+      <message name="IDS_FALCON_NEW_DOWNLOAD_HINT" desc="Add sheet hint">
+        Paste a link. Multi-connection, resumable, verified when you give a hash.
+      </message>
+      <message name="IDS_FALCON_NEW_DOWNLOAD_HINT_CLIPBOARD" desc="Add sheet hint when the clipboard holds a link">
+        Your clipboard already has a link.
+      </message>
+      <message name="IDS_FALCON_FILE_NAME_OPTIONAL" desc="Field hint">
+        File name (optional)
+      </message>
+      <message name="IDS_FALCON_SHA256_OPTIONAL" desc="Field hint">
+        SHA-256 to verify (optional)
+      </message>
+      <message name="IDS_FALCON_SAVE_TO" desc="Row label">
+        Save to
+      </message>
+      <message name="IDS_FALCON_SAVE_TO_DOWNLOADS" desc="Row value">
+        Downloads
+      </message>
+      <message name="IDS_FALCON_CONNECTIONS" desc="Row label">
+        Connections
+      </message>
+      <message name="IDS_FALCON_URL_HINT" desc="URL field hint">
+        https://
+      </message>
+      <message name="IDS_FALCON_DOWNLOAD" desc="Download button">
+        Download
+      </message>
+      <message name="IDS_FALCON_PAUSE" desc="Pause action">
+        Pause
+      </message>
+      <message name="IDS_FALCON_RESUME" desc="Resume action">
+        Resume
+      </message>
+      <message name="IDS_FALCON_OPEN" desc="Open action">
+        Open
+      </message>
+      <message name="IDS_FALCON_RETRY" desc="Retry action">
+        Retry
+      </message>
+      <message name="IDS_FALCON_REMOVE" desc="Remove from list">
+        Remove
+      </message>
+      <message name="IDS_FALCON_CANCEL" desc="Cancel download">
+        Cancel
+      </message>
+      <message name="IDS_FALCON_COPY_URL" desc="Copy the download link">
+        Copy URL
+      </message>
+      <message name="IDS_FALCON_COPIED" desc="Toast">
+        Copied
+      </message>
+      <message name="IDS_FALCON_WHEN_DONE" desc="Tile label">
+        When done
+      </message>
+      <message name="IDS_FALCON_NO_APP_TO_OPEN" desc="Toast">
+        No app can open this file
+      </message>
+      <message name="IDS_FALCON_URL_INVALID" desc="Toast">
+        That doesn’t look like a link
+      </message>
+      <message name="IDS_FALCON_SHA256_INVALID" desc="Toast">
+        A SHA-256 is 64 hex characters
+      </message>
+      <message name="IDS_FALCON_TAB_ALL" desc="Tab">
+        All
+      </message>
+      <message name="IDS_FALCON_TAB_ACTIVE" desc="Tab">
+        Active
+      </message>
+      <message name="IDS_FALCON_TAB_QUEUE" desc="Tab">
+        Queue
+      </message>
+      <message name="IDS_FALCON_TAB_DONE" desc="Tab">
+        Done
+      </message>
+      <message name="IDS_FALCON_CLEAR_FINISHED" desc="Menu">
+        Clear finished
+      </message>
       <message name="IDS_FALCON_SETTINGS" desc="Falcon settings title">
         Falcon
       </message>
