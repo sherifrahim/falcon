@@ -5,8 +5,6 @@
 
 #include "brave/browser/brave_local_state_prefs.h"
 
-#include "brave/browser/falcon/download/pref_names.h"
-#include "brave/browser/falcon/vault/bitwarden_service.h"
 
 #include <string>
 
@@ -88,6 +86,8 @@
 #include "brave/browser/ui/webui/new_tab_page/brave_new_tab_message_handler.h"
 
 #if !BUILDFLAG(IS_ANDROID)
+#include "brave/browser/falcon/download/pref_names.h"
+#include "brave/browser/falcon/vault/bitwarden_service.h"
 #include "brave/browser/p3a/p3a_core_metrics.h"
 #include "brave/browser/search_engines/pref_names.h"
 #include "brave/browser/themes/brave_dark_mode_utils.h"
@@ -178,8 +178,10 @@ void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   brave_shields::RegisterPrefsForAdBlockService(registry);
+#if !BUILDFLAG(IS_ANDROID)
   falcon::prefs::RegisterLocalStatePrefs(registry);
   falcon::prefs::RegisterBitwardenLocalPrefs(registry);
+#endif
   // `kStatsReportingEnabled` is the user/policy-facing opt-in for anonymous
   // usage pings. It is read by other systems (privacy settings UI, policy
   // map, referrals service, SERP tab helper, Brave Origin service) that

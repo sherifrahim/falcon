@@ -812,10 +812,14 @@ brave_chrome_browser_sources += brave_browser_profiles_sources
 brave_chrome_browser_sources += brave_browser_autocomplete_sources
 brave_chrome_browser_sources += brave_browser_brave_referrals_sources
 brave_chrome_browser_sources += brave_browser_brave_vpn_sources
-brave_chrome_browser_sources += brave_browser_falcon_download_sources
-brave_chrome_browser_sources += brave_browser_falcon_media_sources
-brave_chrome_browser_sources += brave_browser_falcon_ux_sources
-brave_chrome_browser_sources += brave_browser_falcon_vault_sources
+# Falcon: the desktop layer (aria2/yt-dlp sidecars, Bitwarden vault, Views
+# UX helpers). Android gets its own downloader service in Phase 6.
+if (!is_android) {
+  brave_chrome_browser_sources += brave_browser_falcon_download_sources
+  brave_chrome_browser_sources += brave_browser_falcon_media_sources
+  brave_chrome_browser_sources += brave_browser_falcon_ux_sources
+  brave_chrome_browser_sources += brave_browser_falcon_vault_sources
+}
 brave_chrome_browser_sources += brave_browser_browsing_data_sources
 brave_chrome_browser_sources += brave_browser_cosmetic_filters_sources
 brave_chrome_browser_sources += brave_browser_debounce_sources
@@ -839,10 +843,12 @@ brave_chrome_browser_sources += brave_browser_webcompat_reporter_sources
 brave_chrome_browser_deps += brave_browser_autocomplete_deps
 brave_chrome_browser_deps += brave_browser_brave_referrals_deps
 brave_chrome_browser_deps += brave_browser_brave_vpn_deps
-brave_chrome_browser_deps += brave_browser_falcon_download_deps
-brave_chrome_browser_deps += brave_browser_falcon_media_deps
-brave_chrome_browser_deps += brave_browser_falcon_ux_deps
-brave_chrome_browser_deps += brave_browser_falcon_vault_deps
+if (!is_android) {
+  brave_chrome_browser_deps += brave_browser_falcon_download_deps
+  brave_chrome_browser_deps += brave_browser_falcon_media_deps
+  brave_chrome_browser_deps += brave_browser_falcon_ux_deps
+  brave_chrome_browser_deps += brave_browser_falcon_vault_deps
+}
 brave_chrome_browser_deps += brave_browser_browsing_data_deps
 brave_chrome_browser_deps += brave_browser_cosmetic_filters_deps
 brave_chrome_browser_deps += brave_browser_debounce_deps

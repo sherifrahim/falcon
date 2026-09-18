@@ -30,6 +30,9 @@
 #if BUILDFLAG(ENABLE_BRAVE_WALLET)
 #include "brave/browser/ui/webui/brave_wallet/wallet_page/wallet_page_ui.h"
 #if !BUILDFLAG(IS_ANDROID)
+#include "brave/browser/ui/webui/falcon_command_deck_ui.h"
+#include "brave/browser/ui/webui/falcon_control_ui.h"
+#include "brave/browser/ui/webui/falcon_downloader_ui.h"
 #include "brave/browser/ui/webui/brave_wallet/wallet_panel/wallet_panel_ui.h"
 #endif
 #endif
@@ -56,9 +59,6 @@
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 #include "brave/browser/ui/webui/brave_adblock_internals_ui.h"
-#include "brave/browser/ui/webui/falcon_command_deck_ui.h"
-#include "brave/browser/ui/webui/falcon_control_ui.h"
-#include "brave/browser/ui/webui/falcon_downloader_ui.h"
 #include "brave/browser/ui/webui/brave_adblock_ui.h"
 
 #if BUILDFLAG(ENABLE_BRAVE_ADS)
@@ -155,10 +155,12 @@ void RegisterChromeWebUIConfigs() {
 #endif  // !BUILDFLAG(IS_ANDROID)
   map.AddWebUIConfig(std::make_unique<BraveAdblockUIConfig>());
   map.AddWebUIConfig(std::make_unique<BraveAdblockInternalsUIConfig>());
+#if !BUILDFLAG(IS_ANDROID)
   map.AddWebUIConfig(std::make_unique<FalconDownloaderUIConfig>());
   map.AddWebUIConfig(std::make_unique<FalconDownloaderPanelUIConfig>());
   map.AddWebUIConfig(std::make_unique<FalconControlUIConfig>());
   map.AddWebUIConfig(std::make_unique<FalconCommandDeckUIConfig>());
+#endif
 #if BUILDFLAG(ENABLE_BRAVE_ADS)
   map.AddWebUIConfig(std::make_unique<AdsInternalsUIConfig>());
 #endif

@@ -5,7 +5,6 @@
 
 #include "brave/browser/ui/webui/brave_web_ui_controller_factory.h"
 
-#include "brave/browser/ui/webui/falcon_newtab_ui.h"
 
 #include <memory>
 #include <string>
@@ -37,6 +36,7 @@
 #include "url/gurl.h"
 
 #if !BUILDFLAG(IS_ANDROID)
+#include "brave/browser/ui/webui/falcon_newtab_ui.h"
 #include "brave/browser/ui/webui/brave_new_tab_page_refresh/brave_new_tab_page_ui.h"
 #include "brave/browser/ui/webui/new_tab_page/brave_new_tab_ui.h"
 #include "brave/browser/ui/webui/welcome_page/brave_welcome_ui.h"

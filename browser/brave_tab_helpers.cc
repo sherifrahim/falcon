@@ -5,11 +5,6 @@
 
 #include "brave/browser/brave_tab_helpers.h"
 
-#include "brave/browser/falcon/media/media_sniffer_tab_helper.h"
-#include "brave/browser/falcon/ux/auto_reload_tab_helper.h"
-#include "brave/browser/falcon/ux/boost_tab_helper.h"
-#include "brave/browser/falcon/ux/mini_menu_tab_helper.h"
-#include "brave/browser/falcon/ux/mouse_gesture_tab_helper.h"
 
 #include <memory>
 #include <utility>
@@ -81,6 +76,11 @@
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
+#include "brave/browser/falcon/media/media_sniffer_tab_helper.h"
+#include "brave/browser/falcon/ux/auto_reload_tab_helper.h"
+#include "brave/browser/falcon/ux/boost_tab_helper.h"
+#include "brave/browser/falcon/ux/mini_menu_tab_helper.h"
+#include "brave/browser/falcon/ux/mouse_gesture_tab_helper.h"
 #include "brave/browser/brave_shields/brave_shields_tab_helper.h"
 #include "brave/browser/ui/geolocation/brave_geolocation_permission_tab_helper.h"
 #include "chrome/browser/ui/thumbnails/thumbnail_tab_helper.h"

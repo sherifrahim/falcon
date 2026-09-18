@@ -6,13 +6,14 @@
 #include <memory>
 #include <utility>
 
-#include "brave/browser/falcon/vault/composite_password_store_backend.h"
 #include "build/build_config.h"
 
 #if BUILDFLAG(IS_ANDROID)
 #include "components/password_manager/core/browser/affiliation/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/password_store/login_database.h"
 #include "components/password_manager/core/browser/password_store/password_store_built_in_backend.h"
+#else
+#include "brave/browser/falcon/vault/composite_password_store_backend.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #define CreatePasswordStoreBackend CreatePasswordStoreBackend_ChromiumImpl

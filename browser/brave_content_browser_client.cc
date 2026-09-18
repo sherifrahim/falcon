@@ -5,7 +5,6 @@
 
 #include "brave/browser/brave_content_browser_client.h"
 
-#include "brave/browser/falcon/download/download_interceptor.h"
 #include "brave/components/constants/falcon_url_constants.h"
 #include "brave/components/constants/url_constants.h"
 
@@ -159,6 +158,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if !BUILDFLAG(IS_ANDROID)
+#include "brave/browser/falcon/download/download_interceptor.h"
 #include "brave/browser/hid/brave_hid_delegate.h"
 #include "brave/browser/ui/geolocation/brave_geolocation_permission_tab_helper.h"
 #include "brave/browser/ui/webui/brave_new_tab_page_refresh/brave_new_tab_page.mojom.h"
@@ -1114,6 +1114,7 @@ bool BraveContentBrowserClient::HandleExternalProtocol(
     content::RenderFrameHost* initiator_document,
     const net::IsolationInfo& isolation_info,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>* out_factory) {
+#if !BUILDFLAG(IS_ANDROID)
   // Falcon: magnet links go to the download engine.
   if (url.SchemeIs(kMagnetScheme)) {
     content::WebContents* web_contents =
@@ -1125,6 +1126,7 @@ bool BraveContentBrowserClient::HandleExternalProtocol(
       return true;
     }
   }
+#endif
   return ChromeContentBrowserClient::HandleExternalProtocol(
       url, web_contents_getter, frame_tree_node_id, navigation_data,
       is_primary_main_frame, is_in_fenced_frame_tree, sandbox_flags,

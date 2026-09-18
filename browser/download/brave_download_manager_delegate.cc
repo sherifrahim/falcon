@@ -15,7 +15,10 @@
 #include "base/location.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "build/build_config.h"
+#if !BUILDFLAG(IS_ANDROID)
 #include "brave/browser/falcon/download/download_interceptor.h"
+#endif
 #include "brave/components/image_metadata_stripper/common/features.h"
 #include "brave/components/image_metadata_stripper/image_metadata_stripper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -46,12 +49,14 @@ bool BraveDownloadManagerDelegate::InterceptDownloadIfApplicable(
     bool is_transient,
     bool is_content_initiated,
     content::WebContents* web_contents) {
+#if !BUILDFLAG(IS_ANDROID)
   if (falcon::MaybeInterceptDownload(profile_, url, user_agent,
                                      content_disposition, mime_type,
                                      content_length, is_transient,
                                      is_content_initiated, web_contents)) {
     return true;
   }
+#endif
   return ChromeDownloadManagerDelegate::InterceptDownloadIfApplicable(
       url, user_agent, content_disposition, mime_type, request_origin,
       content_length, is_transient, is_content_initiated, web_contents);

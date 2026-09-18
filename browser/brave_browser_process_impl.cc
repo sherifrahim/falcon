@@ -15,7 +15,6 @@
 #include "base/path_service.h"
 #include "base/task/thread_pool.h"
 #include "brave/browser/brave_origin/brave_origin_service_factory.h"
-#include "brave/browser/falcon/download/aria2_service.h"
 #include "brave/browser/brave_referrals/referrals_service_delegate.h"
 #include "brave/browser/brave_shields/ad_block_subscription_download_manager_getter.h"
 #include "brave/browser/brave_stats/buildflags.h"
@@ -98,6 +97,7 @@
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #else
+#include "brave/browser/falcon/download/aria2_service.h"
 #include "brave/browser/search_engines/search_engine_provider_util.h"
 #include "brave/browser/ui/brave_browser_command_controller.h"
 #include "chrome/browser/first_run/first_run.h"

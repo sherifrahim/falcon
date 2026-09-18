@@ -11,7 +11,6 @@
 #include "base/feature_list.h"
 #include "brave/browser/brave_browser_features.h"
 #include "brave/browser/brave_shields/brave_shields_web_contents_observer.h"
-#include "brave/browser/falcon/download/pref_names.h"
 #include "brave/browser/new_tab/new_tab_shows_options.h"
 #include "brave/browser/search_engines/search_engine_tracker.h"
 #include "brave/browser/translate/brave_translate_prefs_migration.h"
@@ -141,6 +140,7 @@
 #include "brave/browser/themes/pref_names.h"
 #include "brave/browser/ui/tabs/brave_tab_prefs.h"
 #include "brave/browser/ui/webui/brave_welcome_page/brave_welcome_page_prefs.h"
+#include "brave/browser/falcon/download/pref_names.h"
 #include "brave/browser/falcon/ux/boost_tab_helper.h"
 #include "brave/browser/falcon/ux/mini_menu_tab_helper.h"
 #include "brave/browser/falcon/ux/mouse_gesture_tab_helper.h"
@@ -427,8 +427,8 @@ void RegisterProfilePrefsForMigration(
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   brave_shields::BraveShieldsWebContentsObserver::RegisterProfilePrefs(
       registry);
-  falcon::prefs::RegisterProfilePrefs(registry);
 #if !BUILDFLAG(IS_ANDROID)
+  falcon::prefs::RegisterProfilePrefs(registry);
   falcon::prefs::RegisterNtpProfilePrefs(registry);
   falcon::prefs::RegisterGesturePrefs(registry);
   falcon::prefs::RegisterPeekPrefs(registry);

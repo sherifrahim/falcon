@@ -137,22 +137,6 @@ source_set("ui") {
     "toolbar/brave_location_bar_model_delegate.h",
     "webui/brave_adblock_internals_ui.cc",
     "webui/brave_adblock_internals_ui.h",
-    "views/falcon/mini_menu_bubble.cc",
-    "views/falcon/mini_menu_bubble.h",
-    "views/falcon/peek_window.cc",
-    "views/falcon/peek_window.h",
-    "views/falcon/telemetry_edge_view.cc",
-    "views/falcon/telemetry_edge_view.h",
-    "views/side_panel/falcon/falcon_downloads_side_panel_web_view.cc",
-    "views/side_panel/falcon/falcon_downloads_side_panel_web_view.h",
-    "webui/falcon_command_deck_ui.cc",
-    "webui/falcon_command_deck_ui.h",
-    "webui/falcon_control_ui.cc",
-    "webui/falcon_control_ui.h",
-    "webui/falcon_downloader_ui.cc",
-    "webui/falcon_downloader_ui.h",
-    "webui/falcon_newtab_ui.cc",
-    "webui/falcon_newtab_ui.h",
     "webui/brave_adblock_ui.cc",
     "webui/brave_adblock_ui.h",
     "webui/brave_sanitized_image_source.cc",
@@ -166,6 +150,34 @@ source_set("ui") {
     "webui/untrusted_sanitized_image_source.cc",
     "webui/untrusted_sanitized_image_source.h",
   ]
+
+  # Falcon desktop shell: Views surfaces and the top-chrome / tab WebUIs.
+  if (!is_android) {
+    sources += [
+      "views/falcon/mini_menu_bubble.cc",
+      "views/falcon/mini_menu_bubble.h",
+      "views/falcon/peek_window.cc",
+      "views/falcon/peek_window.h",
+      "views/falcon/telemetry_edge_view.cc",
+      "views/falcon/telemetry_edge_view.h",
+      "views/side_panel/falcon/falcon_downloads_side_panel_web_view.cc",
+      "views/side_panel/falcon/falcon_downloads_side_panel_web_view.h",
+      "webui/falcon_command_deck_ui.cc",
+      "webui/falcon_command_deck_ui.h",
+      "webui/falcon_control_ui.cc",
+      "webui/falcon_control_ui.h",
+      "webui/falcon_downloader_ui.cc",
+      "webui/falcon_downloader_ui.h",
+      "webui/falcon_newtab_ui.cc",
+      "webui/falcon_newtab_ui.h",
+    ]
+    deps += [
+      "//brave/components/falcon_command_deck_ui:generated_resources",
+      "//brave/components/falcon_control_ui:generated_resources",
+      "//brave/components/falcon_downloader_ui:generated_resources",
+      "//brave/components/falcon_newtab_ui:generated_resources",
+    ]
+  }
 
   if (enable_brave_wallet) {
     deps += [
@@ -942,10 +954,6 @@ source_set("ui") {
     "//brave/components/brave_adaptive_captcha",
     "//brave/components/brave_adblock_ui:generated_resources",
     "//brave/components/brave_adblock_ui/adblock_internals:generated_resources",
-    "//brave/components/falcon_command_deck_ui:generated_resources",
-    "//brave/components/falcon_control_ui:generated_resources",
-    "//brave/components/falcon_downloader_ui:generated_resources",
-    "//brave/components/falcon_newtab_ui:generated_resources",
     "//brave/components/brave_perf_predictor/common",
     "//brave/components/brave_rewards/core",
     "//brave/components/brave_rewards/core/mojom:webui",
