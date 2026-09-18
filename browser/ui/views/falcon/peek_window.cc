@@ -36,6 +36,7 @@
 #include "ui/views/background.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/border.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
@@ -152,6 +153,9 @@ void PeekWindow::Show(BrowserWindowInterface* browser, const GURL& url) {
   params.bounds = bounds;
   params.opacity = views::Widget::InitParams::WindowOpacity::kOpaque;
   params.shadow_type = views::Widget::InitParams::ShadowType::kDrop;
+  // Windows 11 rounds the window via DWM (radius is the OS's, ~8 px); the
+  // mock's card corners.
+  params.rounded_corners = gfx::RoundedCornersF(14);
   params.name = "FalconPeek";
   auto* widget = new views::Widget();
   widget->Init(std::move(params));
