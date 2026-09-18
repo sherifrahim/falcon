@@ -695,6 +695,7 @@ android_resources("java_resources") {
     "java/brave-res/xml/brave_leo_radio_button_group_default_model_preference.xml",
     "java/brave-res/xml/brave_license_preferences.xml",
     "java/brave-res/xml/brave_main_preferences.xml",
+    "java/brave-res/xml/falcon_preferences.xml",
     "java/brave-res/xml/brave_origin_preferences.xml",
     "java/brave-res/xml/brave_password_settings_preferences.xml",
     "java/brave-res/xml/brave_playlist_preferences.xml",

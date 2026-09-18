@@ -2593,6 +2593,9 @@ public abstract class BraveActivity extends ChromeActivity
 
     @Override
     public void performPreInflationStartup() {
+        // Falcon: a fresh install starts in the Reach layout (address bar at the
+        // bottom); after that the user's own choice (settings or long-press) wins.
+        BottomToolbarConfiguration.applyFalconBottomBarModeOnce();
         BraveDbUtil dbUtil = BraveDbUtil.getInstance();
         if (dbUtil.dbOperationRequested()) {
             AlertDialog dialog =

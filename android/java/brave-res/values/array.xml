@@ -40,4 +40,28 @@
         <item>@string/settings_default_wallet_option_2</item>
     </string-array>
 
+    <!-- Falcon -->
+    <string-array name="falcon_bottom_bar_entries">
+        <item>@string/falcon_bottom_bar_arc</item>
+        <item>@string/falcon_bottom_bar_reach</item>
+        <item>@string/falcon_bottom_bar_classic</item>
+    </string-array>
+    <string-array name="falcon_bottom_bar_values" translatable="false">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="falcon_downloader_connections_entries" translatable="false">
+        <item>1</item>
+        <item>4</item>
+        <item>8</item>
+        <item>16</item>
+    </string-array>
+    <string-array name="falcon_downloader_connections_values" translatable="false">
+        <item>1</item>
+        <item>4</item>
+        <item>8</item>
+        <item>16</item>
+    </string-array>
+
 </resources>

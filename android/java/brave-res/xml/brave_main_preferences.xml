@@ -55,6 +55,11 @@
         android:key="features_section"
         android:order="2"
         android:title="@string/prefs_section_features"/>
+    <Preference
+        android:fragment="org.chromium.chrome.browser.settings.FalconPreferences"
+        android:key="falcon_settings"
+        android:title="@string/falcon_settings"
+        android:summary="@string/falcon_settings_summary"/>
     <org.chromium.components.browser_ui.settings.ChromeBasePreference
         android:fragment="org.chromium.chrome.browser.privacy.settings.BravePrivacySettings"
         android:key="brave_shields_and_privacy"

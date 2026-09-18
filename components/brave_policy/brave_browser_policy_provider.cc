@@ -10,6 +10,8 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "brave/components/brave_origin/brave_origin_utils.h"
+#include "build/build_config.h"
+#include "components/policy/policy_constants.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
@@ -66,7 +68,35 @@ policy::PolicyBundle BraveBrowserPolicyProvider::LoadPolicies() {
     LoadBraveOriginPolicies(bundle);
   }
 
+#if BUILDFLAG(IS_ANDROID)
+  LoadFalconPolicies(bundle);
+#endif
   return bundle;
+}
+
+void BraveBrowserPolicyProvider::LoadFalconPolicies(
+    policy::PolicyBundle& bundle) {
+  // Desktop strips these services at build time (//brave/build/args/falcon.gni);
+  // the Android Java layer references them unconditionally, so they are
+  // compiled in and disabled here. Every Brave surface (app menu, settings,
+  // NTP widgets, toolbar buttons, onboarding) already honours these policies.
+  policy::PolicyMap& map = bundle.Get(
+      policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string()));
+  auto set = [&map](const char* key, bool value) {
+    map.Set(key, policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
+            policy::POLICY_SOURCE_PLATFORM, base::Value(value), nullptr);
+  };
+  set(policy::key::kBraveRewardsDisabled, true);
+  set(policy::key::kBraveWalletDisabled, true);
+  set(policy::key::kBraveVPNDisabled, true);
+  set(policy::key::kBraveAIChatEnabled, false);
+  set(policy::key::kBraveLocalAIEnabled, false);
+  set(policy::key::kBraveNewsDisabled, true);
+  set(policy::key::kBraveTalkDisabled, true);
+  set(policy::key::kBraveP3AEnabled, false);
+  set(policy::key::kBraveStatsPingEnabled, false);
+  set(policy::key::kBraveWebDiscoveryEnabled, false);
+  set(policy::key::kTorDisabled, true);
 }
 
 std::unique_ptr<policy::ConfigurationPolicyProvider>

@@ -14,7 +14,10 @@ import org.chromium.base.BravePreferenceKeys;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.falcon.FalconPrefs;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
+import org.chromium.chrome.browser.toolbar.ToolbarPositionController.ToolbarPositionAndSource;
+import org.chromium.chrome.browser.toolbar.settings.AddressBarPreference;
 import org.chromium.chrome.browser.toolbar.settings.AddressBarPreference;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -33,6 +36,12 @@ public class BottomToolbarConfiguration {
     public static boolean isBraveBottomControlsEnabled() {
         // Upstream's bottom bar owns the bottom controls when it is enabled.
         if (isAndroidBottomBarEnabled()) {
+            return false;
+        }
+        // Falcon: only the Classic layout keeps Brave's button row. Arc uses the
+        // Falcon capsule (until it ships, it behaves like Reach); Reach anchors
+        // Chromium's address bar at the bottom instead.
+        if (FalconPrefs.getBottomBarMode() != FalconPrefs.BottomBarMode.CLASSIC) {
             return false;
         }
         // We do not use the bottom controls on tablets.
@@ -81,6 +90,32 @@ public class BottomToolbarConfiguration {
 
     public static boolean isToolbarTopAnchored() {
         return AddressBarPreference.isToolbarConfiguredToShowOnTop();
+    }
+
+    /**
+     * Falcon: writes the toolbar position that goes with a bottom bar mode. Called when the
+     * mode changes in settings and once at startup so a fresh install starts in Reach.
+     */
+    private static final String FALCON_BOTTOM_BAR_APPLIED_KEY = "falcon_bottom_bar_applied";
+
+    /** Applies the default Falcon mode exactly once per install. */
+    public static void applyFalconBottomBarModeOnce() {
+        if (ChromeSharedPreferences.getInstance()
+                .readBoolean(FALCON_BOTTOM_BAR_APPLIED_KEY, false)) {
+            return;
+        }
+        ChromeSharedPreferences.getInstance().writeBoolean(FALCON_BOTTOM_BAR_APPLIED_KEY, true);
+        applyFalconBottomBarMode(FalconPrefs.getBottomBarMode());
+    }
+
+    public static void applyFalconBottomBarMode(@FalconPrefs.BottomBarMode int mode) {
+        boolean top = mode == FalconPrefs.BottomBarMode.CLASSIC;
+        if (AddressBarPreference.isToolbarConfiguredToShowOnTop() != top) {
+            AddressBarPreference.setToolbarPositionAndSource(
+                    top
+                            ? ToolbarPositionAndSource.TOP_SETTINGS
+                            : ToolbarPositionAndSource.BOTTOM_SETTINGS);
+        }
     }
 
     public static boolean isToolbarBottomAnchored() {

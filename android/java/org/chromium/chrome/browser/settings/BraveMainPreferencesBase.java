@@ -77,6 +77,7 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
         implements Preference.OnPreferenceChangeListener {
     // sections
     private static final String PREF_FEATURES_SECTION = "features_section";
+    /* package */ static final String PREF_FALCON = "falcon_settings";
     private static final String PREF_DISPLAY_SECTION = "display_section";
     private static final String PREF_GENERAL_SECTION = "general_section";
     private static final String PREF_BASICS_SECTION = "basics_section";
@@ -342,6 +343,7 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
         int featuresSectionOrder = braveAccountSectionOrder;
         setPreferenceOrder(PREF_FEATURES_SECTION, ++featuresSectionOrder);
 
+        setPreferenceOrder(PREF_FALCON, ++featuresSectionOrder);
         setPreferenceOrder(PREF_SHIELDS_AND_PRIVACY, ++featuresSectionOrder);
         setPreferenceOrder(PREF_BRAVE_NEWS_V2, ++featuresSectionOrder);
 

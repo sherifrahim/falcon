@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--* Copyright (c) 2026 The Falcon Authors. All rights reserved.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto" >
+
+    <PreferenceCategory
+        android:key="falcon_shell_section"
+        android:title="@string/falcon_shell_section" />
+
+    <ListPreference
+        android:key="falcon_bottom_bar_mode"
+        android:title="@string/falcon_bottom_bar"
+        android:dialogTitle="@string/falcon_bottom_bar"
+        android:entries="@array/falcon_bottom_bar_entries"
+        android:entryValues="@array/falcon_bottom_bar_values" />
+
+    <PreferenceCategory
+        android:key="falcon_downloads_section"
+        android:title="@string/falcon_downloads_section" />
+
+    <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
+        android:key="falcon_downloader_enabled"
+        android:title="@string/falcon_downloader_enabled"
+        android:summary="@string/falcon_downloader_enabled_summary" />
+
+    <ListPreference
+        android:key="falcon_downloader_connections"
+        android:title="@string/falcon_downloader_connections"
+        android:dialogTitle="@string/falcon_downloader_connections"
+        android:entries="@array/falcon_downloader_connections_entries"
+        android:entryValues="@array/falcon_downloader_connections_values" />
+
+    <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
+        android:key="falcon_downloader_verify"
+        android:title="@string/falcon_downloader_verify"
+        android:summary="@string/falcon_downloader_verify_summary" />
+
+    <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
+        android:key="falcon_downloader_wifi_only"
+        android:title="@string/falcon_downloader_wifi_only"
+        android:summary="@string/falcon_downloader_wifi_only_summary" />
+
+    <PreferenceCategory
+        android:key="falcon_look_section"
+        android:title="@string/falcon_look_section" />
+
+    <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
+        android:key="falcon_pitch_black"
+        android:title="@string/falcon_pitch_black"
+        android:summary="@string/falcon_pitch_black_summary" />
+
+</PreferenceScreen>

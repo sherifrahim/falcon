@@ -161,6 +161,13 @@
     </intent-filter>
 </service>
 
+<!-- Falcon: keeps downloads alive and shows their progress. -->
+<service
+    android:name="org.chromium.chrome.browser.falcon.download.FalconDownloadService"
+    android:foregroundServiceType="dataSync"
+    android:exported="false">
+</service>
+
 <service
     android:name="org.chromium.chrome.browser.vpn.wireguard.WireguardService"
     android:foregroundServiceType="dataSync"

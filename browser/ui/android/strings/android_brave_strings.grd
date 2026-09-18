@@ -1611,6 +1611,60 @@ Are you sure you want to do this?
       <message name="IDS_MONTHS_3" desc="Tab title text">
         3 Months
       </message>
+      <message name="IDS_FALCON_SETTINGS" desc="Falcon settings title">
+        Falcon
+      </message>
+      <message name="IDS_FALCON_SETTINGS_SUMMARY" desc="Falcon settings row summary">
+        Bottom bar, downloader, look
+      </message>
+      <message name="IDS_FALCON_SHELL_SECTION" desc="Section title">
+        Shell
+      </message>
+      <message name="IDS_FALCON_BOTTOM_BAR" desc="Bottom bar mode setting">
+        Bottom bar
+      </message>
+      <message name="IDS_FALCON_BOTTOM_BAR_ARC" desc="Bottom bar mode: Falcon capsule">
+        Arc — Falcon capsule
+      </message>
+      <message name="IDS_FALCON_BOTTOM_BAR_REACH" desc="Bottom bar mode: address bar at the bottom">
+        Reach — address bar at the bottom
+      </message>
+      <message name="IDS_FALCON_BOTTOM_BAR_CLASSIC" desc="Bottom bar mode: top address bar + button row">
+        Classic — top address bar, button row
+      </message>
+      <message name="IDS_FALCON_DOWNLOADS_SECTION" desc="Section title">
+        Downloads
+      </message>
+      <message name="IDS_FALCON_DOWNLOADER_ENABLED" desc="Downloader toggle">
+        Take over page downloads
+      </message>
+      <message name="IDS_FALCON_DOWNLOADER_ENABLED_SUMMARY" desc="Downloader toggle summary">
+        Multi-connection downloads with pause, resume and a schedule. Off: the system downloader.
+      </message>
+      <message name="IDS_FALCON_DOWNLOADER_CONNECTIONS" desc="Connections per download">
+        Connections per download
+      </message>
+      <message name="IDS_FALCON_DOWNLOADER_VERIFY" desc="Verify toggle">
+        Verify SHA-256 when the site publishes one
+      </message>
+      <message name="IDS_FALCON_DOWNLOADER_VERIFY_SUMMARY" desc="Verify toggle summary">
+        Checks the file against the published hash after the download finishes.
+      </message>
+      <message name="IDS_FALCON_DOWNLOADER_WIFI_ONLY" desc="Wi-Fi only toggle">
+        Large downloads on Wi-Fi only
+      </message>
+      <message name="IDS_FALCON_DOWNLOADER_WIFI_ONLY_SUMMARY" desc="Wi-Fi only summary">
+        Queues files over 100 MB until Wi-Fi is available.
+      </message>
+      <message name="IDS_FALCON_LOOK_SECTION" desc="Section title">
+        Look
+      </message>
+      <message name="IDS_FALCON_PITCH_BLACK" desc="OLED black toggle">
+        Pitch black (OLED)
+      </message>
+      <message name="IDS_FALCON_PITCH_BLACK_SUMMARY" desc="OLED black summary">
+        True black surfaces instead of dark glass.
+      </message>
       <message name="IDS_BRAVE_STATS" desc="Brave stats title">
         Privacy Report
       </message>
