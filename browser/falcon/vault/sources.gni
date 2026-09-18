@@ -1,0 +1,30 @@
+# Copyright (c) 2026 Falcon. Personal fork of Brave.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this file,
+# You can obtain one at https://mozilla.org/MPL/2.0/.
+
+# Falcon Passwords: the Bitwarden vault sidecar + the composite password store
+# backend that merges vault logins into autofill.
+brave_browser_falcon_vault_sources = [
+  "//brave/browser/falcon/vault/bitwarden_service.cc",
+  "//brave/browser/falcon/vault/bitwarden_service.h",
+  "//brave/browser/falcon/vault/composite_password_store_backend.cc",
+  "//brave/browser/falcon/vault/composite_password_store_backend.h",
+]
+
+brave_browser_falcon_vault_deps = [
+  "//base",
+  "//chrome/common",
+  "//components/affiliations/core/browser:affiliations",
+  "//components/os_crypt/async/browser",
+  "//components/os_crypt/async/common",
+  "//components/password_manager/core/browser",
+  "//components/password_manager/core/browser/password_store:password_store_interface",
+  "//components/prefs",
+  "//components/sync",
+  "//net",
+  "//services/network/public/cpp",
+  "//services/network/public/mojom",
+  "//third_party/re2",
+  "//url",
+]

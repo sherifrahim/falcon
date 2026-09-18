@@ -126,3 +126,4 @@ agents/**/__pycache__/
 # Falcon sidecar binaries (fetched by D:/falcon/tools/fetch-sidecars.ps1)
 third_party/yt-dlp/win/*.exe
 third_party/ffmpeg-bin/win/*
+third_party/bitwarden-cli/win/*.exe

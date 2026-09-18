@@ -3,6 +3,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+#include <memory>
+#include <utility>
+
+#include "brave/browser/falcon/vault/composite_password_store_backend.h"
 #include "build/build_config.h"
 
 #if BUILDFLAG(IS_ANDROID)
@@ -39,8 +43,15 @@ CreatePasswordStoreBackend(
       std::move(login_db), behavior, prefs, os_crypt_async,
       std::move(affiliated_match_helper));
 #else
-  return CreatePasswordStoreBackend_ChromiumImpl(
+  auto backend = CreatePasswordStoreBackend_ChromiumImpl(
       is_account_store, login_db_directory, prefs, os_crypt_async,
       affiliation_service);
+  if (!is_account_store) {
+    // Falcon Passwords: merge connected vaults (Bitwarden) into the profile
+    // store's fill results.
+    return std::make_unique<falcon::CompositePasswordStoreBackend>(
+        std::move(backend));
+  }
+  return backend;
 #endif
 }

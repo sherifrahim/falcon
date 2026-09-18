@@ -1,0 +1,16 @@
+# Copyright (c) 2026 Falcon. Personal fork of Brave.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this file,
+# You can obtain one at https://mozilla.org/MPL/2.0/.
+
+# Bitwarden CLI (https://github.com/bitwarden/clients, GPL-3.0) is Falcon's
+# vault sidecar: `bw serve` exposes the unlocked vault on 127.0.0.1 and Falcon
+# Passwords reads/writes logins through it. Separate process, not linked.
+# The binary is not in git: run D:/falcon/tools/fetch-sidecars.ps1.
+
+if (is_win) {
+  copy("bitwarden_cli") {
+    sources = [ "win/bw.exe" ]
+    outputs = [ "$root_out_dir/bw.exe" ]
+  }
+}

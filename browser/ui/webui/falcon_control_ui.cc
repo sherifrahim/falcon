@@ -26,6 +26,7 @@
 #include "brave/browser/falcon/ux/boost_tab_helper.h"
 #include "brave/browser/falcon/ux/mini_menu_tab_helper.h"
 #include "brave/browser/falcon/ux/tab_archiver.h"
+#include "brave/browser/falcon/vault/bitwarden_service.h"
 #include "brave/browser/falcon/ux/mouse_gesture_tab_helper.h"
 #include "brave/browser/ui/tabs/brave_tab_prefs.h"
 #include "brave/browser/ui/color/falcon_color_mixer.h"
@@ -118,6 +119,31 @@ class FalconControlMessageHandler : public content::WebUIMessageHandler {
         "falcon_control.deleteSession",
         base::BindRepeating(&FalconControlMessageHandler::DeleteSession,
                             base::Unretained(this)));
+    // Falcon Passwords: Bitwarden vault.
+    web_ui()->RegisterMessageCallback(
+        "falcon_control.bwStatus",
+        base::BindRepeating(&FalconControlMessageHandler::BwStatus,
+                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "falcon_control.bwConnect",
+        base::BindRepeating(&FalconControlMessageHandler::BwConnect,
+                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "falcon_control.bwUnlock",
+        base::BindRepeating(&FalconControlMessageHandler::BwUnlock,
+                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "falcon_control.bwLock",
+        base::BindRepeating(&FalconControlMessageHandler::BwLock,
+                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "falcon_control.bwSync",
+        base::BindRepeating(&FalconControlMessageHandler::BwSync,
+                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "falcon_control.bwDisconnect",
+        base::BindRepeating(&FalconControlMessageHandler::BwDisconnect,
+                            base::Unretained(this)));
   }
 
   // args: [list of {id, host, name, css, js, enabled}] — replaces the list.
@@ -171,6 +197,87 @@ class FalconControlMessageHandler : public content::WebUIMessageHandler {
     CHECK_EQ(1U, args.size());
     AllowJavascript();
     ResolveJavascriptCallback(args[0], SessionList());
+  }
+
+  // ---- Bitwarden vault -----------------------------------------------------
+  static base::DictValue StatusDict(falcon::BitwardenService::Status st) {
+    base::DictValue d;
+    d.Set("configured", st.configured);
+    d.Set("serving", st.serving);
+    d.Set("state", st.state);
+    d.Set("email", st.email);
+    d.Set("server", st.server);
+    d.Set("lastSync", st.last_sync);
+    d.Set("error", st.error);
+    return d;
+  }
+
+  void ResolveStatus(base::Value callback_id,
+                     falcon::BitwardenService::Status st) {
+    ResolveJavascriptCallback(callback_id, StatusDict(std::move(st)));
+  }
+
+  void ResolveResult(base::Value callback_id, bool ok, std::string error) {
+    base::DictValue d;
+    d.Set("ok", ok);
+    d.Set("error", error);
+    ResolveJavascriptCallback(callback_id, d);
+  }
+
+  // args: [callbackId]
+  void BwStatus(const base::ListValue& args) {
+    CHECK_EQ(1U, args.size());
+    AllowJavascript();
+    falcon::BitwardenService::Get()->GetStatus(
+        base::BindOnce(&FalconControlMessageHandler::ResolveStatus,
+                       weak_factory_.GetWeakPtr(), args[0].Clone()));
+  }
+
+  // args: [callbackId, email, masterPassword, totp, serverUrl]
+  void BwConnect(const base::ListValue& args) {
+    CHECK_EQ(5U, args.size());
+    AllowJavascript();
+    auto str = [&](size_t i) {
+      return args[i].is_string() ? args[i].GetString() : std::string();
+    };
+    falcon::BitwardenService::Get()->Connect(
+        str(1), str(2), str(3), str(4),
+        base::BindOnce(&FalconControlMessageHandler::ResolveResult,
+                       weak_factory_.GetWeakPtr(), args[0].Clone()));
+  }
+
+  // args: [callbackId, masterPassword]
+  void BwUnlock(const base::ListValue& args) {
+    CHECK_EQ(2U, args.size());
+    AllowJavascript();
+    falcon::BitwardenService::Get()->Unlock(
+        args[1].is_string() ? args[1].GetString() : std::string(),
+        base::BindOnce(&FalconControlMessageHandler::ResolveResult,
+                       weak_factory_.GetWeakPtr(), args[0].Clone()));
+  }
+
+  void BwLock(const base::ListValue& args) {
+    CHECK_EQ(1U, args.size());
+    AllowJavascript();
+    falcon::BitwardenService::Get()->Lock(
+        base::BindOnce(&FalconControlMessageHandler::ResolveResult,
+                       weak_factory_.GetWeakPtr(), args[0].Clone()));
+  }
+
+  void BwSync(const base::ListValue& args) {
+    CHECK_EQ(1U, args.size());
+    AllowJavascript();
+    falcon::BitwardenService::Get()->Sync(
+        base::BindOnce(&FalconControlMessageHandler::ResolveResult,
+                       weak_factory_.GetWeakPtr(), args[0].Clone()));
+  }
+
+  void BwDisconnect(const base::ListValue& args) {
+    CHECK_EQ(1U, args.size());
+    AllowJavascript();
+    falcon::BitwardenService::Get()->Disconnect(
+        base::BindOnce(&FalconControlMessageHandler::ResolveResult,
+                       weak_factory_.GetWeakPtr(), args[0].Clone()));
   }
 
   // args: [callbackId, name]
@@ -227,6 +334,12 @@ class FalconControlMessageHandler : public content::WebUIMessageHandler {
           p->GetBoolean(brave_tabs::kVerticalTabsCollapsed));
     d.Set("dockCards", p->GetBoolean(falcon::prefs::kDockCards));
     d.Set("archiveHours", p->GetInteger(falcon::prefs::kTabArchiveHours));
+    d.Set("bwEmail", g_browser_process->local_state()->GetString(
+                         falcon::prefs::kBitwardenEmail));
+    d.Set("bwSaveNew", g_browser_process->local_state()->GetBoolean(
+                           falcon::prefs::kBitwardenSaveNew));
+    d.Set("bwRemember", g_browser_process->local_state()->GetBoolean(
+                            falcon::prefs::kBitwardenRememberSession));
     d.Set("videoPill", p->GetBoolean(falcon::prefs::kDownloadVideoPill));
     d.Set("clipboardMonitor",
           p->GetBoolean(falcon::prefs::kDownloadClipboardMonitor));
@@ -318,6 +431,14 @@ class FalconControlMessageHandler : public content::WebUIMessageHandler {
     }
     if (std::optional<int> v = in.FindInt("archiveHours")) {
       p->SetInteger(falcon::prefs::kTabArchiveHours, std::clamp(*v, 0, 24 * 30));
+    }
+    if (std::optional<bool> v = in.FindBool("bwSaveNew")) {
+      g_browser_process->local_state()->SetBoolean(
+          falcon::prefs::kBitwardenSaveNew, *v);
+    }
+    if (std::optional<bool> v = in.FindBool("bwRemember")) {
+      g_browser_process->local_state()->SetBoolean(
+          falcon::prefs::kBitwardenRememberSession, *v);
     }
     if (std::optional<bool> v = in.FindBool("videoPill")) {
       p->SetBoolean(falcon::prefs::kDownloadVideoPill, *v);

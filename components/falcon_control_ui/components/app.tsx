@@ -41,6 +41,9 @@ interface State {
   verticalTabsCollapsed: boolean
   dockCards: boolean
   archiveHours: number
+  bwEmail: string
+  bwSaveNew: boolean
+  bwRemember: boolean
   videoPill: boolean
   clipboardMonitor: boolean
   engineEnabled: boolean
@@ -219,6 +222,85 @@ function UpdateCheck({ version, repo }: { version: string; repo: string }) {
   )
 }
 
+// 3 · Bitwarden: the official CLI runs as a sidecar (`bw serve`); logins from
+// the vault appear in autofill next to local ones.
+const Field = styled.input`
+  height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--f-border, #334155);
+  background: var(--f-bg-2, #0f172a); color: inherit; font: inherit; font-size: 13px; min-width: 0;
+  &:focus { outline: none; border-color: #38bdf8; }
+`
+type BwStatus = { configured: boolean; serving: boolean; state: string; email: string; server: string; lastSync: string; error: string }
+function Bitwarden({ s, update }: { s: State; update: (patch: Partial<State>) => void }) {
+  const [st, setSt] = React.useState<BwStatus | null>(null)
+  const [busy, setBusy] = React.useState('')
+  const [msg, setMsg] = React.useState('')
+  const [email, setEmail] = React.useState(s.bwEmail || '')
+  const [pw, setPw] = React.useState('')
+  const [totp, setTotp] = React.useState('')
+  const [server, setServer] = React.useState('')
+  const [advanced, setAdvanced] = React.useState(false)
+  const refresh = React.useCallback(() => sendWithPromise('falcon_control.bwStatus').then((r: BwStatus) => setSt(r)).catch(() => {}), [])
+  React.useEffect(() => { refresh(); const t = window.setInterval(refresh, 8000); return () => window.clearInterval(t) }, [refresh])
+  const run = async (what: string, msgName: string, ...args: any[]) => {
+    setBusy(what); setMsg('')
+    try {
+      const r: { ok: boolean; error: string } = await sendWithPromise(msgName, ...args)
+      setMsg(r.ok ? '' : (r.error || 'Failed'))
+      if (r.ok && what === 'connect') { setPw(''); setTotp('') }
+      if (r.ok && what === 'unlock') setPw('')
+    } catch (e: any) { setMsg(String(e?.message || e)) }
+    setBusy(''); refresh()
+  }
+  const configured = !!st?.configured
+  const unlocked = st?.state === 'unlocked'
+  const dot = !configured ? '#64748b' : unlocked ? '#22c55e' : st?.serving ? '#f59e0b' : '#64748b'
+  const label = !configured ? 'Not connected' : unlocked ? 'Unlocked' : st?.serving ? (st.state === 'locked' ? 'Locked' : st.state) : 'Starting sidecar…'
+  return (
+    <Card>
+      <Row as="div">
+        <span>3 · Bitwarden<span className="sub">{configured ? `${st?.email || s.bwEmail}${st?.server ? ' · ' + st.server : ''}${st?.lastSync ? ' · synced ' + new Date(st.lastSync).toLocaleString() : ''}` : 'Sign in once; the vault is served locally by the official Bitwarden CLI (nothing else touches your vault)'}</span></span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13 }}><i style={{ width: 8, height: 8, borderRadius: 4, background: dot, boxShadow: `0 0 8px ${dot}`, display: 'inline-block' }} />{label}</span>
+      </Row>
+      {!configured ? (
+        <Row as="div" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 10, alignItems: 'center' }}>
+          <Field placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="off" />
+          <Field placeholder="Master password" type="password" value={pw} onChange={(e) => setPw(e.target.value)} autoComplete="off" />
+          <Btn $primary disabled={busy !== '' || !email || !pw} onClick={() => run('connect', 'falcon_control.bwConnect', email, pw, totp, server)}>{busy === 'connect' ? 'Signing in…' : 'Connect'}</Btn>
+          <div style={{ gridColumn: '1 / -1', display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+            <Field placeholder="2FA code (if enabled)" value={totp} onChange={(e) => setTotp(e.target.value)} style={{ width: 170 }} />
+            {advanced
+              ? <Field placeholder="Self-hosted server URL (optional)" value={server} onChange={(e) => setServer(e.target.value)} style={{ flex: 1 }} />
+              : <a href="#" onClick={(e) => { e.preventDefault(); setAdvanced(true) }} style={{ fontSize: 12 }}>Self-hosted server…</a>}
+          </div>
+        </Row>
+      ) : (
+        <>
+          {!unlocked && (
+            <Row as="div" style={{ display: 'flex', gap: 10 }}>
+              <Field placeholder="Master password to unlock" type="password" value={pw} onChange={(e) => setPw(e.target.value)} style={{ flex: 1 }} autoComplete="off" onKeyDown={(e) => { if (e.key === 'Enter' && pw) run('unlock', 'falcon_control.bwUnlock', pw) }} />
+              <Btn $primary disabled={busy !== '' || !pw || !st?.serving} onClick={() => run('unlock', 'falcon_control.bwUnlock', pw)}>{busy === 'unlock' ? 'Unlocking…' : 'Unlock'}</Btn>
+            </Row>
+          )}
+          <Row as="div">
+            <span>Save new logins to Bitwarden too<span className="sub">When Falcon offers to save a password, also create the item in the vault</span></span>
+            <input type="checkbox" checked={s.bwSaveNew} onChange={(e) => update({ bwSaveNew: e.target.checked })} />
+          </Row>
+          <Row as="div">
+            <span>Stay unlocked between launches<span className="sub">Keeps the CLI session key sealed with Windows (DPAPI) — like the built-in password store. Off = master password on every start</span></span>
+            <input type="checkbox" checked={s.bwRemember} onChange={(e) => update({ bwRemember: e.target.checked })} />
+          </Row>
+          <Row as="div" style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <Btn disabled={busy !== '' || !unlocked} onClick={() => run('sync', 'falcon_control.bwSync')}>{busy === 'sync' ? 'Syncing…' : 'Sync now'}</Btn>
+            <Btn disabled={busy !== '' || !unlocked} onClick={() => run('lock', 'falcon_control.bwLock')}>Lock</Btn>
+            <Btn disabled={busy !== ''} onClick={() => { if (confirm('Disconnect Bitwarden from Falcon? The vault stays intact on Bitwarden.')) run('disconnect', 'falcon_control.bwDisconnect') }}>Disconnect</Btn>
+          </Row>
+        </>
+      )}
+      {(msg || st?.error) && <Row as="div"><span style={{ color: '#f87171', fontSize: 13 }}>{msg || st?.error}</span></Row>}
+    </Card>
+  )
+}
+
 export function App() {
   const [s, setS] = React.useState<State | null>(null)
   const [updateLog, setUpdateLog] = React.useState<string | null>(null)
@@ -338,7 +420,7 @@ export function App() {
   const sections: Array<[string, string]> = [
     ['look', 'Look & Feel'], ['behaviour', 'Behaviour'], ['keys', 'Shortcuts'], ['boosts', 'Boosts'],
     ...(s.sessionsAvailable ? [['sessions', 'Sessions'] as [string, string]] : []),
-    ['engines', 'Engines'], ['about', 'About'],
+    ['passwords', 'Passwords'], ['engines', 'Engines'], ['about', 'About'],
   ]
   return (
     <Shell>
@@ -495,6 +577,20 @@ export function App() {
           </Card>
         </>
       )}
+
+      <h2 id="passwords">Passwords</h2>
+      <p className="hint" style={{ marginTop: -6 }}>Three sources, one autofill list: what you import, Google's export, and a connected Bitwarden vault.</p>
+      <Card>
+        <Row as="div">
+          <span>1 · Import from Brave<span className="sub">Bookmarks, history, passwords, extensions from Brave / Brave Beta / Nightly on this PC (one-time copy)</span></span>
+          <Btn onClick={() => window.open('chrome://settings/importData', '_blank')}>Import…</Btn>
+        </Row>
+        <Row as="div">
+          <span>2 · Google Password Manager<span className="sub">Google has no third-party API: export a CSV at passwords.google.com › Settings › Export, then import it here. On Android, Google autofill works natively.</span></span>
+          <Btn onClick={() => window.open('chrome://password-manager/settings', '_blank')}>Import CSV…</Btn>
+        </Row>
+      </Card>
+      <Bitwarden s={s} update={update} />
 
       <h2 id="engines">Engines</h2>
       <Card>

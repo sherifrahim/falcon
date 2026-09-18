@@ -198,6 +198,7 @@ if (!is_ios) {
         "//brave/third_party/aria2:aria2c",
         "//brave/third_party/ffmpeg-bin:ffmpeg",
         "//brave/third_party/yt-dlp:yt_dlp",
+        "//brave/third_party/bitwarden-cli:bitwarden_cli",
       ]
     }
 
