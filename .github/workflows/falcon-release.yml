@@ -5,7 +5,8 @@
 #
 # Both jobs share one concurrency group so they never build at the same time
 # (one laptop). Each job works inside its existing checkout; nothing is cloned.
-# The Windows runner has only Windows PowerShell 5.1 (no pwsh).
+# The Windows runner has only Windows PowerShell 5.1 (no pwsh) and a Restricted
+# execution policy, hence the explicit shell template.
 name: Falcon release
 
 on:
@@ -41,7 +42,7 @@ jobs:
     concurrency: { group: falcon-build, cancel-in-progress: false }
     defaults:
       run:
-        shell: powershell
+        shell: powershell -NoProfile -ExecutionPolicy Bypass -Command ". '{0}'"
         working-directory: D:\falcon\bb\src\brave
     outputs:
       version: ${{ steps.ver.outputs.version }}
@@ -112,7 +113,7 @@ jobs:
     runs-on: [self-hosted, windows, falcon]
     defaults:
       run:
-        shell: powershell
+        shell: powershell -NoProfile -ExecutionPolicy Bypass -Command ". '{0}'"
     steps:
       - name: Collect artifacts
         uses: actions/download-artifact@v4
