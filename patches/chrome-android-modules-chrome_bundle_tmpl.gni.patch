@@ -1,0 +1,14 @@
+diff --git a/chrome/android/modules/chrome_bundle_tmpl.gni b/chrome/android/modules/chrome_bundle_tmpl.gni
+index c3482b628f..ce0b6a8031 100644
+--- a/chrome/android/modules/chrome_bundle_tmpl.gni
++++ b/chrome/android/modules/chrome_bundle_tmpl.gni
+@@ -187,7 +187,8 @@ template("chrome_bundle") {
+     proguard_enabled = !is_java_debug
+     enable_language_splits = true
+     extra_modules = _extra_modules
+-    system_image_locale_allowlist = platform_pak_locales - extended_locales
++    system_image_locale_allowlist =
++        filter_exclude(platform_pak_locales, extended_locales)
+     is_multi_abi = _is_multi_abi
+     validate_services = true
+     if (enable_silent_java_assert_reporting) {
