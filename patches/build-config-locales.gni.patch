@@ -1,5 +1,5 @@
 diff --git a/build/config/locales.gni b/build/config/locales.gni
-index 736f5f1d23..179043be89 100644
+index 736f5f1d23..199123e859 100644
 --- a/build/config/locales.gni
 +++ b/build/config/locales.gni
 @@ -172,6 +172,7 @@ extended_locales = [
@@ -10,19 +10,17 @@ index 736f5f1d23..179043be89 100644
  
  # Chrome locales not on Android.
  # These locales have not yet been tested yet. Specifically, AOSP has not been
-@@ -296,3 +297,18 @@ if (is_apple) {
+@@ -296,3 +297,16 @@ if (is_apple) {
      }
    }
  }
 +
 +import("//brave/build/config/falcon_locales.gni")
++# Only the packaging lists shrink: grit still generates every locale its .grd
++# declares (|locales_with/without_pseudolocales| are its expected outputs).
 +if (falcon_pak_locales != []) {
 +  platform_pak_locales = []
 +  platform_pak_locales = falcon_pak_locales
-+  locales_with_pseudolocales = []
-+  locales_with_pseudolocales = falcon_pak_locales
-+  locales_without_pseudolocales = []
-+  locales_without_pseudolocales = falcon_pak_locales
 +  if (is_android) {
 +    android_bundle_locales_as_resources = []
 +    android_bundle_locales_as_resources =
