@@ -17,6 +17,8 @@ import org.chromium.base.supplier.SettableMonotonicObservableSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BraveRelaunchUtils;
 import org.chromium.chrome.browser.falcon.FalconPrefs;
+import org.chromium.chrome.browser.night_mode.NightModeMetrics;
+import org.chromium.chrome.browser.night_mode.settings.ThemeSettingsFragment;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
@@ -30,6 +32,7 @@ public class FalconPreferences extends BravePreferenceFragment
     public static final String PREF_DOWNLOADER_VERIFY = "falcon_downloader_verify";
     public static final String PREF_DOWNLOADER_WIFI_ONLY = "falcon_downloader_wifi_only";
     public static final String PREF_PITCH_BLACK = "falcon_pitch_black";
+    public static final String PREF_THEME = "falcon_theme";
 
     private final SettableMonotonicObservableSupplier<String> mPageTitle =
             ObservableSuppliers.createMonotonic();
@@ -68,6 +71,15 @@ public class FalconPreferences extends BravePreferenceFragment
             connections.setValue(String.valueOf(FalconPrefs.getDownloaderConnections()));
             connections.setSummary(connections.getEntry());
             connections.setOnPreferenceChangeListener(this);
+        }
+
+        // The Theme row opens Chromium's picker, which asserts on its entry-point argument.
+        Preference theme = findPreference(PREF_THEME);
+        if (theme != null) {
+            theme.getExtras()
+                    .putInt(
+                            ThemeSettingsFragment.KEY_THEME_SETTINGS_ENTRY,
+                            NightModeMetrics.ThemeSettingsEntry.SETTINGS);
         }
 
         bindSwitch(PREF_DOWNLOADER_ENABLED, FalconPrefs.isDownloaderEnabled());
