@@ -66,6 +66,7 @@ brave_java_resources = [
   "java/res/values-night/brave_colors.xml",
   "java/res/values-sw600dp/brave_dimens.xml",
   "java/res/values/brave_colors.xml",
+  "java/res/values/falcon_palette.xml",
   "java/res/values/brave_dimens.xml",
   "java/res/xml/secure_dns_settings.xml",
 ]

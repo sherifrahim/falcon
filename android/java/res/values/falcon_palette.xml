@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--* Copyright (c) 2026 The Falcon Authors. All rights reserved.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<!-- Falcon dark-glass surfaces for the dark Material 3 theme: ink-tinted, never grey. These
+     feed colorSurface / colorSurfaceContainer* (tab cards, hub, sheets, dialogs, menus). -->
+<resources>
+    <color name="gm3_baseline_surface_dark">#FF05070C</color>
+    <color name="gm3_baseline_surface_dim_dark">#FF05070C</color>
+    <color name="gm3_baseline_surface_bright_dark">#FF1D2739</color>
+    <color name="gm3_baseline_surface_container_lowest_dark">#FF05070C</color>
+    <color name="gm3_baseline_surface_container_low_dark">#FF0B1120</color>
+    <color name="gm3_baseline_surface_container_dark">#FF0D1322</color>
+    <color name="gm3_baseline_surface_container_high_dark">#FF121B2C</color>
+    <color name="gm3_baseline_surface_container_highest_dark">#FF172033</color>
+    <color name="gm3_baseline_surface_tint_dark">#FF38BDF8</color>
+</resources>

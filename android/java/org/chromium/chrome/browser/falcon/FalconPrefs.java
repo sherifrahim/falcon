@@ -39,8 +39,7 @@ public final class FalconPrefs {
     public static final String DOWNLOADER_WIFI_ONLY = "falcon_downloader_wifi_only";
     public static final String PITCH_BLACK = "falcon_pitch_black";
 
-    // Reach until the Arc capsule ships; the selector already offers all three.
-    public static final @BottomBarMode int DEFAULT_BOTTOM_BAR_MODE = BottomBarMode.REACH;
+    public static final @BottomBarMode int DEFAULT_BOTTOM_BAR_MODE = BottomBarMode.ARC;
     public static final int DEFAULT_DOWNLOADER_CONNECTIONS = 8;
 
     private static SharedPreferencesManager prefs() {

@@ -17,7 +17,11 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.PorterDuff;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.InsetDrawable;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
@@ -254,6 +258,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
+        maybeApplyFalconCapsule();
 
         mWalletLayout = findViewById(R.id.brave_wallet_button_layout);
         mShieldsLayout = findViewById(R.id.brave_shields_button_layout);
@@ -1708,9 +1713,54 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         return true;
     }
 
+    // ── Falcon: Arc capsule ──────────────────────────────────────────────────
+    // In the Arc bottom-bar mode the bottom-anchored toolbar is drawn as a floating dark-glass
+    // capsule (docs/design/android/mock-v6.html): ToolbarPhone's own full-width background is
+    // kept transparent and an inset rounded pill becomes the view background.
+    private boolean mFalconCapsule;
+
+    private void maybeApplyFalconCapsule() {
+        if (!BraveReflectionUtil.equalTypes(this.getClass(), ToolbarPhone.class)) return;
+        if (org.chromium.chrome.browser.falcon.FalconPrefs.getBottomBarMode()
+                != org.chromium.chrome.browser.falcon.FalconPrefs.BottomBarMode.ARC) {
+            return;
+        }
+        if (!BottomToolbarConfiguration.isToolbarBottomAnchored()) return;
+        float d = getResources().getDisplayMetrics().density;
+        GradientDrawable pill = new GradientDrawable();
+        pill.setShape(GradientDrawable.RECTANGLE);
+        pill.setCornerRadius(26 * d);
+        pill.setColor(getContext().getColor(R.color.falcon_glass_solid));
+        pill.setStroke(Math.round(d), getContext().getColor(R.color.falcon_hair_2));
+        int side = Math.round(14 * d);
+        setBackground(new InsetDrawable(pill, side, Math.round(2 * d), side, Math.round(6 * d)));
+        setPadding(side + Math.round(4 * d), getPaddingTop(), side + Math.round(4 * d), getPaddingBottom());
+        mFalconCapsule = true;
+    }
+
+    /**
+     * ToolbarPhone (our subclass, via bytecode patching) repaints its full-width background
+     * colour on every visual-state change; the capsule needs that backdrop to stay clear.
+     */
+    private void clearToolbarBackdrop() {
+        if (!mFalconCapsule) return;
+        Object bg = BraveReflectionUtil.getField(ToolbarPhone.class, "mToolbarBackground", this);
+        if (bg instanceof android.graphics.drawable.ColorDrawable) {
+            android.graphics.drawable.ColorDrawable cd = (android.graphics.drawable.ColorDrawable) bg;
+            if (cd.getColor() != Color.TRANSPARENT) cd.setColor(Color.TRANSPARENT);
+        }
+    }
+
+    @Override
+    protected void dispatchDraw(Canvas canvas) {
+        clearToolbarBackdrop();
+        super.dispatchDraw(canvas);
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         maybeHideTopTabSwitcherButton();
+        clearToolbarBackdrop();
 
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 

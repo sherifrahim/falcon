@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.falcon;
 
 import org.chromium.base.shared_preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.night_mode.ThemeType;
+import org.chromium.chrome.browser.onboarding.OnboardingPrefManager;
+import org.chromium.chrome.browser.settings.BackgroundImagesPreferences;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
@@ -30,5 +32,8 @@ public final class FalconDefaults {
             prefs.writeInt(ChromePreferenceKeys.UI_THEME_SETTING, ThemeType.DARK);
         }
         BottomToolbarConfiguration.applyFalconBottomBarMode(FalconPrefs.getBottomBarMode());
+        // The space home (mock v6 screen 1) has no stats widget.
+        prefs.writeBoolean(BackgroundImagesPreferences.PREF_SHOW_BRAVE_STATS, false);
+        OnboardingPrefManager.getInstance().setBraveStatsEnabled(false);
     }
 }

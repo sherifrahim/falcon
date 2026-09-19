@@ -6,38 +6,40 @@
 -->
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Overriding chromium baseline_* palette with Nala primitive_* equivalents -->
+    <!-- Falcon: the dark slots below carry the dark-glass palette (docs/design/android/mock-v6.html);
+         light slots keep Brave's primitives until the light variant lands. -->
     <!-- baseline_primary -->
     <color name="baseline_primary_100" tools:ignore="UnusedResources">@color/primitive_primary_100</color>
     <color name="baseline_primary_95" tools:ignore="UnusedResources">@color/primitive_primary_95</color>
-    <color name="baseline_primary_90" tools:ignore="UnusedResources">@color/primitive_primary_90</color>
-    <color name="baseline_primary_80" tools:ignore="UnusedResources">@color/primitive_primary_80</color>
+    <color name="baseline_primary_90" tools:ignore="UnusedResources">#BFE6FA</color>
+    <color name="baseline_primary_80" tools:ignore="UnusedResources">#38BDF8</color>
     <color name="baseline_primary_70" tools:ignore="UnusedResources">@color/primitive_primary_70</color>
     <color name="baseline_primary_60" tools:ignore="UnusedResources">@color/primitive_primary_60</color>
     <color name="baseline_primary_50" tools:ignore="UnusedResources">@color/primitive_primary_50</color>
     <color name="baseline_primary_40" tools:ignore="UnusedResources">@color/primitive_primary_40</color>
-    <color name="baseline_primary_30" tools:ignore="UnusedResources">@color/primitive_primary_30</color>
-    <color name="baseline_primary_20" tools:ignore="UnusedResources">@color/primitive_primary_20</color>
+    <color name="baseline_primary_30" tools:ignore="UnusedResources">#0E3A52</color>
+    <color name="baseline_primary_20" tools:ignore="UnusedResources">#04111C</color>
     <color name="baseline_primary_10" tools:ignore="UnusedResources">@color/primitive_primary_10</color>
     <!-- baseline_neutral -->
     <color name="baseline_neutral_100" tools:ignore="UnusedResources">@color/primitive_neutral_100</color>
     <color name="baseline_neutral_99" tools:ignore="UnusedResources">@color/primitive_neutral_99</color>
-    <color name="baseline_neutral_95" tools:ignore="UnusedResources">@color/primitive_neutral_95</color>
-    <color name="baseline_neutral_90" tools:ignore="UnusedResources">@color/primitive_neutral_90</color>
+    <color name="baseline_neutral_95" tools:ignore="UnusedResources">#F5F7FB</color>
+    <color name="baseline_neutral_90" tools:ignore="UnusedResources">#EEF2F8</color>
     <color name="baseline_neutral_80" tools:ignore="UnusedResources">@color/primitive_neutral_80</color>
     <color name="baseline_neutral_70" tools:ignore="UnusedResources">@color/primitive_neutral_70</color>
     <color name="baseline_neutral_60" tools:ignore="UnusedResources">@color/primitive_neutral_60</color>
     <color name="baseline_neutral_50" tools:ignore="UnusedResources">@color/primitive_neutral_50</color>
     <color name="baseline_neutral_40" tools:ignore="UnusedResources">@color/primitive_neutral_40</color>
     <color name="baseline_neutral_30" tools:ignore="UnusedResources">@color/primitive_neutral_30</color>
-    <color name="baseline_neutral_20" tools:ignore="UnusedResources">@color/primitive_neutral_20</color>
-    <color name="baseline_neutral_10" tools:ignore="UnusedResources">@color/primitive_neutral_10</color>
+    <color name="baseline_neutral_20" tools:ignore="UnusedResources">#0F1626</color>
+    <color name="baseline_neutral_10" tools:ignore="UnusedResources">#05070C</color>
     <color name="baseline_neutral_0" tools:ignore="UnusedResources">@color/primitive_neutral_0</color>
     <!-- baseline_neutral_variant -->
     <color name="baseline_neutral_variant_90" tools:ignore="UnusedResources">@color/primitive_neutral_variant_90</color>
-    <color name="baseline_neutral_variant_80" tools:ignore="UnusedResources">@color/primitive_neutral_variant_80</color>
-    <color name="baseline_neutral_variant_60" tools:ignore="UnusedResources">@color/primitive_neutral_variant_60</color>
+    <color name="baseline_neutral_variant_80" tools:ignore="UnusedResources">#AAB5C7</color>
+    <color name="baseline_neutral_variant_60" tools:ignore="UnusedResources">#5B6A84</color>
     <color name="baseline_neutral_variant_50" tools:ignore="UnusedResources">@color/primitive_neutral_variant_50</color>
-    <color name="baseline_neutral_variant_30" tools:ignore="UnusedResources">@color/primitive_neutral_variant_30</color>
+    <color name="baseline_neutral_variant_30" tools:ignore="UnusedResources">#2A3446</color>
     <!-- baseline_secondary -->
     <color name="baseline_secondary_95" tools:ignore="UnusedResources">@color/primitive_secondary_95</color>
     <color name="baseline_secondary_90" tools:ignore="UnusedResources">@color/primitive_secondary_90</color>

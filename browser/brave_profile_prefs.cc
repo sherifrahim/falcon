@@ -49,6 +49,7 @@
 #include "brave/components/local_ai/buildflags/buildflags.h"
 #include "brave/components/ntp_background_images/browser/view_counter_service.h"
 #include "brave/components/ntp_background_images/buildflags/buildflags.h"
+#include "brave/components/ntp_background_images/common/pref_names.h"
 #include "brave/components/ntp_background_images/common/view_counter_pref_registry.h"
 #include "brave/components/omnibox/browser/brave_omnibox_prefs.h"
 #include "brave/components/psst/buildflags/buildflags.h"
@@ -653,6 +654,12 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
   OverrideDefaultPrefValues(registry);
 
+#if BUILDFLAG(IS_ANDROID)
+  // Falcon Android: the space colour field is the new-tab backdrop.
+  registry->SetDefaultPrefValue(
+      ntp_background_images::prefs::kNewTabPageShowBackgroundImage,
+      base::Value(false));
+#endif
   // Falcon UX defaults (Zen/Arc direction): vertical tabs on, tab strip
   // collapsible with titles on the window. Users can flip them in settings.
 #if !BUILDFLAG(IS_ANDROID)
