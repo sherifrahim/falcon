@@ -10,10 +10,8 @@
     <color name="gm3_baseline_surface_dark">#FF05070C</color>
     <color name="gm3_baseline_surface_dim_dark">#FF05070C</color>
     <color name="gm3_baseline_surface_bright_dark">#FF1D2739</color>
-    <color name="gm3_baseline_surface_container_lowest_dark">#FF05070C</color>
     <color name="gm3_baseline_surface_container_low_dark">#FF0B1120</color>
     <color name="gm3_baseline_surface_container_dark">#FF0D1322</color>
     <color name="gm3_baseline_surface_container_high_dark">#FF121B2C</color>
     <color name="gm3_baseline_surface_container_highest_dark">#FF172033</color>
-    <color name="gm3_baseline_surface_tint_dark">#FF38BDF8</color>
 </resources>
