@@ -22,6 +22,9 @@
     <issue id="UnusedResources">
         <ignore regexp="The resource `R\..*falcon_.*` appears to be unused" />
         <ignore regexp="The resource `R\.style\.Theme_Falcon_.*` appears to be unused" />
+        <!-- Falcon: the XR feature module is out of the APK; these strings were its. -->
+        <ignore regexp="The resource `R\.string\.accessibility_immersive_video_format` appears to be unused" />
+        <ignore regexp="The resource `R\.string\.accessibility_exit_immersive_playback` appears to be unused" />
         <ignore regexp="The resource `R.string.playlist_.*` appears to be unused" />
         <ignore regexp="The resource `R.string.new_tab_otr.*` appears to be unused" />
         <ignore regexp="The resource `R.dimen.md_incognito_ntp.*` appears to be unused" />
