@@ -36,6 +36,7 @@ brave_java_sources = [
   "../../brave/android/java/org/chromium/chrome/browser/falcon/download/DownloadItem.java",
   "../../brave/android/java/org/chromium/chrome/browser/falcon/download/FalconDownloadBridge.java",
   "../../brave/android/java/org/chromium/chrome/browser/falcon/download/FalconDownloadManager.java",
+  "../../brave/android/java/org/chromium/chrome/browser/falcon/download/FalconDownloadUtils.java",
   "../../brave/android/java/org/chromium/chrome/browser/falcon/download/FalconDownloadService.java",
   "../../brave/android/java/org/chromium/chrome/browser/falcon/download/HttpDownloadTask.java",
   "../../brave/android/java/org/chromium/chrome/browser/falcon/download/ui/AddDownloadSheet.java",

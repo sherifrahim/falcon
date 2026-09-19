@@ -18,6 +18,7 @@ public class BraveClassAdapter {
         chain = new BraveAppMenuClassAdapter(chain);
         chain = new BraveAppMenuHandlerImplClassAdapter(chain);
         chain = new BraveBaseCustomTabActivityClassAdapter(chain);
+        chain = new BraveDownloadUtilsClassAdapter(chain);
         chain = new BraveCustomTabActivityClassAdapter(chain);
         chain = new BraveCustomTabToolbarButtonsViewBinderClassAdapter(chain);
         chain = new BraveApplicationImplBaseClassAdapter(chain);
