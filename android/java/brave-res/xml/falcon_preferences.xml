@@ -48,6 +48,12 @@
         android:key="falcon_look_section"
         android:title="@string/falcon_look_section" />
 
+    <Preference
+        android:fragment="org.chromium.chrome.browser.night_mode.settings.ThemeSettingsFragment"
+        android:key="falcon_theme"
+        android:title="@string/theme_settings"
+        android:summary="@string/falcon_theme_summary" />
+
     <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
         android:key="falcon_pitch_black"
         android:title="@string/falcon_pitch_black"

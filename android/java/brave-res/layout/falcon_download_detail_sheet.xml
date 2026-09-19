@@ -211,7 +211,7 @@
             android:background="@drawable/falcon_bg_button_primary"
             android:drawablePadding="8dp"
             android:gravity="center"
-            android:textColor="@color/falcon_accent_ink"
+            android:textColor="@color/falcon_button_primary_ink"
             android:textSize="13sp"
             android:textStyle="bold" />
     </LinearLayout>

@@ -4,28 +4,35 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. -->
 
-<!-- Falcon design tokens (docs/design/android/mock-v6.html): one accent, three containers. -->
+<!-- Falcon design tokens, light: ink-tinted paper, the same single accent one step deeper so it
+     holds on white. The dark set lives in values-night/ (docs/design/android/mock-v6.html). -->
 <resources>
-    <color name="falcon_ink">#FFFFFFFF</color>
-    <color name="falcon_ink_2">#A3FFFFFF</color>
-    <color name="falcon_ink_3">#66FFFFFF</color>
-    <color name="falcon_accent">#FF38BDF8</color>
-    <color name="falcon_accent_ink">#FF04111C</color>
-    <color name="falcon_ok">#FF22C55E</color>
-    <color name="falcon_warn">#FFF59E0B</color>
-    <color name="falcon_hair">#1FFFFFFF</color>
-    <color name="falcon_hair_2">#38FFFFFF</color>
-    <color name="falcon_surface">#09FFFFFF</color>
-    <color name="falcon_glass">#AD080C16</color>
-    <color name="falcon_glass_solid">#FF0D1322</color>
-    <color name="falcon_selection">#2438BDF8</color>
-    <color name="falcon_selection_line">#8C38BDF8</color>
-    <color name="falcon_bg">#FF05070C</color>
-    <color name="falcon_bg_2">#FF070A12</color>
-    <!-- the Downloads space: indigo field fading into ink -->
-    <color name="falcon_space_downloads">#FF2B3A8F</color>
-    <color name="falcon_space_downloads_2">#FF0B1030</color>
-    <color name="falcon_segment_idle">#1FFFFFFF</color>
-    <color name="falcon_segment_done">#FF38BDF8</color>
-    <color name="falcon_segment_done_dim">#66FFFFFF</color>
+    <color name="falcon_ink">#FF0B1220</color>
+    <color name="falcon_ink_2">#A60B1220</color>
+    <color name="falcon_ink_3">#660B1220</color>
+    <color name="falcon_accent">#FF0284C7</color>
+    <color name="falcon_accent_ink">#FFFFFFFF</color>
+    <color name="falcon_ok">#FF15803D</color>
+    <color name="falcon_warn">#FFB45309</color>
+    <color name="falcon_hair">#140B1220</color>
+    <color name="falcon_hair_2">#240B1220</color>
+    <color name="falcon_surface">#0A0B1220</color>
+    <color name="falcon_fill">#0F0B1220</color>
+    <color name="falcon_field">#120B1220</color>
+    <color name="falcon_handle">#4D0B1220</color>
+    <color name="falcon_glass">#D9FFFFFF</color>
+    <color name="falcon_glass_solid">#FFFFFFFF</color>
+    <color name="falcon_button_primary">#FF0B1220</color>
+    <color name="falcon_button_primary_ink">#FFFFFFFF</color>
+    <color name="falcon_selection">#240284C7</color>
+    <color name="falcon_selection_line">#8C0284C7</color>
+    <color name="falcon_bg">#FFF7F9FC</color>
+    <color name="falcon_bg_2">#FFFFFFFF</color>
+    <!-- the Downloads space: a pale indigo wash fading into paper -->
+    <color name="falcon_space_downloads">#FFB9C4F5</color>
+    <color name="falcon_space_downloads_2">#FFE6EAFB</color>
+    <color name="falcon_segment_idle">#140B1220</color>
+    <color name="falcon_segment_done">#FF0284C7</color>
+    <color name="falcon_segment_done_dim">#660B1220</color>
+    <bool name="falcon_light_bars">true</bool>
 </resources>

@@ -18,6 +18,7 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -86,7 +87,13 @@ public class FalconDownloadsActivity extends AsyncInitializationActivity
         mAdapter = new DownloadRowAdapter(this);
         mList.setLayoutManager(new LinearLayoutManager(this));
         mList.setAdapter(mAdapter);
-        mList.setItemAnimator(null);
+        // Rows slide in and out; progress ticks must not cross-fade the whole row.
+        DefaultItemAnimator anim = new DefaultItemAnimator();
+        anim.setSupportsChangeAnimations(false);
+        anim.setAddDuration(180);
+        anim.setRemoveDuration(140);
+        anim.setMoveDuration(180);
+        mList.setItemAnimator(anim);
 
         buildTabs();
         mPauseAll.setOnClickListener(v -> togglePauseAll());

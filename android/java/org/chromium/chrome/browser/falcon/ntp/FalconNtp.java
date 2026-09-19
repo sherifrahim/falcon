@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.ui.interpolators.Interpolators;
 import org.chromium.url.GURL;
 
 import java.util.ArrayList;
@@ -39,6 +40,8 @@ public final class FalconNtp {
     private static final int[] TILE_COLORS = {
         0xFF3B5BDB, 0xFFEA4335, 0xFF1F2328, 0xFF1DB954, 0xFFF97316, 0xFF5865F2, 0xFF1D9BF0
     };
+
+    private static final long ENTER_MS = 200;
 
     private FalconNtp() {}
 
@@ -107,9 +110,24 @@ public final class FalconNtp {
             row.setOnClickListener(
                     v -> TabModelUtils.selectTabById(sel, tabId, TabSelectionType.FROM_USER));
             rows.addView(row);
+            enter(row, shown);
         }
         today.findViewById(R.id.falcon_today_action)
                 .setOnClickListener(v -> openTabSwitcher());
+    }
+
+    /** Rows settle in one after another: a short rise and fade, staggered per row. */
+    private static void enter(View row, int index) {
+        float rise = 8 * row.getResources().getDisplayMetrics().density;
+        row.setAlpha(0f);
+        row.setTranslationY(rise);
+        row.animate()
+                .alpha(1f)
+                .translationY(0f)
+                .setStartDelay(40L * index)
+                .setDuration(ENTER_MS)
+                .setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR)
+                .start();
     }
 
     private static void openTabSwitcher() {

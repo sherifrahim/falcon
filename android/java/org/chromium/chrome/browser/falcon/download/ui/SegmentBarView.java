@@ -5,6 +5,7 @@
 
 package org.chromium.chrome.browser.falcon.download.ui;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -12,6 +13,7 @@ import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.View;
 
+import org.chromium.build.annotations.Nullable;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.falcon.download.DownloadItem;
 import org.chromium.chrome.browser.falcon.download.DownloadItem.Segment;
@@ -29,11 +31,18 @@ public class SegmentBarView extends View {
     private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF mRect = new RectF();
     private final float[] mFill = new float[BARS];
+    private final float[] mFrom = new float[BARS];
+    private final float[] mTo = new float[BARS];
     private final int mIdle;
     private final int mDone;
     private final int mDoneDim;
     private boolean mFinished;
     private boolean mIndeterminate;
+    private @Nullable String mItemId;
+    private @Nullable ValueAnimator mTween;
+
+    private static final long TWEEN_MS = 220;
+    private static final long SWEEP_PERIOD_MS = 1400;
 
     public SegmentBarView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -44,9 +53,36 @@ public class SegmentBarView extends View {
 
     public void setItem(DownloadItem item) {
         mFinished = item.state == State.DONE;
-        computeFill(item, mFill);
+        boolean sameItem = item.id.equals(mItemId);
+        mItemId = item.id;
+        computeFill(item, mTo);
+        boolean wasIndeterminate = mIndeterminate;
         mIndeterminate = item.totalBytes <= 0 && !mFinished;
-        invalidate();
+        if (mTween != null) mTween.cancel();
+        // A recycled row showing a different download snaps; the same download tweens so the
+        // buckets fill smoothly between progress ticks.
+        if (!sameItem || !isAttachedToWindow() || wasIndeterminate) {
+            System.arraycopy(mTo, 0, mFill, 0, BARS);
+            invalidate();
+            return;
+        }
+        System.arraycopy(mFill, 0, mFrom, 0, BARS);
+        ValueAnimator a = ValueAnimator.ofFloat(0f, 1f);
+        a.setDuration(TWEEN_MS);
+        a.addUpdateListener(
+                anim -> {
+                    float t = (float) anim.getAnimatedValue();
+                    for (int i = 0; i < BARS; i++) mFill[i] = mFrom[i] + (mTo[i] - mFrom[i]) * t;
+                    invalidate();
+                });
+        mTween = a;
+        a.start();
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        if (mTween != null) mTween.cancel();
+        super.onDetachedFromWindow();
     }
 
     /** Fraction [0,1] of each of the 16 buckets that has been downloaded. */
@@ -85,12 +121,19 @@ public class SegmentBarView extends View {
         float gap = 3 * getResources().getDisplayMetrics().density;
         float bw = (w - gap * (BARS - 1)) / BARS;
         float r = h / 2;
+        // Probing (size unknown): one bucket at a time lights up and sweeps across.
+        int sweep = -1;
+        if (mIndeterminate) {
+            long phase = android.os.SystemClock.uptimeMillis() % SWEEP_PERIOD_MS;
+            sweep = (int) (phase * BARS / SWEEP_PERIOD_MS);
+            postInvalidateOnAnimation();
+        }
         for (int i = 0; i < BARS; i++) {
             float x = i * (bw + gap);
             mRect.set(x, 0, x + bw, h);
             mPaint.setColor(mIdle);
             canvas.drawRoundRect(mRect, r, r, mPaint);
-            float f = mIndeterminate ? 0f : mFill[i];
+            float f = mIndeterminate ? (i == sweep ? 0.5f : 0f) : mFill[i];
             if (f > 0f) {
                 mPaint.setColor(mFinished ? mDoneDim : mDone);
                 mPaint.setAlpha(mFinished ? 0x66 : (int) (0x66 + 0x99 * f));

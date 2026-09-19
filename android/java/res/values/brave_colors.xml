@@ -7,7 +7,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Overriding chromium baseline_* palette with Nala primitive_* equivalents -->
     <!-- Falcon: the dark slots below carry the dark-glass palette (docs/design/android/mock-v6.html);
-         light slots keep Brave's primitives until the light variant lands. -->
+         the light slots carry the paper variant (same accent, one step deeper). -->
     <!-- baseline_primary -->
     <color name="baseline_primary_100" tools:ignore="UnusedResources">@color/primitive_primary_100</color>
     <color name="baseline_primary_95" tools:ignore="UnusedResources">@color/primitive_primary_95</color>
@@ -16,7 +16,7 @@
     <color name="baseline_primary_70" tools:ignore="UnusedResources">@color/primitive_primary_70</color>
     <color name="baseline_primary_60" tools:ignore="UnusedResources">@color/primitive_primary_60</color>
     <color name="baseline_primary_50" tools:ignore="UnusedResources">@color/primitive_primary_50</color>
-    <color name="baseline_primary_40" tools:ignore="UnusedResources">@color/primitive_primary_40</color>
+    <color name="baseline_primary_40" tools:ignore="UnusedResources">#0284C7</color>
     <color name="baseline_primary_30" tools:ignore="UnusedResources">#0E3A52</color>
     <color name="baseline_primary_20" tools:ignore="UnusedResources">#04111C</color>
     <color name="baseline_primary_10" tools:ignore="UnusedResources">@color/primitive_primary_10</color>
@@ -35,10 +35,10 @@
     <color name="baseline_neutral_10" tools:ignore="UnusedResources">#05070C</color>
     <color name="baseline_neutral_0" tools:ignore="UnusedResources">@color/primitive_neutral_0</color>
     <!-- baseline_neutral_variant -->
-    <color name="baseline_neutral_variant_90" tools:ignore="UnusedResources">@color/primitive_neutral_variant_90</color>
+    <color name="baseline_neutral_variant_90" tools:ignore="UnusedResources">#E3E8F0</color>
     <color name="baseline_neutral_variant_80" tools:ignore="UnusedResources">#AAB5C7</color>
     <color name="baseline_neutral_variant_60" tools:ignore="UnusedResources">#5B6A84</color>
-    <color name="baseline_neutral_variant_50" tools:ignore="UnusedResources">@color/primitive_neutral_variant_50</color>
+    <color name="baseline_neutral_variant_50" tools:ignore="UnusedResources">#6B7789</color>
     <color name="baseline_neutral_variant_30" tools:ignore="UnusedResources">#2A3446</color>
     <!-- baseline_secondary -->
     <color name="baseline_secondary_95" tools:ignore="UnusedResources">@color/primitive_secondary_95</color>
@@ -70,15 +70,15 @@
     <color name="modern_blue_300">#FF7654</color>
     <color name="dialog_bg_color_dark_baseline">@color/toolbar_background_primary_dark</color>
     <color name="default_text_color_on_accent1_dark">@color/primitive_neutral_0</color>
-    <color name="gm3_baseline_surface_tint_light">#948989</color>
+    <color name="gm3_baseline_surface_tint_light">#0284C7</color>
     <color name="gm3_baseline_surface_tint_dark">#F7F9FC</color>
     <!-- Chromium's value is blue-tinted (#F8FAFD); point it at the Nala equivalent so surfaces
          using ?attr/colorSurfaceContainerLow stay on the design system when dynamic colors are
          off, and follow the wallpaper when they are on. -->
-    <color name="gm3_baseline_surface_container_low_light">@color/primitive_neutral_98</color>
-    <color name="gm3_baseline_surface_container_light">#F3F1F1</color>
-    <color name="gm3_baseline_surface_container_high_light">#F2F0F0</color>
-    <color name="gm3_baseline_surface_container_highest_light">#F0EEEE</color>
+    <color name="gm3_baseline_surface_container_low_light">#F5F7FB</color>
+    <color name="gm3_baseline_surface_container_light">#EEF2F8</color>
+    <color name="gm3_baseline_surface_container_high_light">#E6EBF3</color>
+    <color name="gm3_baseline_surface_container_highest_light">#DDE3ED</color>
 
     <!-- Day/Night brave wallet colors -->
     <color name="brave_wallet_onboarding_item_background_color">#687485</color>

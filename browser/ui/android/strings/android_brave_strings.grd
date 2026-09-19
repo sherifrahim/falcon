@@ -1767,6 +1767,9 @@ Are you sure you want to do this?
       <message name="IDS_FALCON_LOOK_SECTION" desc="Section title">
         Look
       </message>
+      <message name="IDS_FALCON_THEME_SUMMARY" desc="Theme row summary in Falcon settings">
+        Dark glass, or paper. Falcon starts dark.
+      </message>
       <message name="IDS_FALCON_PITCH_BLACK" desc="OLED black toggle">
         Pitch black (OLED)
       </message>

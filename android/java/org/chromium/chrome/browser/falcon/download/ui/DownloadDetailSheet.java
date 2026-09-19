@@ -155,7 +155,9 @@ public class DownloadDetailSheet extends BottomSheetDialogFragment
                 mEta.setText(String.format(Locale.US, "%d%%", pct));
                 mEtaLabel.setText(item.state == State.WAITING_WIFI ? "WI-FI" : "QUEUED");
         }
-        mProgress.setProgress(item.totalBytes > 0 ? (int) (item.doneBytes() * 1000 / item.totalBytes) : 0);
+        mProgress.setProgress(
+                item.totalBytes > 0 ? (int) (item.doneBytes() * 1000 / item.totalBytes) : 0,
+                /* animate= */ true);
         mBytes.setText(
                 DownloadItem.formatBytes(item.doneBytes())
                         + (item.totalBytes > 0 ? " of " + DownloadItem.formatBytes(item.totalBytes) : ""));
@@ -198,7 +200,7 @@ public class DownloadDetailSheet extends BottomSheetDialogFragment
         mPrimary.setText(primaryText);
         mPrimary.setCompoundDrawablesRelativeWithIntrinsicBounds(primaryIcon, 0, 0, 0);
         android.graphics.drawable.Drawable[] ds = mPrimary.getCompoundDrawablesRelative();
-        if (ds[0] != null) ds[0].setTint(requireContext().getColor(R.color.falcon_accent_ink));
+        if (ds[0] != null) ds[0].setTint(requireContext().getColor(R.color.falcon_button_primary_ink));
         android.graphics.drawable.Drawable[] ss = mSecondary.getCompoundDrawablesRelative();
         if (ss[0] != null) ss[0].setTint(requireContext().getColor(R.color.falcon_ink));
     }

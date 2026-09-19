@@ -10,6 +10,7 @@ import static org.chromium.ui.base.ViewUtils.dpToPx;
 
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -20,8 +21,6 @@ import android.graphics.PorterDuff;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.InsetDrawable;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
@@ -69,6 +68,7 @@ import org.chromium.chrome.browser.custom_layout.popup_window_tooltip.PopupWindo
 import org.chromium.chrome.browser.customtabs.FullScreenCustomTabActivity;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar;
 import org.chromium.chrome.browser.dialogs.BraveAdsSignupDialog;
+import org.chromium.chrome.browser.falcon.ui.CapsuleDrawable;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.local_database.BraveStatsTable;
 import org.chromium.chrome.browser.local_database.DatabaseHelper;
@@ -1714,10 +1714,13 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     }
 
     // ── Falcon: Arc capsule ──────────────────────────────────────────────────
-    // In the Arc bottom-bar mode the bottom-anchored toolbar is drawn as a floating dark-glass
-    // capsule (docs/design/android/mock-v6.html): ToolbarPhone's own full-width background is
-    // kept transparent and an inset rounded pill becomes the view background.
-    private boolean mFalconCapsule;
+    // In the Arc bottom-bar mode the bottom-anchored toolbar is drawn as a floating glass capsule
+    // (docs/design/android/mock-v6.html): ToolbarPhone's own full-width background is kept
+    // transparent and a CapsuleDrawable becomes the view background. When the omnibox takes
+    // focus the capsule morphs into a flat edge-to-edge bar above the keyboard, and back.
+    private static final int CAPSULE_MORPH_MS = ToolbarPhone.URL_FOCUS_CHANGE_ANIMATION_DURATION_MS;
+    @Nullable private CapsuleDrawable mFalconCapsule;
+    @Nullable private ValueAnimator mCapsuleMorph;
 
     private void maybeApplyFalconCapsule() {
         if (!BraveReflectionUtil.equalTypes(this.getClass(), ToolbarPhone.class)) return;
@@ -1727,15 +1730,38 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         }
         if (!BottomToolbarConfiguration.isToolbarBottomAnchored()) return;
         float d = getResources().getDisplayMetrics().density;
-        GradientDrawable pill = new GradientDrawable();
-        pill.setShape(GradientDrawable.RECTANGLE);
-        pill.setCornerRadius(26 * d);
-        pill.setColor(getContext().getColor(R.color.falcon_glass_solid));
-        pill.setStroke(Math.round(d), getContext().getColor(R.color.falcon_hair_2));
         int side = Math.round(14 * d);
-        setBackground(new InsetDrawable(pill, side, Math.round(2 * d), side, Math.round(6 * d)));
+        mFalconCapsule =
+                new CapsuleDrawable(
+                        getContext().getColor(R.color.falcon_glass_solid),
+                        getContext().getColor(R.color.falcon_hair_2),
+                        d,
+                        26 * d,
+                        side,
+                        2 * d,
+                        6 * d);
+        setBackground(mFalconCapsule);
         setPadding(side + Math.round(4 * d), getPaddingTop(), side + Math.round(4 * d), getPaddingBottom());
-        mFalconCapsule = true;
+    }
+
+    private void morphCapsule(boolean flat) {
+        if (mFalconCapsule == null) return;
+        if (mCapsuleMorph != null) mCapsuleMorph.cancel();
+        final CapsuleDrawable capsule = mFalconCapsule;
+        float to = flat ? 1f : 0f;
+        if (capsule.getMorph() == to) return;
+        ValueAnimator a = ValueAnimator.ofFloat(capsule.getMorph(), to);
+        a.setDuration(CAPSULE_MORPH_MS);
+        a.setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR);
+        a.addUpdateListener(anim -> capsule.setMorph((float) anim.getAnimatedValue()));
+        mCapsuleMorph = a;
+        a.start();
+    }
+
+    @Override
+    void onUrlFocusChange(boolean hasFocus) {
+        super.onUrlFocusChange(hasFocus);
+        morphCapsule(hasFocus);
     }
 
     /**
@@ -1743,7 +1769,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
      * colour on every visual-state change; the capsule needs that backdrop to stay clear.
      */
     private void clearToolbarBackdrop() {
-        if (!mFalconCapsule) return;
+        if (mFalconCapsule == null) return;
         Object bg = BraveReflectionUtil.getField(ToolbarPhone.class, "mToolbarBackground", this);
         if (bg instanceof android.graphics.drawable.ColorDrawable) {
             android.graphics.drawable.ColorDrawable cd = (android.graphics.drawable.ColorDrawable) bg;

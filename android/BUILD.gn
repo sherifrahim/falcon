@@ -737,6 +737,7 @@ android_resources("java_resources") {
     "java/brave-res/layout/falcon_ntp_tab_row.xml",
     "java/brave-res/layout/falcon_ntp_today.xml",
     "java/brave-res/values/falcon_colors.xml",
+    "java/brave-res/values-night/falcon_colors.xml",
     "java/brave-res/xml/brave_origin_preferences.xml",
     "java/brave-res/xml/brave_password_settings_preferences.xml",
     "java/brave-res/xml/brave_playlist_preferences.xml",
