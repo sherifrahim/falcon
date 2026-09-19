@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.app.BraveActivity;
+import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabSelectionType;
@@ -114,8 +115,9 @@ public final class FalconNtp {
     private static void openTabSwitcher(Activity activity) {
         try {
             BraveActivity a = BraveActivity.getBraveActivity();
-            if (a.getLayoutManager() != null) {
-                a.getLayoutManager().showLayout(LayoutType.HUB, /* animate= */ true);
+            LayoutManagerImpl layoutManager = a.getLayoutManagerSupplier().get();
+            if (layoutManager != null) {
+                layoutManager.showLayout(LayoutType.HUB, /* animate= */ true);
             }
         } catch (BraveActivity.BraveActivityNotFoundException e) {
             // Nothing to open.

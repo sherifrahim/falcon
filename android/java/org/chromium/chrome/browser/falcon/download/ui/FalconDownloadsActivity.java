@@ -26,7 +26,10 @@ import org.chromium.chrome.browser.falcon.FalconPrefs;
 import org.chromium.chrome.browser.falcon.download.DownloadItem;
 import org.chromium.chrome.browser.falcon.download.DownloadItem.State;
 import org.chromium.chrome.browser.falcon.download.FalconDownloadManager;
+import org.chromium.base.supplier.OneshotSupplier;
+import org.chromium.chrome.browser.init.ActivityProfileProvider;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
+import org.chromium.chrome.browser.profiles.ProfileProvider;
 import org.chromium.chrome.browser.settings.FalconPreferences;
 import org.chromium.chrome.browser.settings.SettingsNavigationFactory;
 
@@ -62,6 +65,11 @@ public class FalconDownloadsActivity extends AsyncInitializationActivity
     @Override
     public boolean shouldStartGpuProcess() {
         return true;
+    }
+
+    @Override
+    protected OneshotSupplier<ProfileProvider> createProfileProvider() {
+        return new ActivityProfileProvider(getLifecycleDispatcher());
     }
 
     @Override
