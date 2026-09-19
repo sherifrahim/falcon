@@ -11,6 +11,7 @@ import org.chromium.base.Log;
 import org.chromium.build.annotations.Nullable;
 import org.chromium.chrome.browser.BraveConfig;
 import org.chromium.chrome.browser.app.BraveActivity;
+import org.chromium.chrome.browser.falcon.FalconPrefs;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.BravePref;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
@@ -28,7 +29,7 @@ public class BraveLeoPrefUtils {
      * <p>Note: The pref is "enabled_by_policy", so we check if it's managed AND false (disabled).
      */
     public static boolean isLeoDisabledByPolicy(@Nullable Profile profile) {
-        if (!BraveConfig.ENABLE_AI_CHAT) return true;
+        if (!BraveConfig.ENABLE_AI_CHAT || !FalconPrefs.BRAVE_SERVICES) return true;
         if (profile == null) {
             return false;
         }

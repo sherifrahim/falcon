@@ -32,6 +32,14 @@ public final class FalconPrefs {
         int CLASSIC = 2;
     }
 
+    /**
+     * Falcon ships without Brave's services on Android (Rewards, Wallet, VPN, Leo, News). Their
+     * policy helpers report "disabled" from this constant so every Brave surface hides them even
+     * before a profile exists (the toolbar asks with a null profile at startup); the native side is
+     * disabled by LoadFalconPolicies and, in Release, compiled out.
+     */
+    public static final boolean BRAVE_SERVICES = false;
+
     public static final String BOTTOM_BAR_MODE = "falcon_bottom_bar_mode";
     public static final String DOWNLOADER_ENABLED = "falcon_downloader_enabled";
     public static final String DOWNLOADER_CONNECTIONS = "falcon_downloader_connections";

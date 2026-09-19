@@ -8,6 +8,7 @@ package org.chromium.chrome.browser.brave_news;
 import org.chromium.build.annotations.NullMarked;
 import org.chromium.build.annotations.Nullable;
 import org.chromium.chrome.browser.BraveConfig;
+import org.chromium.chrome.browser.falcon.FalconPrefs;
 import org.chromium.chrome.browser.preferences.BravePref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.prefs.PrefService;
@@ -18,7 +19,7 @@ import org.chromium.components.user_prefs.UserPrefs;
 public class BraveNewsPolicy {
     /** Returns true if News is disabled by policy for the given profile. */
     public static boolean isDisabledByPolicy(@Nullable Profile profile) {
-        if (!BraveConfig.ENABLE_NEWS) return true;
+        if (!BraveConfig.ENABLE_NEWS || !FalconPrefs.BRAVE_SERVICES) return true;
         if (profile == null) {
             return false;
         }
