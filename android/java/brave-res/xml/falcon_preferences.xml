@@ -12,6 +12,7 @@
         android:title="@string/falcon_shell_section" />
 
     <ListPreference
+        android:persistent="false"
         android:key="falcon_bottom_bar_mode"
         android:title="@string/falcon_bottom_bar"
         android:dialogTitle="@string/falcon_bottom_bar"
@@ -23,11 +24,13 @@
         android:title="@string/falcon_downloads_section" />
 
     <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
+        android:persistent="false"
         android:key="falcon_downloader_enabled"
         android:title="@string/falcon_downloader_enabled"
         android:summary="@string/falcon_downloader_enabled_summary" />
 
     <ListPreference
+        android:persistent="false"
         android:key="falcon_downloader_connections"
         android:title="@string/falcon_downloader_connections"
         android:dialogTitle="@string/falcon_downloader_connections"
@@ -35,11 +38,13 @@
         android:entryValues="@array/falcon_downloader_connections_values" />
 
     <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
+        android:persistent="false"
         android:key="falcon_downloader_verify"
         android:title="@string/falcon_downloader_verify"
         android:summary="@string/falcon_downloader_verify_summary" />
 
     <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
+        android:persistent="false"
         android:key="falcon_downloader_wifi_only"
         android:title="@string/falcon_downloader_wifi_only"
         android:summary="@string/falcon_downloader_wifi_only_summary" />
@@ -55,6 +60,7 @@
         android:summary="@string/falcon_theme_summary" />
 
     <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
+        android:persistent="false"
         android:key="falcon_pitch_black"
         android:title="@string/falcon_pitch_black"
         android:summary="@string/falcon_pitch_black_summary" />

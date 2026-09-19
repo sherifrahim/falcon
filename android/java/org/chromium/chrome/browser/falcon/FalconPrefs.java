@@ -46,8 +46,28 @@ public final class FalconPrefs {
         return ChromeSharedPreferences.getInstance();
     }
 
+    /**
+     * readInt that survives a String stored under the key (a persistent ListPreference did that
+     * in the first Falcon APK and every later launch crashed); the value is rewritten as an int.
+     */
+    private static int readIntSafe(String key, int defaultValue) {
+        try {
+            return prefs().readInt(key, defaultValue);
+        } catch (ClassCastException e) {
+            int value = defaultValue;
+            try {
+                value = Integer.parseInt(prefs().readString(key, ""));
+            } catch (NumberFormatException | ClassCastException ignored) {
+                // fall through to the default
+            }
+            prefs().removeKey(key);
+            prefs().writeInt(key, value);
+            return value;
+        }
+    }
+
     public static @BottomBarMode int getBottomBarMode() {
-        int mode = prefs().readInt(BOTTOM_BAR_MODE, DEFAULT_BOTTOM_BAR_MODE);
+        int mode = readIntSafe(BOTTOM_BAR_MODE, DEFAULT_BOTTOM_BAR_MODE);
         return mode >= BottomBarMode.ARC && mode <= BottomBarMode.CLASSIC
                 ? mode
                 : DEFAULT_BOTTOM_BAR_MODE;
@@ -67,7 +87,7 @@ public final class FalconPrefs {
     }
 
     public static int getDownloaderConnections() {
-        int n = prefs().readInt(DOWNLOADER_CONNECTIONS, DEFAULT_DOWNLOADER_CONNECTIONS);
+        int n = readIntSafe(DOWNLOADER_CONNECTIONS, DEFAULT_DOWNLOADER_CONNECTIONS);
         return Math.max(1, Math.min(16, n));
     }
 
