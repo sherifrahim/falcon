@@ -84,6 +84,7 @@ public final class DownloadItem {
     public volatile long speedBps;
     public volatile long etaSeconds = -1;
 
+    private final Object mLock = new Object();
     private final List<Segment> mSegments = new ArrayList<>();
 
     public DownloadItem(
@@ -108,17 +109,23 @@ public final class DownloadItem {
         this.state = State.QUEUED;
     }
 
-    public synchronized List<Segment> segments() {
-        return new ArrayList<>(mSegments);
+    public List<Segment> segments() {
+        synchronized (mLock) {
+            return new ArrayList<>(mSegments);
+        }
     }
 
-    public synchronized void setSegments(List<Segment> segments) {
-        mSegments.clear();
-        mSegments.addAll(segments);
+    public void setSegments(List<Segment> segments) {
+        synchronized (mLock) {
+            mSegments.clear();
+            mSegments.addAll(segments);
+        }
     }
 
-    public synchronized boolean hasSegments() {
-        return !mSegments.isEmpty();
+    public boolean hasSegments() {
+        synchronized (mLock) {
+            return !mSegments.isEmpty();
+        }
     }
 
     public long doneBytes() {

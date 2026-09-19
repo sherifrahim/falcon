@@ -109,10 +109,10 @@ public final class FalconNtp {
             rows.addView(row);
         }
         today.findViewById(R.id.falcon_today_action)
-                .setOnClickListener(v -> openTabSwitcher(activity));
+                .setOnClickListener(v -> openTabSwitcher());
     }
 
-    private static void openTabSwitcher(Activity activity) {
+    private static void openTabSwitcher() {
         try {
             BraveActivity a = BraveActivity.getBraveActivity();
             LayoutManagerImpl layoutManager = a.getLayoutManagerSupplier().get();
@@ -131,7 +131,7 @@ public final class FalconNtp {
 
     static int colorFor(String host) {
         if (host == null) return TILE_COLORS[0];
-        return TILE_COLORS[Math.abs(host.hashCode()) % TILE_COLORS.length];
+        return TILE_COLORS[Math.floorMod(host.hashCode(), TILE_COLORS.length)];
     }
 
     static String ago(long ms) {

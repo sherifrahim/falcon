@@ -8,6 +8,8 @@ package org.chromium.chrome.browser.falcon.download;
 import android.text.TextUtils;
 
 import org.chromium.base.Log;
+import org.chromium.net.ChromiumNetworkAdapter;
+import org.chromium.net.NetworkTrafficAnnotationTag;
 import org.chromium.chrome.browser.falcon.download.DownloadItem.Segment;
 
 import java.io.File;
@@ -36,6 +38,24 @@ final class HttpDownloadTask implements Runnable {
     private static final int MAX_RETRIES = 6;
     private static final int CONNECT_TIMEOUT_MS = 20_000;
     private static final int READ_TIMEOUT_MS = 30_000;
+    private static final NetworkTrafficAnnotationTag TRAFFIC_ANNOTATION =
+            NetworkTrafficAnnotationTag.createComplete(
+                    "falcon_downloader",
+                    "semantics {"
+                            + "  sender: 'Falcon downloader'"
+                            + "  description: 'Fetches a file the user chose to download, in"
+                            + " several byte ranges at once, with the page cookies Chromium"
+                            + " would have sent.'"
+                            + "  trigger: 'A download Chromium handed to Falcon, or a link the"
+                            + " user pasted into the Downloads page.'"
+                            + "  data: 'The download URL, referer, user agent and cookies.'"
+                            + "  destination: WEBSITE"
+                            + "}"
+                            + "policy {"
+                            + "  cookies_allowed: YES"
+                            + "  setting: 'Settings > Falcon > Take over page downloads.'"
+                            + "  policy_exception_justification: 'Personal fork; no policy.'"
+                            + "}");
 
     interface Listener {
         void onProbed(DownloadItem item);
@@ -264,7 +284,9 @@ final class HttpDownloadTask implements Runnable {
                     int n = in.read(buf, 0, want);
                     if (n < 0) break;
                     raf.write(buf, 0, n);
-                    segment.done += n;
+                    // One writer per segment; the read-then-write is what the volatile is for.
+                    long done = segment.done;
+                    segment.done = done + n;
                     remaining -= n;
                 }
                 if (segment.end < 0 && !isStopping()) {
@@ -278,7 +300,9 @@ final class HttpDownloadTask implements Runnable {
     }
 
     private HttpURLConnection open(String method, String range) throws IOException {
-        HttpURLConnection c = (HttpURLConnection) new URL(mItem.url).openConnection();
+        HttpURLConnection c =
+                (HttpURLConnection)
+                        ChromiumNetworkAdapter.openConnection(new URL(mItem.url), TRAFFIC_ANNOTATION);
         c.setRequestMethod(method);
         c.setInstanceFollowRedirects(true);
         c.setConnectTimeout(CONNECT_TIMEOUT_MS);
