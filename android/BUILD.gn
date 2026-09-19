@@ -3,6 +3,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
+import("//brave/components/ai_chat/core/common/buildflags/buildflags.gni")
+import("//brave/components/brave_ads/buildflags/buildflags.gni")
+import("//brave/components/brave_news/common/buildflags/buildflags.gni")
+import("//brave/components/brave_rewards/core/buildflags/buildflags.gni")
+import("//brave/components/brave_vpn/common/buildflags/buildflags.gni")
 import("//brave/components/brave_wallet/common/buildflags/buildflags.gni")
 import("//brave/components/email_aliases/buildflags/buildflags.gni")
 import(
@@ -18,9 +23,8 @@ declare_args() {
 java_cpp_enum("brave_android_java_enums_srcjar") {
   sources = [ "//brave/chromium_src/chrome/browser/notifications/notification_handler_impl.h" ]
 
-  if (enable_brave_wallet) {
-    sources += [ "//brave/components/decentralized_dns/core/constants.h" ]
-  }
+  # Falcon: always (the wallet Java stays compiled; see brave_config_java).
+  sources += [ "//brave/components/decentralized_dns/core/constants.h" ]
 }
 
 java_cpp_template("brave_config_java") {
@@ -30,6 +34,16 @@ java_cpp_template("brave_config_java") {
     "BRAVE_ANDROID_WEBCOMPAT_REPORT_ENDPOINT=\"$webcompat_report_api_endpoint\"",
     "BRAVE_ANDROID_WEB_DISCOVERY_ENABLED=$enable_web_discovery_native",
     "BRAVE_ANDROID_ENABLE_EMAIL_ALIASES=$enable_email_aliases",
+
+    # Falcon: services compiled out natively (build/args/falcon_android.gni).
+    # The Java stays, gated at its JNI boundary by these constants so javac/R8
+    # drop the dead native-facing code.
+    "BRAVE_ANDROID_ENABLE_AI_CHAT=$enable_ai_chat",
+    "BRAVE_ANDROID_ENABLE_ADS=$enable_brave_ads",
+    "BRAVE_ANDROID_ENABLE_NEWS=$enable_brave_news",
+    "BRAVE_ANDROID_ENABLE_REWARDS=$enable_brave_rewards",
+    "BRAVE_ANDROID_ENABLE_VPN=$enable_brave_vpn",
+    "BRAVE_ANDROID_ENABLE_WALLET=$enable_brave_wallet",
   ]
 }
 

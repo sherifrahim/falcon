@@ -9,6 +9,7 @@ import org.chromium.base.BraveFeatureList;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.build.annotations.Nullable;
+import org.chromium.chrome.browser.BraveConfig;
 import org.chromium.chrome.browser.app.BraveActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.BravePref;
@@ -27,6 +28,7 @@ public class BraveLeoPrefUtils {
      * <p>Note: The pref is "enabled_by_policy", so we check if it's managed AND false (disabled).
      */
     public static boolean isLeoDisabledByPolicy(@Nullable Profile profile) {
+        if (!BraveConfig.ENABLE_AI_CHAT) return true;
         if (profile == null) {
             return false;
         }
@@ -53,6 +55,7 @@ public class BraveLeoPrefUtils {
     }
 
     public static void setIsSubscriptionActive(boolean value) {
+        if (!BraveConfig.ENABLE_AI_CHAT) return;
         Profile profileToUse = BraveLeoPrefUtils.getProfile();
         if (profileToUse == null) {
             Log.e(TAG, "BraveLeoPrefUtils.setIsSubscriptionActive profile is null");
@@ -63,6 +66,7 @@ public class BraveLeoPrefUtils {
     }
 
     public static boolean getIsSubscriptionActive(Profile profile) {
+        if (!BraveConfig.ENABLE_AI_CHAT) return false;
         // The subscription pref is only registered when the AI Chat feature is enabled
         // (see ai_chat::prefs::RegisterProfilePrefs, gated on IsAIChatEnabled()). Reading an
         // unregistered pref trips a CHECK in PrefService, so bail out when AI Chat is disabled.
@@ -80,6 +84,7 @@ public class BraveLeoPrefUtils {
     }
 
     public static void setChatPurchaseToken(String token) {
+        if (!BraveConfig.ENABLE_AI_CHAT) return;
         Profile profileToUse = BraveLeoPrefUtils.getProfile();
         if (profileToUse == null) {
             Log.e(TAG, "BraveLeoPrefUtils.setChatPurchaseToken profile is null");
@@ -101,6 +106,7 @@ public class BraveLeoPrefUtils {
     }
 
     public static boolean getIsHistoryEnabled() {
+        if (!BraveConfig.ENABLE_AI_CHAT) return false;
         Profile profileToUse = BraveLeoPrefUtils.getProfile();
         if (profileToUse == null) {
             Log.e(TAG, "BraveLeoPrefUtils.getIsHistoryEnabled profile is null");
@@ -110,6 +116,7 @@ public class BraveLeoPrefUtils {
     }
 
     public static void setIsHistoryEnabled(boolean isEnabled) {
+        if (!BraveConfig.ENABLE_AI_CHAT) return;
         Profile profileToUse = BraveLeoPrefUtils.getProfile();
         if (profileToUse == null) {
             Log.e(TAG, "BraveLeoPrefUtils.getIsHistoryEnabled profile is null");
@@ -140,6 +147,7 @@ public class BraveLeoPrefUtils {
     }
 
     public static void setChatPackageName() {
+        if (!BraveConfig.ENABLE_AI_CHAT) return;
         Profile profileToUse = BraveLeoPrefUtils.getProfile();
         if (profileToUse == null) {
             Log.e(TAG, "BraveLeoPrefUtils.setChatPackageName profile is null");
@@ -152,6 +160,7 @@ public class BraveLeoPrefUtils {
     }
 
     public static void setChatProductId(String productId) {
+        if (!BraveConfig.ENABLE_AI_CHAT) return;
         Profile profileToUse = BraveLeoPrefUtils.getProfile();
         if (profileToUse == null) {
             Log.e(TAG, "BraveLeoPrefUtils.setChatProductId profile is null");
@@ -169,6 +178,7 @@ public class BraveLeoPrefUtils {
     }
 
     public static boolean isSubscriptionLinked() {
+        if (!BraveConfig.ENABLE_AI_CHAT) return false;
         Profile profileToUse = BraveLeoPrefUtils.getProfile();
         if (profileToUse == null) {
             Log.e(TAG, "BraveLeoPrefUtils.isSubscriptionLinked profile is null");

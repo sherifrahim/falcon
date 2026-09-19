@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.crypto_wallet;
 
 import org.chromium.build.annotations.NullMarked;
 import org.chromium.build.annotations.Nullable;
+import org.chromium.chrome.browser.BraveConfig;
 import org.chromium.chrome.browser.preferences.BravePref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.prefs.PrefService;
@@ -17,6 +18,7 @@ import org.chromium.components.user_prefs.UserPrefs;
 public class BraveWalletPolicy {
     /** Returns true if Wallet is disabled by policy for the given profile. */
     public static boolean isDisabledByPolicy(@Nullable Profile profile) {
+        if (!BraveConfig.ENABLE_WALLET) return true;
         if (profile == null) {
             return false;
         }

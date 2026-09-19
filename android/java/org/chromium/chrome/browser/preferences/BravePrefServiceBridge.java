@@ -9,6 +9,7 @@ import org.jni_zero.JNINamespace;
 import org.jni_zero.NativeMethods;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.BraveConfig;
 import org.chromium.chrome.browser.profiles.Profile;
 
 /**
@@ -73,6 +74,7 @@ public class BravePrefServiceBridge {
     }
 
     public void resetPromotionLastFetchStamp() {
+        if (!BraveConfig.ENABLE_REWARDS) return;
         BravePrefServiceBridgeJni.get().resetPromotionLastFetchStamp();
     }
 
@@ -100,19 +102,24 @@ public class BravePrefServiceBridge {
         return BravePrefServiceBridgeJni.get().getWebrtcPolicy();
     }
 
+    // Falcon: the news prefs only exist while Brave News is compiled in.
     public void setNewsOptIn(boolean value) {
+        if (!BraveConfig.ENABLE_NEWS) return;
         BravePrefServiceBridgeJni.get().setNewsOptIn(value);
     }
 
     public boolean getNewsOptIn() {
+        if (!BraveConfig.ENABLE_NEWS) return false;
         return BravePrefServiceBridgeJni.get().getNewsOptIn();
     }
 
     public void setShowNews(boolean value) {
+        if (!BraveConfig.ENABLE_NEWS) return;
         BravePrefServiceBridgeJni.get().setShowNews(value);
     }
 
     public boolean getShowNews() {
+        if (!BraveConfig.ENABLE_NEWS) return false;
         return BravePrefServiceBridgeJni.get().getShowNews();
     }
 

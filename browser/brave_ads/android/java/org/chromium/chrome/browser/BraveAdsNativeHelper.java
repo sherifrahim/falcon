@@ -17,24 +17,24 @@ public class BraveAdsNativeHelper {
     private BraveAdsNativeHelper() {}
 
     public static boolean nativeIsSupportedRegion(Profile profile) {
-        return BraveAdsNativeHelperJni.get().isSupportedRegion(profile);
+        return BraveConfig.ENABLE_ADS ? BraveAdsNativeHelperJni.get().isSupportedRegion(profile) : false;
     }
 
     public static void nativeClearData(Profile profile) {
-        BraveAdsNativeHelperJni.get().clearData(profile);
+        if (BraveConfig.ENABLE_ADS) BraveAdsNativeHelperJni.get().clearData(profile);
     }
 
     public static void nativeOnNotificationAdShown(Profile profile, String jNotificationId) {
-        BraveAdsNativeHelperJni.get().onNotificationAdShown(profile, jNotificationId);
+        if (BraveConfig.ENABLE_ADS) BraveAdsNativeHelperJni.get().onNotificationAdShown(profile, jNotificationId);
     }
 
     public static void nativeOnNotificationAdClosed(
             Profile profile, String jNotificationId, boolean jByUser) {
-        BraveAdsNativeHelperJni.get().onNotificationAdClosed(profile, jNotificationId, jByUser);
+        if (BraveConfig.ENABLE_ADS) BraveAdsNativeHelperJni.get().onNotificationAdClosed(profile, jNotificationId, jByUser);
     }
 
     public static void nativeOnNotificationAdClicked(Profile profile, String jNotificationId) {
-        BraveAdsNativeHelperJni.get().onNotificationAdClicked(profile, jNotificationId);
+        if (BraveConfig.ENABLE_ADS) BraveAdsNativeHelperJni.get().onNotificationAdClicked(profile, jNotificationId);
     }
 
     @NativeMethods

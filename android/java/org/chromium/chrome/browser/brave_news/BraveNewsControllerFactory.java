@@ -15,6 +15,7 @@ import org.chromium.base.task.TaskTraits;
 import org.chromium.brave_news.mojom.BraveNewsController;
 import org.chromium.build.annotations.NullMarked;
 import org.chromium.build.annotations.Nullable;
+import org.chromium.chrome.browser.BraveConfig;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.mojo.bindings.ConnectionErrorHandler;
 import org.chromium.mojo.bindings.Interface;
@@ -49,8 +50,8 @@ public class BraveNewsControllerFactory {
         mTaskRunner.execute(
                 () -> {
                     long nativeHandle =
-                            BraveNewsControllerFactoryJni.get()
-                                    .getInterfaceToBraveNewsController(profile);
+                            (BraveConfig.ENABLE_NEWS ? BraveNewsControllerFactoryJni.get()
+                                    .getInterfaceToBraveNewsController(profile) : 0);
                     MessagePipeHandle handle = wrapNativeHandle(nativeHandle);
                     if (!handle.isValid()) {
                         promise.fulfill(null);

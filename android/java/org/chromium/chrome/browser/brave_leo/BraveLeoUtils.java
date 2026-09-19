@@ -18,6 +18,7 @@ import org.jni_zero.NativeMethods;
 import org.chromium.ai_chat.mojom.ModelWithSubtitle;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
+import org.chromium.chrome.browser.BraveConfig;
 import org.chromium.chrome.browser.app.BraveActivity;
 import org.chromium.chrome.browser.billing.InAppPurchaseWrapper;
 import org.chromium.chrome.browser.billing.PurchaseModel;
@@ -58,11 +59,11 @@ public class BraveLeoUtils {
             String conversationUuid,
             String query,
             boolean openLeoChatWindow) {
-        BraveLeoUtilsJni.get().openLeoQuery(webContents, conversationUuid, query);
+        if (BraveConfig.ENABLE_AI_CHAT) BraveLeoUtilsJni.get().openLeoQuery(webContents, conversationUuid, query);
     }
 
     public static void openLeoUrlForTab(WebContents webContents) {
-        BraveLeoUtilsJni.get().openLeoUrlForTab(webContents);
+        if (BraveConfig.ENABLE_AI_CHAT) BraveLeoUtilsJni.get().openLeoUrlForTab(webContents);
     }
 
     public static String getDefaultModelName(ModelWithSubtitle[] models, String defaultModelKey) {

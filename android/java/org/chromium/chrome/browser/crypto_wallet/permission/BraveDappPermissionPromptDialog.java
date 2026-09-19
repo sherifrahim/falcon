@@ -30,6 +30,7 @@ import org.chromium.brave_wallet.mojom.CoinType;
 import org.chromium.brave_wallet.mojom.KeyringService;
 import org.chromium.brave_wallet.mojom.PermissionLifetimeOption;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.BraveConfig;
 import org.chromium.chrome.browser.app.BraveActivity;
 import org.chromium.chrome.browser.app.domain.WalletModel;
 import org.chromium.chrome.browser.app.helpers.ImageLoader;
@@ -232,7 +233,7 @@ public class BraveDappPermissionPromptDialog
                                     ConnectAccountFragment.getAndResetConnectAccountPendingData();
                             if (capd != null) {
                                 final String[] selectedAccounts = {capd.accountAddress};
-                                BraveDappPermissionPromptDialogJni.get()
+                                if (BraveConfig.ENABLE_WALLET) BraveDappPermissionPromptDialogJni.get()
                                         .onPrimaryButtonClicked(
                                                 mNativeDialogController,
                                                 selectedAccounts,
@@ -273,7 +274,7 @@ public class BraveDappPermissionPromptDialog
     @Override
     public void onClick(PropertyModel model, @ButtonType int buttonType) {
         if (buttonType == ButtonType.POSITIVE) {
-            BraveDappPermissionPromptDialogJni.get()
+            if (BraveConfig.ENABLE_WALLET) BraveDappPermissionPromptDialogJni.get()
                     .onPrimaryButtonClicked(
                             mNativeDialogController,
                             getSelectedAccounts(),
@@ -281,7 +282,7 @@ public class BraveDappPermissionPromptDialog
             mModalDialogManager.dismissDialog(
                     mPropertyModel, DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
         } else if (buttonType == ButtonType.NEGATIVE) {
-            BraveDappPermissionPromptDialogJni.get()
+            if (BraveConfig.ENABLE_WALLET) BraveDappPermissionPromptDialogJni.get()
                     .onNegativeButtonClicked(mNativeDialogController);
             mModalDialogManager.dismissDialog(
                     mPropertyModel, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
@@ -291,7 +292,7 @@ public class BraveDappPermissionPromptDialog
     @Override
     public void onDismiss(PropertyModel model, int dismissalCause) {
         disconnectMojoServices();
-        BraveDappPermissionPromptDialogJni.get().onDialogDismissed(mNativeDialogController);
+        if (BraveConfig.ENABLE_WALLET) BraveDappPermissionPromptDialogJni.get().onDialogDismissed(mNativeDialogController);
         mNativeDialogController = 0;
     }
 

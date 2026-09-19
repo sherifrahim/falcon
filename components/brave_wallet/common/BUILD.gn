@@ -11,7 +11,8 @@ import("//testing/test.gni")
 import("//tools/grit/preprocess_if_expr.gni")
 import("//tools/json_schema_compiler/json_schema_api.gni")
 
-assert(enable_brave_wallet)
+# Falcon Android keeps the mojom Java bindings when the native wallet is out.
+assert(enable_brave_wallet || is_android)
 
 preprocess_folder = "preprocessed"
 preprocess_mojo_manifest = "preprocessed_mojo_manifest.json"

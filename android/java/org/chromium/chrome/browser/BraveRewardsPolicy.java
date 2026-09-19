@@ -20,6 +20,7 @@ public class BraveRewardsPolicy {
 
     /** Returns true if Rewards is disabled by policy for the given profile. */
     public static boolean isDisabledByPolicy(@Nullable Profile profile) {
+        if (!BraveConfig.ENABLE_REWARDS) return true;
         if (sDisabledByPolicyForTesting != null) {
             return sDisabledByPolicyForTesting;
         }

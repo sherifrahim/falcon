@@ -8,24 +8,25 @@ package org.chromium.chrome.browser.crypto_wallet.util;
 import org.jni_zero.JNINamespace;
 import org.jni_zero.NativeMethods;
 
+import org.chromium.chrome.browser.BraveConfig;
 import org.chromium.chrome.browser.profiles.Profile;
 
 @JNINamespace("chrome::android")
 public class WalletNativeUtils {
     public static void resetWallet(Profile profile) {
-        WalletNativeUtilsJni.get().resetWallet(profile);
+        if (BraveConfig.ENABLE_WALLET) WalletNativeUtilsJni.get().resetWallet(profile);
     }
 
     public static boolean isUnstoppableDomainsTld(String domain) {
-        return WalletNativeUtilsJni.get().isUnstoppableDomainsTld(domain);
+        return BraveConfig.ENABLE_WALLET ? WalletNativeUtilsJni.get().isUnstoppableDomainsTld(domain) : false;
     }
 
     public static boolean isEnsTld(String domain) {
-        return WalletNativeUtilsJni.get().isEnsTld(domain);
+        return BraveConfig.ENABLE_WALLET ? WalletNativeUtilsJni.get().isEnsTld(domain) : false;
     }
 
     public static boolean isSnsTld(String domain) {
-        return WalletNativeUtilsJni.get().isSnsTld(domain);
+        return BraveConfig.ENABLE_WALLET ? WalletNativeUtilsJni.get().isSnsTld(domain) : false;
     }
 
     @NativeMethods

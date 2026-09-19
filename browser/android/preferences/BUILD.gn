@@ -58,13 +58,12 @@ java_cpp_strings("java_pref_names_srcjar") {
     "//components/translate/core/browser/translate_pref_names.h",
   ]
 
-  if (enable_brave_ads) {
-    sources += [ "//brave/components/brave_ads/core/public/prefs/pref_names.h" ]
-  }
-
-  if (enable_brave_wallet) {
-    sources += [ "//brave/components/decentralized_dns/core/pref_names.h" ]
-  }
+  # Falcon: the Java that names these prefs stays compiled when the native
+  # side is out (android/BUILD.gn brave_config_java); the headers always exist.
+  sources += [
+    "//brave/components/brave_ads/core/public/prefs/pref_names.h",
+    "//brave/components/decentralized_dns/core/pref_names.h",
+  ]
 
   template =
       "//brave/browser/preferences/android/java_templates/BravePref.java.tmpl"

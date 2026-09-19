@@ -9,6 +9,7 @@ import org.jni_zero.JNINamespace;
 import org.jni_zero.NativeMethods;
 
 import org.chromium.brave_vpn.mojom.ServiceHandler;
+import org.chromium.chrome.browser.BraveConfig;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.mojo.bindings.ConnectionErrorHandler;
 import org.chromium.mojo.bindings.Interface;
@@ -38,7 +39,7 @@ public class BraveVpnServiceFactoryAndroid {
             return null;
         }
         long nativeHandle =
-                BraveVpnServiceFactoryAndroidJni.get().getInterfaceToVpnService(profile);
+                (BraveConfig.ENABLE_VPN ? BraveVpnServiceFactoryAndroidJni.get().getInterfaceToVpnService(profile) : 0);
         if (nativeHandle == -1) {
             return null;
         }

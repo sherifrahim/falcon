@@ -12,6 +12,7 @@ import org.jni_zero.NativeMethods;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.brave_wallet.mojom.CoinType;
+import org.chromium.chrome.browser.BraveConfig;
 import org.chromium.chrome.browser.app.BraveActivity;
 import org.chromium.chrome.browser.settings.BraveWalletPreferences;
 import org.chromium.content_public.browser.WebContents;
@@ -93,7 +94,7 @@ public class BraveWalletProviderDelegateImplHelper {
                 result -> {
                     callback.call(result);
                 };
-        BraveWalletProviderDelegateImplHelperJni.get()
+        if (BraveConfig.ENABLE_WALLET) BraveWalletProviderDelegateImplHelperJni.get()
                 .isSolanaConnected(webContents, account, callbackWrapper);
     }
 

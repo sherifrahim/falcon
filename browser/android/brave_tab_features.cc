@@ -5,18 +5,22 @@
 
 #include "brave/browser/android/brave_tab_features.h"
 
-#include "brave/browser/ai_chat/ai_chat_utils.h"
-#include "brave/browser/ai_chat/tab_data_web_contents_observer.h"
-#include "brave/browser/ai_chat/web_mcp_injection/web_mcp_injector.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_contents.h"
+
+#if BUILDFLAG(ENABLE_AI_CHAT)
+#include "brave/browser/ai_chat/ai_chat_utils.h"
+#include "brave/browser/ai_chat/tab_data_web_contents_observer.h"
+#include "brave/browser/ai_chat/web_mcp_injection/web_mcp_injector.h"
+#endif
 
 namespace tabs {
 
 BraveTabFeatures::BraveTabFeatures(content::WebContents* web_contents,
                                    Profile* profile)
     : TabFeatures_Chromium(web_contents, profile) {
+#if BUILDFLAG(ENABLE_AI_CHAT)
   if (ai_chat::IsAllowedForContext(profile)) {
     tab_data_observer_ = std::make_unique<ai_chat::TabDataWebContentsObserver>(
         TabAndroid::FromWebContents(web_contents)->GetAndroidId(),
@@ -25,6 +29,7 @@ BraveTabFeatures::BraveTabFeatures(content::WebContents* web_contents,
     // WebMcpInjector. Null when WebMCP is disabled or has no rules.
     web_mcp_injector_ = ai_chat::WebMcpInjector::MaybeCreate(web_contents);
   }
+#endif
 }
 
 BraveTabFeatures::~BraveTabFeatures() = default;

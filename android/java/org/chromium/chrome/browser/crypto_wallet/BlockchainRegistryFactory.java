@@ -9,6 +9,7 @@ import org.jni_zero.JNINamespace;
 import org.jni_zero.NativeMethods;
 
 import org.chromium.brave_wallet.mojom.BlockchainRegistry;
+import org.chromium.chrome.browser.BraveConfig;
 import org.chromium.chrome.browser.crypto_wallet.util.Utils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.mojo.bindings.ConnectionErrorHandler;
@@ -34,7 +35,7 @@ public class BlockchainRegistryFactory {
     private BlockchainRegistryFactory() {}
 
     public BlockchainRegistry getBlockchainRegistry(ConnectionErrorHandler connectionErrorHandler) {
-        long nativeHandle = BlockchainRegistryFactoryJni.get().getInterfaceToBlockchainRegistry();
+        long nativeHandle = (BraveConfig.ENABLE_WALLET ? BlockchainRegistryFactoryJni.get().getInterfaceToBlockchainRegistry() : 0);
         MessagePipeHandle handle = wrapNativeHandle(nativeHandle);
         BlockchainRegistry blockchainRegistry = BlockchainRegistry.MANAGER.attachProxy(handle, 0);
         Handler handler = ((Interface.Proxy) blockchainRegistry).getProxyHandler();
@@ -45,7 +46,7 @@ public class BlockchainRegistryFactory {
 
     public String getTokensIconsLocation() {
         Profile profile = Utils.getProfile(false); // always use regular profile
-        return BlockchainRegistryFactoryJni.get().getTokensIconsLocation(profile);
+        return BraveConfig.ENABLE_WALLET ? BlockchainRegistryFactoryJni.get().getTokensIconsLocation(profile) : "";
     }
 
     private MessagePipeHandle wrapNativeHandle(long nativeHandle) {

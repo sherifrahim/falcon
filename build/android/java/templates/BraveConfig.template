@@ -13,4 +13,11 @@ public class BraveConfig {
   public static final String WEBCOMPAT_REPORT_ENDPOINT = BRAVE_ANDROID_WEBCOMPAT_REPORT_ENDPOINT;
   public static final boolean WEB_DISCOVERY_ENABLED = BRAVE_ANDROID_WEB_DISCOVERY_ENABLED;
   public static final boolean ENABLE_EMAIL_ALIASES = BRAVE_ANDROID_ENABLE_EMAIL_ALIASES;
+  // Falcon: false when the service's native side is compiled out.
+  public static final boolean ENABLE_AI_CHAT = BRAVE_ANDROID_ENABLE_AI_CHAT;
+  public static final boolean ENABLE_ADS = BRAVE_ANDROID_ENABLE_ADS;
+  public static final boolean ENABLE_NEWS = BRAVE_ANDROID_ENABLE_NEWS;
+  public static final boolean ENABLE_REWARDS = BRAVE_ANDROID_ENABLE_REWARDS;
+  public static final boolean ENABLE_VPN = BRAVE_ANDROID_ENABLE_VPN;
+  public static final boolean ENABLE_WALLET = BRAVE_ANDROID_ENABLE_WALLET;
 }

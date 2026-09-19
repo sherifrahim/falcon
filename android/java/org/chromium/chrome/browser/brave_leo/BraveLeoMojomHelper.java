@@ -11,6 +11,7 @@ import org.jni_zero.NativeMethods;
 import org.chromium.ai_chat.mojom.AiChatSettingsHelper;
 import org.chromium.ai_chat.mojom.ModelWithSubtitle;
 import org.chromium.ai_chat.mojom.PremiumStatus;
+import org.chromium.chrome.browser.BraveConfig;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
 import org.chromium.content_public.browser.BrowserContextHandle;
 import org.chromium.mojo.bindings.ConnectionErrorHandler;
@@ -42,10 +43,10 @@ public class BraveLeoMojomHelper implements ConnectionErrorHandler {
     }
 
     private BraveLeoMojomHelper(BrowserContextHandle browserContextHandle) {
-        mNativeAIChatCMHelperAndroid = BraveLeoMojomHelperJni.get().init(browserContextHandle);
+        mNativeAIChatCMHelperAndroid = (BraveConfig.ENABLE_AI_CHAT ? BraveLeoMojomHelperJni.get().init(browserContextHandle) : 0);
         long nativeHandle =
-                BraveLeoMojomHelperJni.get()
-                        .getInterfaceToAndroidHelper(mNativeAIChatCMHelperAndroid);
+                (BraveConfig.ENABLE_AI_CHAT ? BraveLeoMojomHelperJni.get()
+                        .getInterfaceToAndroidHelper(mNativeAIChatCMHelperAndroid) : 0);
         MessagePipeHandle handle =
                 CoreImpl.getInstance().acquireNativeHandle(nativeHandle).toMessagePipeHandle();
         mAIChatAndroidHelper = AiChatSettingsHelper.MANAGER.attachProxy(handle, 0);
@@ -61,7 +62,7 @@ public class BraveLeoMojomHelper implements ConnectionErrorHandler {
             }
             mAIChatAndroidHelper.close();
             mAIChatAndroidHelper = null;
-            BraveLeoMojomHelperJni.get().destroy(mNativeAIChatCMHelperAndroid);
+            if (BraveConfig.ENABLE_AI_CHAT) BraveLeoMojomHelperJni.get().destroy(mNativeAIChatCMHelperAndroid);
             mNativeAIChatCMHelperAndroid = 0;
         }
     }

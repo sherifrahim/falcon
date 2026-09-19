@@ -35,6 +35,7 @@ import org.chromium.build.annotations.MonotonicNonNull;
 import org.chromium.build.annotations.NullMarked;
 import org.chromium.build.annotations.Nullable;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.BraveConfig;
 import org.chromium.chrome.browser.BraveRewardsHelper;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.app.BraveActivity;
@@ -249,7 +250,7 @@ public class ConnectAccountFragment extends BaseDAppsFragment implements Permiss
         if (tab != null && tab.getWebContents() != null) {
             // Static data for BraveDappPermissionPromptDialog.show
             setConnectAccountPendingData(account.address);
-            ConnectAccountFragmentJni.get()
+            if (BraveConfig.ENABLE_WALLET) ConnectAccountFragmentJni.get()
                     .connectAccount(
                             account.address,
                             account.accountId.coin,

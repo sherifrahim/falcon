@@ -98,10 +98,10 @@ brave_chrome_java_deps = [
 brave_chrome_java_deps += brave_app_billing_deps
 brave_chrome_java_deps += brave_app_playlist_deps
 
-if (enable_brave_wallet) {
-  brave_chrome_java_deps +=
-      [ "//brave/components/brave_wallet/common:mojom_java" ]
-}
+# Falcon: the wallet Java compiles even when its native side is out
+# (enable_brave_wallet = false); R8 drops what the constants leave dead.
+brave_chrome_java_deps +=
+    [ "//brave/components/brave_wallet/common:mojom_java" ]
 
 brave_chrome_all_java_deps = [
   "//brave/android/features/tab_ui:java",
