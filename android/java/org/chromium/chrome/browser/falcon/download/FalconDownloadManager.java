@@ -5,6 +5,7 @@
 
 package org.chromium.chrome.browser.falcon.download;
 
+import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -70,6 +71,7 @@ public final class FalconDownloadManager {
         default void onDownloadFinished(DownloadItem item) {}
     }
 
+    @SuppressLint("StaticFieldLeak") // application context only
     private static FalconDownloadManager sInstance;
 
     private final Context mContext = ContextUtils.getApplicationContext();

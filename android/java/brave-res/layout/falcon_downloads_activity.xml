@@ -6,6 +6,7 @@
 
 <!-- Downloads (mock v6 screen 4): telemetry first, text tabs, rows, capsule at the thumb. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/falcon_downloads_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -43,6 +44,7 @@
 
             <TextView
                 android:id="@+id/falcon_engine_pill"
+                tools:ignore="RelativeOverlap"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
@@ -164,7 +166,9 @@
                 android:src="@drawable/falcon_ic_search" />
 
             <EditText
+                android:importantForAutofill="no"
                 android:id="@+id/falcon_search"
+                tools:ignore="NestedWeights"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"

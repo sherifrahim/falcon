@@ -34,6 +34,7 @@
         android:textSize="12.5sp" />
 
     <EditText
+            android:importantForAutofill="no"
         android:id="@+id/falcon_add_name"
         android:layout_width="match_parent"
         android:layout_height="46dp"
@@ -50,6 +51,7 @@
         android:textSize="13sp" />
 
     <EditText
+            android:importantForAutofill="no"
         android:id="@+id/falcon_add_sha"
         android:layout_width="match_parent"
         android:layout_height="46dp"
@@ -164,6 +166,7 @@
         android:orientation="horizontal">
 
         <EditText
+            android:importantForAutofill="no"
             android:id="@+id/falcon_add_url"
             android:layout_width="0dp"
             android:layout_height="52dp"

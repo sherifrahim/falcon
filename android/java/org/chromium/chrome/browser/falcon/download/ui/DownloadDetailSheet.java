@@ -5,6 +5,7 @@
 
 package org.chromium.chrome.browser.falcon.download.ui;
 
+import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -30,6 +31,7 @@ import org.chromium.chrome.browser.falcon.download.FalconDownloadManager;
 import java.util.Locale;
 
 /** Download detail (mock v6 screen 5): live segments, the three tiles, actions at the thumb. */
+@SuppressLint("SetTextI18n") // live numeric readouts; Falcon is English-only for now
 public class DownloadDetailSheet extends BottomSheetDialogFragment
         implements FalconDownloadManager.Observer {
     private static final String ARG_ID = "id";

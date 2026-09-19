@@ -23,7 +23,7 @@
         android:letterSpacing="0.14"
         android:textAllCaps="true"
         android:textColor="@color/falcon_ink_3"
-        android:textSize="10sp" />
+        android:textSize="11sp" />
 
     <TextView
         android:id="@+id/falcon_tile_value"

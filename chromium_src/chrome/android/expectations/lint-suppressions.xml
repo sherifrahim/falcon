@@ -20,6 +20,8 @@
         <ignore regexp="ContentSettingsType.BRAVE_CONTENT_SETTINGS_TYPES_LIST" />
     </issue>
     <issue id="UnusedResources">
+        <ignore regexp="The resource `R\..*falcon_.*` appears to be unused" />
+        <ignore regexp="The resource `R\.style\.Theme_Falcon_.*` appears to be unused" />
         <ignore regexp="The resource `R.string.playlist_.*` appears to be unused" />
         <ignore regexp="The resource `R.string.new_tab_otr.*` appears to be unused" />
         <ignore regexp="The resource `R.dimen.md_incognito_ntp.*` appears to be unused" />

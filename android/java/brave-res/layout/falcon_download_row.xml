@@ -42,7 +42,7 @@
                     android:fontFamily="monospace"
                     android:letterSpacing="0.08"
                     android:textColor="@color/falcon_ink_3"
-                    android:textSize="10sp"
+                    android:textSize="11sp"
                     android:textStyle="bold" />
 
                 <TextView
