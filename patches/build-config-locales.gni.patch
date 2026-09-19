@@ -1,5 +1,5 @@
 diff --git a/build/config/locales.gni b/build/config/locales.gni
-index 736f5f1d23..179043be89 100644
+index 736f5f1d23..d8fbbee189 100644
 --- a/build/config/locales.gni
 +++ b/build/config/locales.gni
 @@ -172,6 +172,7 @@ extended_locales = [
@@ -10,7 +10,7 @@ index 736f5f1d23..179043be89 100644
  
  # Chrome locales not on Android.
  # These locales have not yet been tested yet. Specifically, AOSP has not been
-@@ -296,3 +297,18 @@ if (is_apple) {
+@@ -296,3 +297,29 @@ if (is_apple) {
      }
    }
  }
@@ -28,4 +28,15 @@ index 736f5f1d23..179043be89 100644
 +    android_bundle_locales_as_resources =
 +        falcon_android_bundle_locales_as_resources
 +  }
++
++  # Consumers subtract |extended_locales| from |platform_pak_locales|; keep
++  # only the extended locales that are still shipped so that stays valid.
++  _falcon_extended_locales = []
++  foreach(_locale, extended_locales) {
++    if (filter_include(falcon_pak_locales, [ _locale ]) != []) {
++      _falcon_extended_locales += [ _locale ]
++    }
++  }
++  extended_locales = []
++  extended_locales = _falcon_extended_locales
 +}
