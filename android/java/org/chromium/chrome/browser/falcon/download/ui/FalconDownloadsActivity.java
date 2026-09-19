@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.falcon.download.ui;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.ColorDrawable;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Menu;
@@ -27,6 +28,7 @@ import org.chromium.chrome.browser.falcon.FalconPrefs;
 import org.chromium.chrome.browser.falcon.download.DownloadItem;
 import org.chromium.chrome.browser.falcon.download.DownloadItem.State;
 import org.chromium.chrome.browser.falcon.download.FalconDownloadManager;
+import org.chromium.chrome.browser.falcon.ui.FalconTheme;
 import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.chrome.browser.init.ActivityProfileProvider;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
@@ -74,7 +76,17 @@ public class FalconDownloadsActivity extends AsyncInitializationActivity
     }
 
     @Override
+    protected void applyThemeOverlays() {
+        super.applyThemeOverlays();
+        FalconTheme.applyPitchBlack(this);
+    }
+
+    @Override
     protected void triggerLayoutInflation() {
+        if (FalconTheme.isPitchBlack(this)) {
+            getWindow().setBackgroundDrawable(new ColorDrawable(FalconTheme.bg(this)));
+            getWindow().setNavigationBarColor(FalconTheme.bg(this));
+        }
         setContentView(R.layout.falcon_downloads_activity);
         mTelemetry = findViewById(R.id.falcon_telemetry);
         mEnginePill = findViewById(R.id.falcon_engine_pill);

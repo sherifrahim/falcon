@@ -2596,6 +2596,12 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     @Override
+    protected void applyThemeOverlays() {
+        super.applyThemeOverlays();
+        org.chromium.chrome.browser.falcon.ui.FalconTheme.applyPitchBlack(this);
+    }
+
+    @Override
     public void performPreInflationStartup() {
         // Falcon: first-run defaults (dark, address bar at the thumb); after that
         // the user's own choices win.

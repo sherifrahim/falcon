@@ -1733,7 +1733,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         int side = Math.round(14 * d);
         mFalconCapsule =
                 new CapsuleDrawable(
-                        getContext().getColor(R.color.falcon_glass_solid),
+                        org.chromium.chrome.browser.falcon.ui.FalconTheme.glassSolid(getContext()),
                         getContext().getColor(R.color.falcon_hair_2),
                         d,
                         26 * d,

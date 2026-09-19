@@ -1774,7 +1774,7 @@ Are you sure you want to do this?
         Pitch black (OLED)
       </message>
       <message name="IDS_FALCON_PITCH_BLACK_SUMMARY" desc="OLED black summary">
-        True black surfaces instead of dark glass.
+        True black surfaces instead of dark glass (dark theme). Takes effect on the next launch.
       </message>
       <message name="IDS_BRAVE_STATS" desc="Brave stats title">
         Privacy Report

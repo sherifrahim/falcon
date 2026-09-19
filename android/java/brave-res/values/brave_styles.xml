@@ -774,4 +774,15 @@
         <item name="android:background">@android:color/transparent</item>
     </style>
 
+    <!-- Falcon: pitch black (OLED) — applied on top of the dark theme when the Look toggle is on. -->
+    <style name="ThemeOverlay.Falcon.PitchBlack" parent="">
+        <item name="android:colorBackground">@android:color/black</item>
+        <item name="colorSurface">@android:color/black</item>
+        <item name="colorSurfaceDim">@android:color/black</item>
+        <item name="colorSurfaceContainerLow">#FF07090E</item>
+        <item name="colorSurfaceContainer">#FF0B0E15</item>
+        <item name="colorSurfaceContainerHigh">#FF11151E</item>
+        <item name="colorSurfaceContainerHighest">#FF171C27</item>
+    </style>
+
 </resources>
