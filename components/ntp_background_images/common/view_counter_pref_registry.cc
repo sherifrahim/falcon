@@ -5,6 +5,7 @@
 
 #include "brave/components/ntp_background_images/common/view_counter_pref_registry.h"
 
+#include "build/build_config.h"
 #include "brave/components/brave_ads/buildflags/buildflags.h"
 #include "brave/components/ntp_background_images/common/infobar_constants.h"
 #include "brave/components/ntp_background_images/common/pref_names.h"
@@ -54,7 +55,9 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
                                 false);
   registry->RegisterBooleanPref(prefs::kBrandedWallpaperNotificationDismissed,
                                 false);
-  registry->RegisterBooleanPref(prefs::kNewTabPageShowBackgroundImage, true);
+  // Falcon Android: the space colour field is the new-tab backdrop.
+  registry->RegisterBooleanPref(prefs::kNewTabPageShowBackgroundImage,
+                                !BUILDFLAG(IS_ANDROID));
   registry->RegisterIntegerPref(
       prefs::kNewTabTakeoverInfobarRemainingDisplayCount,
       kNewTabTakeoverInfobarRemainingDisplayCountThreshold);
