@@ -247,8 +247,11 @@ base::DictValue Aria2Service::EngineOptionsFromPrefs() const {
 void Aria2Service::Launch() {
   ++launch_attempts_;
 
+  // Sidecars ship in the version dir (base::DIR_MODULE, where chrome.dll is):
+  // setup.exe only manages brave.exe and chrome_proxy.exe at the Application
+  // root. In a dev out/ dir DIR_MODULE is the same directory as brave.exe.
   base::FilePath exe_dir;
-  base::PathService::Get(base::DIR_EXE, &exe_dir);
+  base::PathService::Get(base::DIR_MODULE, &exe_dir);
   const base::FilePath exe = exe_dir.AppendASCII("aria2c.exe");
   const base::FilePath dir = Aria2Dir();
 

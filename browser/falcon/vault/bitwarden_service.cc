@@ -105,8 +105,9 @@ PrefService* local_state() {
 }
 
 base::FilePath CliExe() {
+  // Version dir (see aria2_service.cc): DIR_EXE only in dev out/ dirs.
   base::FilePath dir;
-  base::PathService::Get(base::DIR_EXE, &dir);
+  base::PathService::Get(base::DIR_MODULE, &dir);
   return dir.AppendASCII("bw.exe");
 }
 

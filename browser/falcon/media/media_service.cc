@@ -55,9 +55,12 @@ constexpr char kTitlePrefix[] = "FALCONT|";
 constexpr char kFilePrefix[] = "FALCONF|";
 constexpr char kPostPrefix[] = "FALCONM|";
 
+// Sidecars ship in the version dir (base::DIR_MODULE): setup.exe only manages
+// brave.exe and chrome_proxy.exe at the Application root. In a dev out/ dir
+// DIR_MODULE is the same directory as brave.exe.
 base::FilePath ExeDir() {
   base::FilePath dir;
-  base::PathService::Get(base::DIR_EXE, &dir);
+  base::PathService::Get(base::DIR_MODULE, &dir);
   return dir;
 }
 
