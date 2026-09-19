@@ -2595,6 +2595,12 @@ public abstract class BraveActivity extends ChromeActivity
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
+    // Falcon: keep the dark-glass / paper palette; no wallpaper-derived (Material You) colours.
+    @Override
+    protected boolean shouldApplyDynamicColors() {
+        return false;
+    }
+
     @Override
     protected void applyThemeOverlays() {
         super.applyThemeOverlays();

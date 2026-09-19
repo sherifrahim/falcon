@@ -76,6 +76,11 @@ public class FalconDownloadsActivity extends AsyncInitializationActivity
     }
 
     @Override
+    protected boolean shouldApplyDynamicColors() {
+        return false;
+    }
+
+    @Override
     protected void applyThemeOverlays() {
         super.applyThemeOverlays();
         FalconTheme.applyPitchBlack(this);

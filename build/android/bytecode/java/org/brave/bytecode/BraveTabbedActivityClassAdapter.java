@@ -41,6 +41,8 @@ public class BraveTabbedActivityClassAdapter extends BraveClassVisitor {
         makePublicMethod(sChromeTabbedActivityClassName, "hideOverview");
 
         deleteMethod(sChromeTabbedActivityClassName, "supportsDynamicColors");
+        // Falcon: the palette is the design; Material You must not repaint it.
+        deleteMethod(sChromeTabbedActivityClassName, "shouldApplyDynamicColors");
 
         makePublicMethod(sChromeTabbedActivityClassName, "maybeHandleUrlIntent");
         changeMethodOwner(
