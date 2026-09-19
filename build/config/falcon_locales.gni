@@ -1,0 +1,35 @@
+# Copyright (c) 2026 The Falcon Authors. All rights reserved.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this file,
+# You can obtain one at https://mozilla.org/MPL/2.0/.
+
+# Falcon ships an English-only UI: listing the locales here replaces
+# |platform_pak_locales| (and the Android resource allowlist derived from it)
+# at the end of //build/config/locales.gni, so both the .pak files and the
+# res/values-xx strings of every other language stay out of the build.
+# Empty (the default) keeps Chromium's full list.
+declare_args() {
+  falcon_pak_locales = []
+}
+
+# Same transform as //build/config/locales.gni (ToAndroidLocaleName).
+falcon_android_bundle_locales_as_resources = []
+foreach(_locale, falcon_pak_locales) {
+  _res = string_replace(_locale, "-", "-r")
+  if (_res == "en-rUS") {
+    _res = ""
+  } else if (_res == "es-r419") {
+    _res = "es-rUS"
+  } else if (_res == "fil") {
+    _res = "tl"
+  } else if (_res == "he") {
+    _res = "iw"
+  } else if (_res == "id") {
+    _res = "in"
+  } else if (_res == "sr-rLatn") {
+    _res = "b+sr+Latn"
+  }
+  if (_res != "") {
+    falcon_android_bundle_locales_as_resources += [ _res ]
+  }
+}
