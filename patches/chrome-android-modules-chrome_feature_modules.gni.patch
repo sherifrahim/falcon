@@ -1,0 +1,15 @@
+diff --git a/chrome/android/modules/chrome_feature_modules.gni b/chrome/android/modules/chrome_feature_modules.gni
+index a34a5fe875..33f88d1277 100644
+--- a/chrome/android/modules/chrome_feature_modules.gni
++++ b/chrome/android/modules/chrome_feature_modules.gni
+@@ -30,8 +30,9 @@ import("//device/vr/buildflags/buildflags.gni")
+ chrome_module_descs = [
+   on_demand_module_desc,
+   stack_unwinder_module_desc,
+-  xr_module_desc,
+ ]
++# Falcon: no WebXR/AR, so the XR module (impress, ARCore, cardboard prebuilts,
++# ~20 MB of native libs in a universal APK) stays out.
+ if (dfmify_dev_ui) {
+   chrome_module_descs += [ dev_ui_module_desc ]
+ }
