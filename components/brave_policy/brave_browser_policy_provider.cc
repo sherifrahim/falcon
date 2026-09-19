@@ -90,13 +90,12 @@ void BraveBrowserPolicyProvider::LoadFalconPolicies(
   set(policy::key::kBraveWalletDisabled, true);
   set(policy::key::kBraveVPNDisabled, true);
   set(policy::key::kBraveAIChatEnabled, false);
-  set(policy::key::kBraveLocalAIEnabled, false);
+  // Local AI and Tor have no Android build, so their policy keys don't exist here.
   set(policy::key::kBraveNewsDisabled, true);
   set(policy::key::kBraveTalkDisabled, true);
   set(policy::key::kBraveP3AEnabled, false);
   set(policy::key::kBraveStatsPingEnabled, false);
   set(policy::key::kBraveWebDiscoveryEnabled, false);
-  set(policy::key::kTorDisabled, true);
 }
 
 std::unique_ptr<policy::ConfigurationPolicyProvider>
