@@ -385,7 +385,10 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
         }
 
         setPreferenceOrder(PREF_SYNC, ++generalOrder);
-        setPreferenceOrder(PREF_BRAVE_STATS, ++generalOrder);
+        // Falcon: no Brave stats ("Privacy report"), no Brave Origin, no "Rate Brave".
+        removePreferenceIfPresent(PREF_BRAVE_STATS);
+        removePreferenceIfPresent(PREF_BRAVE_ORIGIN);
+        removePreferenceIfPresent(PREF_RATE_BRAVE);
         // if notification is not available (eg. for emulators)
         if (findPreference(PREF_NOTIFICATIONS) != null) {
             findPreference(PREF_NOTIFICATIONS).setOrder(++generalOrder);
@@ -399,11 +402,6 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
             setPreferenceOrder(PREF_CLOSING_ALL_TABS_CLOSES_BRAVE, ++generalOrder);
         }
 
-        if (ChromeFeatureList.isEnabled(BraveFeatureList.BRAVE_ORIGIN)) {
-            setPreferenceOrder(PREF_BRAVE_ORIGIN, ++generalOrder);
-        } else {
-            removePreferenceIfPresent(PREF_BRAVE_ORIGIN);
-        }
 
         // Only present when the upstream default browser entry point is enabled.
         Preference defaultBrowser = findPreference(MainSettings.PREF_DEFAULT_BROWSER);
@@ -431,7 +429,6 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
         int supportSectionOrder = passwordsAndAutofillSectionOrder;
         setPreferenceOrder(PREF_SUPPORT_SECTION, ++supportSectionOrder);
 
-        setPreferenceOrder(PREF_RATE_BRAVE, ++supportSectionOrder);
 
         int aboutSectionOrder = supportSectionOrder;
         // This preference doesn't exist by default in Release mode
@@ -540,7 +537,6 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
     }
 
     private void updateSummaries() {
-        updateSummary(PREF_BRAVE_STATS, BraveStatsPreferences.getPreferenceSummary());
     }
 
     private void overrideChromiumPreferences() {
