@@ -1,0 +1,12 @@
+Name: Bitwarden CLI
+Short Name: bitwarden-cli
+URL: https://github.com/bitwarden/clients
+Version: cli-v2026.9.0
+License: GPL-3.0
+License File: /brave/third_party/bitwarden-cli/LICENSE
+Security Critical: no
+Shipped: yes
+
+Description:
+Sidecar for Falcon Passwords on desktop (bw serve, local REST API on
+127.0.0.1). Executed as a separate process; not linked. See README.md.

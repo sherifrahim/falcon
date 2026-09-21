@@ -1,0 +1,13 @@
+Name: aria2
+Short Name: aria2
+URL: https://github.com/aria2/aria2
+Version: 1.37.0
+License: GPL-2.0-or-later
+License File: /brave/third_party/aria2/LICENSE
+Security Critical: no
+Shipped: yes
+
+Description:
+Falcon's download engine on desktop. The official release binary runs as a
+separate process and is driven over its JSON-RPC interface; Falcon does not
+link against it. See README.md.

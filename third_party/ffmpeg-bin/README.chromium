@@ -1,0 +1,12 @@
+Name: ffmpeg (yt-dlp builds)
+Short Name: ffmpeg-bin
+URL: https://github.com/yt-dlp/FFmpeg-Builds
+Version: master-latest-win64-gpl-shared
+License: GPL-3.0
+License File: /brave/third_party/ffmpeg-bin/LICENSE
+Security Critical: no
+Shipped: yes
+
+Description:
+ffmpeg/ffprobe binaries used by yt-dlp to merge DASH audio+video and remux
+HLS on desktop. Executed as a separate process; not linked. See README.md.

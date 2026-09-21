@@ -1,0 +1,12 @@
+Name: yt-dlp
+Short Name: yt-dlp
+URL: https://github.com/yt-dlp/yt-dlp
+Version: 2026.08.19
+License: Unlicense
+License File: /brave/third_party/yt-dlp/LICENSE
+Security Critical: no
+Shipped: yes
+
+Description:
+Falcon's media extractor on desktop (HLS/DASH playlists). Executed as a
+separate process; not linked. See README.md.
