@@ -740,6 +740,8 @@ android_resources("java_resources") {
     "java/brave-res/drawable/falcon_ic_retry.xml",
     "java/brave-res/drawable/falcon_ic_search.xml",
     "java/brave-res/drawable/falcon_ic_share.xml",
+    "java/brave-res/drawable/falcon_ic_shield.xml",
+    "java/brave-res/drawable/falcon_ic_shield_off.xml",
     "java/brave-res/drawable/falcon_ic_trash.xml",
     "java/brave-res/drawable/falcon_progress.xml",
     "java/brave-res/layout/falcon_download_add_sheet.xml",

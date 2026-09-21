@@ -49,7 +49,7 @@
     <org.chromium.chrome.browser.settings.BraveAccountPreference
         android:key="get_started"
         android:order="8"
-        android:icon="@drawable/ic_social_brave_release_favicon_fullheight_color"
+        android:icon="@drawable/falcon_ic_shield"
         android:title="@string/settings_brave_account_get_started_button_label"/>
     <PreferenceCategory
         android:key="features_section"

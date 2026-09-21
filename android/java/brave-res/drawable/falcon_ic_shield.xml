@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--* Copyright (c) 2026 The Falcon Authors. All rights reserved.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. -->
+<!-- Shields on: filled shield with a check, in the accent. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="@color/falcon_accent"
+        android:pathData="M12,2.5 L4.5,5.3 V11.2 C4.5,15.9 7.7,20.2 12,21.5 C16.3,20.2 19.5,15.9 19.5,11.2 V5.3 Z" />
+    <path android:pathData="M8.6,12.2 L11,14.6 L15.6,9.9" android:strokeColor="@color/falcon_accent_ink"
+        android:strokeWidth="2" android:strokeLineCap="round" android:strokeLineJoin="round" android:fillColor="#00000000" />
+</vector>
