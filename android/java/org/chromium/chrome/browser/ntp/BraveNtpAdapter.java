@@ -34,9 +34,11 @@ import org.chromium.brave_news.mojom.BraveNewsController;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BraveConstants;
 import org.chromium.chrome.browser.app.BraveActivity;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.brave_news.CardBuilderFeedCard;
 import org.chromium.chrome.browser.brave_news.models.FeedItemsCard;
 import org.chromium.chrome.browser.brave_stats.BraveStatsUtil;
+import org.chromium.chrome.browser.falcon.ntp.FalconNtp;
 import org.chromium.chrome.browser.ntp_background_images.NTPBackgroundImagesBridge;
 import org.chromium.chrome.browser.ntp_background_images.model.BackgroundImage;
 import org.chromium.chrome.browser.ntp_background_images.model.NTPImage;
@@ -47,6 +49,7 @@ import org.chromium.chrome.browser.preferences.BravePref;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.settings.BackgroundImagesPreferences;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.BraveTouchUtils;
 import org.chromium.chrome.browser.util.TabUtils;
 import org.chromium.components.user_prefs.UserPrefs;
@@ -82,6 +85,7 @@ public class BraveNtpAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private int mTopMarginImageCredit;
     private float mImageCreditAlpha = 1f;
 
+    private static final boolean FALCON_SPACE_HEADER = true;
     private static final int TYPE_STATS = 1;
     private static final int TYPE_TOP_SITES = 2;
     private static final int TYPE_NEW_CONTENT = 3;
@@ -137,7 +141,13 @@ public class BraveNtpAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        if (holder instanceof StatsViewHolder) {
+        if (holder instanceof FalconSpaceViewHolder) {
+            Tab currentTab =
+                    mActivity instanceof ChromeActivity
+                            ? ((ChromeActivity) mActivity).getActivityTab()
+                            : null;
+            FalconNtp.bind((ViewGroup) holder.itemView, mActivity, currentTab);
+        } else if (holder instanceof StatsViewHolder) {
             StatsViewHolder statsViewHolder = (StatsViewHolder) holder;
 
             statsViewHolder.mHideStatsImg.setOnClickListener(
@@ -405,9 +415,10 @@ public class BraveNtpAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view;
         if (viewType == TYPE_STATS) {
+            // Falcon: the space header + Today rows take Brave's stats slot.
             view = LayoutInflater.from(parent.getContext())
-                           .inflate(R.layout.brave_stats_layout, parent, false);
-            return new StatsViewHolder(view);
+                           .inflate(R.layout.falcon_ntp_space, parent, false);
+            return new FalconSpaceViewHolder(view);
 
         } else if (viewType == TYPE_TOP_SITES) {
             // mMvTilesContainerLayout may have been placed in the NTP layout tree by
@@ -482,9 +493,9 @@ public class BraveNtpAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         return isStatsEnabled() ? 1 : 0;
     }
 
-    // Will be used in privacy hub feature
+    // Falcon: the first slot holds the space header even with Brave stats off (FalconDefaults).
     private boolean isStatsEnabled() {
-        return mIsBraveStatsEnabled;
+        return mIsBraveStatsEnabled || FALCON_SPACE_HEADER;
     }
 
     public int getTopSitesCount() {
@@ -511,18 +522,9 @@ public class BraveNtpAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     }
 
     public void setBraveStatsEnabled(boolean isBraveStatsEnabled) {
-        if (mIsBraveStatsEnabled != isBraveStatsEnabled) {
-            mIsBraveStatsEnabled = isBraveStatsEnabled;
-            if (mIsBraveStatsEnabled) {
-                notifyItemInserted(getStatsCount());
-            } else {
-                notifyItemRemoved(getStatsCount());
-            }
-            // Rebind items shifted by the insert/remove above so they're positioned correctly.
-            notifyItemRangeChanged(
-                    getStatsCount(),
-                    getStatsCount() + getTopSitesCount() + getNewContentCount() + ONE_ITEM_SPACE);
-        }
+        // Falcon: the first item is the space header either way (see isStatsEnabled), so no
+        // insert/remove; the flag is kept for Brave's callers.
+        mIsBraveStatsEnabled = isBraveStatsEnabled;
     }
 
     public void setDisplayNewsFeed(boolean isDisplayNewsFeed) {
@@ -630,6 +632,13 @@ public class BraveNtpAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             count += 1;
         }
         notifyItemRangeChanged(0, count);
+    }
+
+    /** Falcon space home: header (space name, tab count, clock, date) + Today rows. */
+    public static class FalconSpaceViewHolder extends RecyclerView.ViewHolder {
+        FalconSpaceViewHolder(View itemView) {
+            super(itemView);
+        }
     }
 
     public static class StatsViewHolder extends RecyclerView.ViewHolder {

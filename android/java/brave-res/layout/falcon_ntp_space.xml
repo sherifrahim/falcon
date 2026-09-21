@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--* Copyright (c) 2026 The Falcon Authors. All rights reserved.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<!-- The space home's first item (mock v6 screen 1): header + Today rows. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <include layout="@layout/falcon_ntp_header" />
+
+    <include layout="@layout/falcon_ntp_today" />
+</LinearLayout>

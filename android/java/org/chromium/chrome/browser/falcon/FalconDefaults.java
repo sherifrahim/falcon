@@ -34,6 +34,8 @@ public final class FalconDefaults {
         BottomToolbarConfiguration.applyFalconBottomBarMode(FalconPrefs.getBottomBarMode());
         // The space home (mock v6 screen 1) has no stats widget.
         prefs.writeBoolean(BackgroundImagesPreferences.PREF_SHOW_BRAVE_STATS, false);
+        // The space colour field is the backdrop; no wallpaper photos.
+        prefs.writeBoolean(BackgroundImagesPreferences.PREF_SHOW_BACKGROUND_IMAGES, false);
         OnboardingPrefManager.getInstance().setBraveStatsEnabled(false);
     }
 }

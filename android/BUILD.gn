@@ -748,6 +748,7 @@ android_resources("java_resources") {
     "java/brave-res/layout/falcon_downloads_activity.xml",
     "java/brave-res/layout/falcon_kv_tile.xml",
     "java/brave-res/layout/falcon_ntp_header.xml",
+    "java/brave-res/layout/falcon_ntp_space.xml",
     "java/brave-res/layout/falcon_ntp_tab_row.xml",
     "java/brave-res/layout/falcon_ntp_today.xml",
     "java/brave-res/values/falcon_colors.xml",
