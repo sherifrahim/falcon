@@ -5,7 +5,14 @@
 
 package org.chromium.chrome.browser.settings;
 
+import android.app.AlertDialog;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.DocumentsContract;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
@@ -34,6 +41,9 @@ public class FalconPreferences extends BravePreferenceFragment
     public static final String PREF_PITCH_BLACK = "falcon_pitch_black";
     public static final String PREF_THEME = "falcon_theme";
     public static final String PREF_ARCHIVE_TABS = "falcon_archive_tabs";
+    public static final String PREF_SAVE_TO = "falcon_save_to";
+
+    private ActivityResultLauncher<Uri> mPickFolder;
 
     private final SettableMonotonicObservableSupplier<String> mPageTitle =
             ObservableSuppliers.createMonotonic();
@@ -43,6 +53,24 @@ public class FalconPreferences extends BravePreferenceFragment
         super.onCreate(savedInstanceState);
         mPageTitle.set(getString(R.string.falcon_settings));
         SettingsUtils.addPreferencesFromResource(this, R.xml.falcon_preferences);
+        mPickFolder =
+                registerForActivityResult(
+                        new ActivityResultContracts.OpenDocumentTree(),
+                        uri -> {
+                            if (uri == null) return;
+                            try {
+                                requireContext()
+                                        .getContentResolver()
+                                        .takePersistableUriPermission(
+                                                uri,
+                                                Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                                        | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                            } catch (SecurityException e) {
+                                return;
+                            }
+                            FalconPrefs.setSaveTreeUri(uri.toString());
+                            updateSaveToSummary();
+                        });
     }
 
     @Override
@@ -93,10 +121,50 @@ public class FalconPreferences extends BravePreferenceFragment
                             NightModeMetrics.ThemeSettingsEntry.SETTINGS);
         }
 
+        Preference saveTo = findPreference(PREF_SAVE_TO);
+        if (saveTo != null) {
+            updateSaveToSummary();
+            saveTo.setOnPreferenceClickListener(
+                    p -> {
+                        String[] items = {
+                            getString(R.string.falcon_save_to_choose),
+                            getString(R.string.falcon_save_to_default)
+                        };
+                        new AlertDialog.Builder(requireContext())
+                                .setTitle(R.string.falcon_save_to)
+                                .setItems(
+                                        items,
+                                        (d, which) -> {
+                                            if (which == 0) {
+                                                mPickFolder.launch(null);
+                                            } else {
+                                                FalconPrefs.setSaveTreeUri("");
+                                                updateSaveToSummary();
+                                            }
+                                        })
+                                .show();
+                        return true;
+                    });
+        }
+
         bindSwitch(PREF_DOWNLOADER_ENABLED, FalconPrefs.isDownloaderEnabled());
         bindSwitch(PREF_DOWNLOADER_VERIFY, FalconPrefs.isDownloaderVerifyEnabled());
         bindSwitch(PREF_DOWNLOADER_WIFI_ONLY, FalconPrefs.isDownloaderWifiOnly());
         bindSwitch(PREF_PITCH_BLACK, FalconPrefs.isPitchBlack());
+    }
+
+    private void updateSaveToSummary() {
+        Preference saveTo = findPreference(PREF_SAVE_TO);
+        if (saveTo == null) return;
+        String tree = FalconPrefs.getSaveTreeUri();
+        if (tree.isEmpty()) {
+            saveTo.setSummary(R.string.falcon_save_to_default);
+            return;
+        }
+        // "primary:Movies/Falcon" → "Movies/Falcon"
+        String id = DocumentsContract.getTreeDocumentId(Uri.parse(tree));
+        int colon = id.indexOf(':');
+        saveTo.setSummary(colon >= 0 && colon < id.length() - 1 ? id.substring(colon + 1) : id);
     }
 
     private void bindSwitch(String key, boolean checked) {

@@ -17,6 +17,7 @@ import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 
@@ -500,6 +501,16 @@ public final class FalconDownloadManager {
      */
     private String exportToDownloads(DownloadItem item, File partFile) throws IOException {
         ContentResolver resolver = mContext.getContentResolver();
+        String tree = FalconPrefs.getSaveTreeUri();
+        if (!TextUtils.isEmpty(tree)) {
+            try {
+                String saved = exportToTree(resolver, Uri.parse(tree), item, partFile);
+                if (saved != null) return saved;
+            } catch (Exception e) {
+                // Folder gone or permission revoked: fall back to Downloads.
+                Log.w(TAG, "save-to folder failed, using Downloads", e);
+            }
+        }
         ContentValues values = new ContentValues();
         values.put(MediaStore.Downloads.DISPLAY_NAME, item.fileName);
         values.put(
@@ -521,6 +532,29 @@ public final class FalconDownloadManager {
         values.put(MediaStore.Downloads.IS_PENDING, 0);
         resolver.update(uri, values, null, null);
         return uri.toString();
+    }
+
+    /** Copies into the user's "Save to" folder (Storage Access Framework tree). */
+    private String exportToTree(
+            ContentResolver resolver, Uri tree, DownloadItem item, File partFile)
+            throws IOException {
+        Uri dir = DocumentsContract.buildDocumentUriUsingTree(
+                tree, DocumentsContract.getTreeDocumentId(tree));
+        String mime = TextUtils.isEmpty(item.mimeType) ? "application/octet-stream" : item.mimeType;
+        Uri doc = DocumentsContract.createDocument(resolver, dir, mime, item.fileName);
+        if (doc == null) return null;
+        try (InputStream in = new FileInputStream(partFile);
+                OutputStream out = resolver.openOutputStream(doc)) {
+            if (out == null) throw new IOException("no output stream");
+            copy(in, out);
+        } catch (IOException e) {
+            try {
+                DocumentsContract.deleteDocument(resolver, doc);
+            } catch (Exception ignored) {
+            }
+            throw e;
+        }
+        return doc.toString();
     }
 
     private static void copy(InputStream in, OutputStream out) throws IOException {

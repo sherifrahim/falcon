@@ -45,6 +45,11 @@
         android:entries="@array/falcon_downloader_connections_entries"
         android:entryValues="@array/falcon_downloader_connections_values" />
 
+    <Preference
+        android:persistent="false"
+        android:key="falcon_save_to"
+        android:title="@string/falcon_save_to" />
+
     <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
         android:persistent="false"
         android:key="falcon_downloader_verify"

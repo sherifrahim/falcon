@@ -95,6 +95,17 @@ public final class FalconPrefs {
         prefs().writeBoolean(DOWNLOADER_ENABLED, enabled);
     }
 
+    private static final String SAVE_TREE_URI = "falcon_save_tree_uri";
+
+    /** SAF tree URI finished downloads are copied into; empty = the Downloads collection. */
+    public static String getSaveTreeUri() {
+        return prefs().readString(SAVE_TREE_URI, "");
+    }
+
+    public static void setSaveTreeUri(String uri) {
+        prefs().writeString(SAVE_TREE_URI, uri == null ? "" : uri);
+    }
+
     /** Hours before an idle tab is archived (Chromium tab declutter); 0 = never. */
     public static int getArchiveHours() {
         TabArchiveSettings settings = new TabArchiveSettings(ChromeSharedPreferences.getInstance());
