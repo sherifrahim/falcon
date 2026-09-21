@@ -1740,6 +1740,24 @@ Are you sure you want to do this?
       <message name="IDS_FALCON_BOTTOM_BAR" desc="Bottom bar mode setting">
         Bottom bar
       </message>
+      <message name="IDS_FALCON_ARCHIVE_TABS" desc="Setting: archive tabs not used for a while (Arc-style auto-archive)">
+        Archive idle tabs after
+      </message>
+      <message name="IDS_FALCON_ARCHIVE_OFF" desc="Archive idle tabs: never">
+        Never
+      </message>
+      <message name="IDS_FALCON_ARCHIVE_12H" desc="Archive idle tabs: 12 hours">
+        12 hours
+      </message>
+      <message name="IDS_FALCON_ARCHIVE_1D" desc="Archive idle tabs: 1 day">
+        1 day
+      </message>
+      <message name="IDS_FALCON_ARCHIVE_3D" desc="Archive idle tabs: 3 days">
+        3 days
+      </message>
+      <message name="IDS_FALCON_ARCHIVE_1W" desc="Archive idle tabs: 1 week">
+        1 week
+      </message>
       <message name="IDS_FALCON_BOTTOM_BAR_ARC" desc="Bottom bar mode: Falcon capsule">
         Arc — Falcon capsule
       </message>

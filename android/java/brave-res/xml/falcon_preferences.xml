@@ -19,6 +19,14 @@
         android:entries="@array/falcon_bottom_bar_entries"
         android:entryValues="@array/falcon_bottom_bar_values" />
 
+    <ListPreference
+        android:persistent="false"
+        android:key="falcon_archive_tabs"
+        android:title="@string/falcon_archive_tabs"
+        android:dialogTitle="@string/falcon_archive_tabs"
+        android:entries="@array/falcon_archive_entries"
+        android:entryValues="@array/falcon_archive_values" />
+
     <PreferenceCategory
         android:key="falcon_downloads_section"
         android:title="@string/falcon_downloads_section" />

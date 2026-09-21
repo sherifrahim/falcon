@@ -51,6 +51,20 @@
         <item>1</item>
         <item>2</item>
     </string-array>
+    <string-array name="falcon_archive_entries">
+        <item>@string/falcon_archive_off</item>
+        <item>@string/falcon_archive_12h</item>
+        <item>@string/falcon_archive_1d</item>
+        <item>@string/falcon_archive_3d</item>
+        <item>@string/falcon_archive_1w</item>
+    </string-array>
+    <string-array name="falcon_archive_values" translatable="false">
+        <item>0</item>
+        <item>12</item>
+        <item>24</item>
+        <item>72</item>
+        <item>168</item>
+    </string-array>
     <string-array name="falcon_downloader_connections_entries" translatable="false">
         <item>1</item>
         <item>4</item>

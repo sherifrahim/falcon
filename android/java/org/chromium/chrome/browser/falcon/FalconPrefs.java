@@ -9,6 +9,7 @@ import androidx.annotation.IntDef;
 
 import org.chromium.base.shared_preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
+import org.chromium.chrome.browser.tab.TabArchiveSettings;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -92,6 +93,26 @@ public final class FalconPrefs {
 
     public static void setDownloaderEnabled(boolean enabled) {
         prefs().writeBoolean(DOWNLOADER_ENABLED, enabled);
+    }
+
+    /** Hours before an idle tab is archived (Chromium tab declutter); 0 = never. */
+    public static int getArchiveHours() {
+        TabArchiveSettings settings = new TabArchiveSettings(ChromeSharedPreferences.getInstance());
+        try {
+            return settings.getArchiveEnabled() ? settings.getArchiveTimeDeltaHours() : 0;
+        } finally {
+            settings.destroy();
+        }
+    }
+
+    public static void setArchiveHours(int hours) {
+        TabArchiveSettings settings = new TabArchiveSettings(ChromeSharedPreferences.getInstance());
+        try {
+            settings.setArchiveEnabled(hours > 0);
+            if (hours > 0) settings.setArchiveTimeDeltaHours(hours);
+        } finally {
+            settings.destroy();
+        }
     }
 
     public static int getDownloaderConnections() {

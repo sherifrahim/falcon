@@ -37,5 +37,8 @@ public final class FalconDefaults {
         // The space colour field is the backdrop; no wallpaper photos.
         prefs.writeBoolean(BackgroundImagesPreferences.PREF_SHOW_BACKGROUND_IMAGES, false);
         OnboardingPrefManager.getInstance().setBraveStatsEnabled(false);
+        // Arc-style: tabs untouched for three days move to the archive (Chromium's
+        // default is 21 days).
+        FalconPrefs.setArchiveHours(72);
     }
 }

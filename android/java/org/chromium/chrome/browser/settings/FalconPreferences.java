@@ -33,6 +33,7 @@ public class FalconPreferences extends BravePreferenceFragment
     public static final String PREF_DOWNLOADER_WIFI_ONLY = "falcon_downloader_wifi_only";
     public static final String PREF_PITCH_BLACK = "falcon_pitch_black";
     public static final String PREF_THEME = "falcon_theme";
+    public static final String PREF_ARCHIVE_TABS = "falcon_archive_tabs";
 
     private final SettableMonotonicObservableSupplier<String> mPageTitle =
             ObservableSuppliers.createMonotonic();
@@ -63,6 +64,16 @@ public class FalconPreferences extends BravePreferenceFragment
             mode.setValue(String.valueOf(FalconPrefs.getBottomBarMode()));
             mode.setSummary(mode.getEntry());
             mode.setOnPreferenceChangeListener(this);
+        }
+
+        // Arc-style auto-archive rides on Chromium's tab declutter; the row maps
+        // Never / 12 h / 1 d / 3 d / 1 w onto its enabled flag + hours.
+        ListPreference archive = (ListPreference) findPreference(PREF_ARCHIVE_TABS);
+        if (archive != null) {
+            archive.setValue(String.valueOf(FalconPrefs.getArchiveHours()));
+            if (archive.getEntry() == null) archive.setValue("0");
+            archive.setSummary(archive.getEntry());
+            archive.setOnPreferenceChangeListener(this);
         }
 
         ListPreference connections =
@@ -108,6 +119,11 @@ public class FalconPreferences extends BravePreferenceFragment
                 // The toolbar layout is chosen when the activity is created.
                 BraveRelaunchUtils.askForRelaunch(getActivity());
             }
+            return true;
+        } else if (PREF_ARCHIVE_TABS.equals(key)) {
+            ListPreference list = (ListPreference) preference;
+            list.setSummary(list.getEntries()[list.findIndexOfValue((String) newValue)]);
+            FalconPrefs.setArchiveHours(Integer.parseInt((String) newValue));
             return true;
         } else if (PREF_DOWNLOADER_CONNECTIONS.equals(key)) {
             ListPreference list = (ListPreference) preference;
