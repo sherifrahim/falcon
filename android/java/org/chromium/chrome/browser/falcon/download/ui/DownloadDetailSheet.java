@@ -6,6 +6,7 @@
 package org.chromium.chrome.browser.falcon.download.ui;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -27,6 +28,7 @@ import org.chromium.chrome.browser.falcon.FalconPrefs;
 import org.chromium.chrome.browser.falcon.download.DownloadItem;
 import org.chromium.chrome.browser.falcon.download.DownloadItem.State;
 import org.chromium.chrome.browser.falcon.download.FalconDownloadManager;
+import org.chromium.chrome.browser.falcon.ui.FalconTheme;
 
 import java.util.Locale;
 
@@ -61,7 +63,15 @@ public class DownloadDetailSheet extends BottomSheetDialogFragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setStyle(STYLE_NORMAL, R.style.Theme_Falcon_BottomSheet);
+        // Pitch black applies to the dialog's own theme (created from the style above).
         mId = getArguments() == null ? "" : getArguments().getString(ARG_ID, "");
+    }
+
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        Dialog dialog = super.onCreateDialog(savedInstanceState);
+        FalconTheme.applyPitchBlack(dialog.getContext().getTheme(), requireContext());
+        return dialog;
     }
 
     @Override

@@ -7,7 +7,8 @@ package org.chromium.chrome.browser.falcon.ui;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Color;
+import android.content.res.Resources;
+import android.util.TypedValue;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.falcon.FalconPrefs;
@@ -25,19 +26,40 @@ public final class FalconTheme {
         return FalconPrefs.isPitchBlack() && ColorUtils.inNightMode(context);
     }
 
-    /** Call from an activity's applyThemeOverlays(), before any view is inflated. */
+    /**
+     * Call from an activity's applyThemeOverlays(), before any view is inflated: gives a
+     * Chromium-themed activity the Falcon surface tokens, then pitch black on top if it is on.
+     */
+    public static void applyTokens(Activity activity) {
+        activity.getTheme().applyStyle(R.style.ThemeOverlay_Falcon_Tokens, true);
+        applyPitchBlack(activity);
+    }
+
+    /** Pitch black on a theme that already carries the tokens (the Falcon themes). */
     public static void applyPitchBlack(Activity activity) {
-        if (!isPitchBlack(activity)) return;
-        activity.getTheme().applyStyle(R.style.ThemeOverlay_Falcon_PitchBlack, true);
+        applyPitchBlack(activity.getTheme(), activity);
     }
 
-    /** {@code falcon_bg} or black. */
+    public static void applyPitchBlack(Resources.Theme theme, Context context) {
+        if (!isPitchBlack(context)) return;
+        theme.applyStyle(R.style.ThemeOverlay_Falcon_PitchBlack, true);
+    }
+
+    /** A Falcon surface token from the context's theme (falcon_attrs.xml). */
+    public static int color(Context context, int attr) {
+        TypedValue v = new TypedValue();
+        if (context.getTheme().resolveAttribute(attr, v, true)) return v.data;
+        // A context without the tokens (should not happen): the plain colour set.
+        return attr == R.attr.falconGlassSolid
+                ? context.getColor(R.color.falcon_glass_solid)
+                : context.getColor(R.color.falcon_bg);
+    }
+
     public static int bg(Context context) {
-        return isPitchBlack(context) ? Color.BLACK : context.getColor(R.color.falcon_bg);
+        return color(context, R.attr.falconBg);
     }
 
-    /** {@code falcon_glass_solid} (the capsule fill) or black. */
     public static int glassSolid(Context context) {
-        return isPitchBlack(context) ? Color.BLACK : context.getColor(R.color.falcon_glass_solid);
+        return color(context, R.attr.falconGlassSolid);
     }
 }

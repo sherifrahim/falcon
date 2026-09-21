@@ -8,7 +8,7 @@
     <item android:id="@android:id/background">
         <shape android:shape="rectangle">
             <corners android:radius="3dp" />
-            <solid android:color="@color/falcon_segment_idle" />
+            <solid android:color="?attr/falconSegmentIdle" />
         </shape>
     </item>
     <item android:id="@android:id/progress">

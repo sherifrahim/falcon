@@ -750,6 +750,13 @@
 
     <!-- Falcon: dark-glass surfaces (docs/design/android/mock-v6.html). -->
     <style name="Theme.Falcon.Downloads" parent="Theme.Chromium.Activity">
+        <item name="falconBg">@color/falcon_bg</item>
+        <item name="falconGlassSolid">@color/falcon_glass_solid</item>
+        <item name="falconSurface">@color/falcon_surface</item>
+        <item name="falconFill">@color/falcon_fill</item>
+        <item name="falconField">@color/falcon_field</item>
+        <item name="falconHandle">@color/falcon_handle</item>
+        <item name="falconSegmentIdle">@color/falcon_segment_idle</item>
         <item name="android:windowBackground">@color/falcon_bg</item>
         <item name="android:statusBarColor">@color/falcon_space_downloads</item>
         <item name="android:navigationBarColor">@color/falcon_bg</item>
@@ -762,6 +769,13 @@
     </style>
 
     <style name="Theme.Falcon.BottomSheet" parent="Theme.Design.Light.BottomSheetDialog">
+        <item name="falconBg">@color/falcon_bg</item>
+        <item name="falconGlassSolid">@color/falcon_glass_solid</item>
+        <item name="falconSurface">@color/falcon_surface</item>
+        <item name="falconFill">@color/falcon_fill</item>
+        <item name="falconField">@color/falcon_field</item>
+        <item name="falconHandle">@color/falcon_handle</item>
+        <item name="falconSegmentIdle">@color/falcon_segment_idle</item>
         <item name="bottomSheetStyle">@style/Falcon.BottomSheet.Modal</item>
         <item name="android:windowSoftInputMode">adjustResize</item>
         <item name="android:textColorPrimary">@color/falcon_ink</item>
@@ -774,8 +788,26 @@
         <item name="android:background">@android:color/transparent</item>
     </style>
 
-    <!-- Falcon: pitch black (OLED) — applied on top of the dark theme when the Look toggle is on. -->
+    <!-- Falcon: the surface tokens for activities on Chromium's theme (the browser, settings);
+         the Falcon themes above carry them directly. -->
+    <style name="ThemeOverlay.Falcon.Tokens" parent="">
+        <item name="falconBg">@color/falcon_bg</item>
+        <item name="falconGlassSolid">@color/falcon_glass_solid</item>
+        <item name="falconSurface">@color/falcon_surface</item>
+        <item name="falconFill">@color/falcon_fill</item>
+        <item name="falconField">@color/falcon_field</item>
+        <item name="falconHandle">@color/falcon_handle</item>
+        <item name="falconSegmentIdle">@color/falcon_segment_idle</item>
+    </style>
+
+    <!-- Falcon: pitch black (OLED), applied on top of the dark theme when the Look toggle is on.
+         Ink surfaces become true black; hairlines and the accent stay. -->
     <style name="ThemeOverlay.Falcon.PitchBlack" parent="">
+        <item name="falconBg">@android:color/black</item>
+        <item name="falconGlassSolid">@android:color/black</item>
+        <item name="falconSurface">#0FFFFFFF</item>
+        <item name="falconFill">#14FFFFFF</item>
+        <item name="falconField">#1AFFFFFF</item>
         <item name="android:colorBackground">@android:color/black</item>
         <item name="colorSurface">@android:color/black</item>
         <item name="colorSurfaceDim">@android:color/black</item>

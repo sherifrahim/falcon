@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--* Copyright (c) 2026 The Falcon Authors. All rights reserved.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<!-- Falcon surface tokens as theme attributes, so a runtime overlay (pitch black) can swap
+     them; accents, hairlines and ink stay plain colours (falcon_colors.xml). -->
+<resources>
+    <attr name="falconBg" format="color" />
+    <attr name="falconGlassSolid" format="color" />
+    <attr name="falconSurface" format="color" />
+    <attr name="falconFill" format="color" />
+    <attr name="falconField" format="color" />
+    <attr name="falconHandle" format="color" />
+    <attr name="falconSegmentIdle" format="color" />
+</resources>

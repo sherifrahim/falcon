@@ -17,6 +17,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.falcon.download.DownloadItem;
 import org.chromium.chrome.browser.falcon.download.DownloadItem.Segment;
 import org.chromium.chrome.browser.falcon.download.DownloadItem.State;
+import org.chromium.chrome.browser.falcon.ui.FalconTheme;
 
 import java.util.List;
 import java.util.Locale;
@@ -56,7 +57,7 @@ public class SegmentGridView extends View {
         mSelection = context.getColor(R.color.falcon_selection);
         mSelectionLine = context.getColor(R.color.falcon_selection_line);
         mHair = context.getColor(R.color.falcon_hair);
-        mSurface = context.getColor(R.color.falcon_surface);
+        mSurface = FalconTheme.color(context, R.attr.falconSurface);
         mInk = context.getColor(R.color.falcon_ink);
         mInk3 = context.getColor(R.color.falcon_ink_3);
         mStroke.setStyle(Paint.Style.STROKE);

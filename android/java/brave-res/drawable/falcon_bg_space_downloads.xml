@@ -11,5 +11,5 @@
         android:startColor="@color/falcon_space_downloads"
         android:centerColor="@color/falcon_space_downloads_2"
         android:centerY="0.34"
-        android:endColor="@color/falcon_bg" />
+        android:endColor="?attr/falconBg" />
 </shape>

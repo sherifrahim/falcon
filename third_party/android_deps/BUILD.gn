@@ -1,3 +1,4 @@
+import("//brave/components/brave_vpn/common/buildflags/buildflags.gni")
 import("//build/config/android/rules.gni")
 
 group("android_deps") {
@@ -74,7 +75,13 @@ android_aar_prebuilt("com_wireguard_android_java") {
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_collection_collection_java",
   ]
-  extract_native_libraries = true
+  # Falcon: the VPN Java stays compiled but its Go tunnel (libwg-go.so, 3.4 MB) only
+  # ships when the VPN is built in.
+  if (enable_brave_vpn) {
+    extract_native_libraries = true
+  } else {
+    ignore_native_libraries = true
+  }
   ignore_manifest = true
 }
 

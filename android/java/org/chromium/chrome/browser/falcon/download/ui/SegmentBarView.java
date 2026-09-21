@@ -18,6 +18,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.falcon.download.DownloadItem;
 import org.chromium.chrome.browser.falcon.download.DownloadItem.Segment;
 import org.chromium.chrome.browser.falcon.download.DownloadItem.State;
+import org.chromium.chrome.browser.falcon.ui.FalconTheme;
 
 import java.util.List;
 
@@ -46,7 +47,7 @@ public class SegmentBarView extends View {
 
     public SegmentBarView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mIdle = context.getColor(R.color.falcon_segment_idle);
+        mIdle = FalconTheme.color(context, R.attr.falconSegmentIdle);
         mDone = context.getColor(R.color.falcon_segment_done);
         mDoneDim = context.getColor(R.color.falcon_segment_done_dim);
     }
@@ -126,7 +127,7 @@ public class SegmentBarView extends View {
         if (mIndeterminate) {
             long phase = android.os.SystemClock.uptimeMillis() % SWEEP_PERIOD_MS;
             sweep = (int) (phase * BARS / SWEEP_PERIOD_MS);
-            postInvalidateOnAnimation();
+            postInvalidateDelayed(80); // ~12 fps is plenty for a sweep; no per-frame redraws
         }
         for (int i = 0; i < BARS; i++) {
             float x = i * (bw + gap);

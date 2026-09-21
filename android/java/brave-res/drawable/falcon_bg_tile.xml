@@ -5,6 +5,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
     <corners android:radius="12dp" />
-    <solid android:color="@color/falcon_surface" />
+    <solid android:color="?attr/falconSurface" />
     <stroke android:width="1dp" android:color="@color/falcon_hair" />
 </shape>

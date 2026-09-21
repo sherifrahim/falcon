@@ -483,10 +483,6 @@ public abstract class BraveActivity extends ChromeActivity
             ShareDelegate shareDelegate = (ShareDelegate) getShareDelegateSupplier().get();
             shareDelegate.share(currentTab, false, ShareOrigin.OVERFLOW_MENU);
             return true;
-        } else if (id == R.id.downloads_menu_id
-                && org.chromium.chrome.browser.falcon.FalconPrefs.isDownloaderEnabled()) {
-            org.chromium.chrome.browser.falcon.download.ui.FalconDownloadsActivity.launch(this);
-            return true;
         } else if (id == R.id.reload_menu_id) {
             setComesFromNewTab(true);
         } else if (id == R.id.preferences_id) {
@@ -2604,7 +2600,7 @@ public abstract class BraveActivity extends ChromeActivity
     @Override
     protected void applyThemeOverlays() {
         super.applyThemeOverlays();
-        org.chromium.chrome.browser.falcon.ui.FalconTheme.applyPitchBlack(this);
+        org.chromium.chrome.browser.falcon.ui.FalconTheme.applyTokens(this);
     }
 
     @Override

@@ -50,10 +50,6 @@ public final class FalconNtp {
         View header = root.findViewById(R.id.falcon_ntp_header);
         if (header == null) return;
 
-        // The bottom capsule/omnibox is the search box; the NTP's own fake box is noise here.
-        View searchBox = root.findViewById(R.id.search_box);
-        if (searchBox != null) searchBox.setVisibility(View.GONE);
-
         TextView date = header.findViewById(R.id.falcon_date);
         date.setText(DateFormat.format("EEE d MMM", new Date()));
 
