@@ -168,7 +168,9 @@ brave_jni_headers_sources = [
   "//brave/browser/brave_ads/android/java/org/chromium/chrome/browser/BraveAdsNativeHelper.java",
 ]
 
-if (enable_brave_wallet) {
+# Falcon: always — the wallet Java stays compiled when its native side is out
+# (jni_zero generates the XxxJni classes from this list).
+if (true) {
   brave_jni_headers_sources += [
     "//brave/android/java/org/chromium/chrome/browser/crypto_wallet/BlockchainRegistryFactory.java",
     "//brave/android/java/org/chromium/chrome/browser/crypto_wallet/BraveWalletProviderDelegateImplHelper.java",
