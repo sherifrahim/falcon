@@ -4,6 +4,7 @@
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import("//brave/components/brave_ads/buildflags/buildflags.gni")
+import("//brave/components/brave_news/common/buildflags/buildflags.gni")
 import("//brave/components/brave_wallet/common/buildflags/buildflags.gni")
 import("//build/config/android/rules.gni")
 
@@ -14,7 +15,6 @@ source_set("preferences") {
     "//base",
     "//brave/build/android:jni_headers",
     "//brave/components/brave_adaptive_captcha",
-    "//brave/components/brave_news/common",
     "//brave/components/brave_perf_predictor/common",
     "//brave/components/brave_referrals/common",
     "//brave/components/brave_rewards/core",
@@ -33,6 +33,11 @@ source_set("preferences") {
     "//third_party/blink/public/common",
     "//url",
   ]
+
+  # Only pref names are used; the component itself is out when News is off.
+  if (enable_brave_news) {
+    deps += [ "//brave/components/brave_news/common" ]
+  }
 }
 
 java_cpp_strings("java_pref_names_srcjar") {
