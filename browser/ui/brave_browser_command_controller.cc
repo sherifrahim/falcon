@@ -6,6 +6,7 @@
 #include "brave/browser/ui/brave_browser_command_controller.h"
 
 #include "brave/browser/falcon/falcon_command_ids.h"
+#include "brave/browser/falcon/ux/command_chain_runner.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "url/gurl.h"
 
@@ -52,6 +53,9 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/browser_window/public/browser_window_features.h"
+#include "chrome/browser/ui/side_panel/side_panel_entry_key.h"
+#include "chrome/browser/ui/side_panel/side_panel_enums.h"
+#include "chrome/browser/ui/side_panel/side_panel_ui.h"
 #include "chrome/browser/ui/tabs/features.h"
 #include "chrome/browser/ui/tabs/tab_change_type.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -599,6 +603,12 @@ void BraveBrowserCommandController::UpdateCommandForBraveSync() {
   UpdateCommandEnabled(IDC_SHOW_BRAVE_SYNC, true);
   UpdateCommandEnabled(IDC_FALCON_SHOW_DOWNLOADS, true);
   UpdateCommandEnabled(IDC_FALCON_SHOW_CONTROL, true);
+  UpdateCommandEnabled(IDC_FALCON_SHOW_COLLECTIONS,
+                       !browser_->GetProfile()->IsOffTheRecord());
+  UpdateCommandEnabled(IDC_FALCON_CHAINS_MENU, true);
+  for (int id = IDC_FALCON_CHAIN_FIRST; id <= IDC_FALCON_CHAIN_LAST; ++id) {
+    UpdateCommandEnabled(id, true);
+  }
 }
 
 #if BUILDFLAG(ENABLE_BRAVE_WALLET)
@@ -622,6 +632,17 @@ bool BraveBrowserCommandController::ExecuteBraveCommandWithDisposition(
   }
 
   DCHECK(IsCommandEnabled(id)) << "Invalid/disabled command " << id;
+
+  if (id >= IDC_FALCON_CHAIN_FIRST && id <= IDC_FALCON_CHAIN_LAST) {
+    // App menu › Command chains › <n-th chain>.
+    const auto chains =
+        falcon::CommandChainRunner::Chains(browser_->GetProfile());
+    const size_t index = id - IDC_FALCON_CHAIN_FIRST;
+    if (index < chains.size()) {
+      falcon::CommandChainRunner::Run(&*browser_, chains[index].id);
+    }
+    return true;
+  }
 
   switch (id) {
     case IDC_NEW_WINDOW:
@@ -664,6 +685,11 @@ bool BraveBrowserCommandController::ExecuteBraveCommandWithDisposition(
       break;
     case IDC_FALCON_SHOW_CONTROL:
       ShowSingletonTab(&*browser_, GURL("chrome://falcon"));
+      break;
+    case IDC_FALCON_SHOW_COLLECTIONS:
+      browser_->GetFeatures().side_panel_ui()->Toggle(
+          SidePanelEntryKey(SidePanelEntryId::kFalconCollections),
+          SidePanelOpenTrigger::kAppMenu);
       break;
 #if BUILDFLAG(ENABLE_BRAVE_WALLET)
     case IDC_SHOW_BRAVE_WALLET:

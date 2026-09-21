@@ -35,6 +35,7 @@
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
+#include "brave/browser/ui/webui/falcon_collections_ui.h"
 #include "brave/browser/ui/webui/falcon_command_deck_ui.h"
 #include "brave/browser/ui/webui/falcon_control_ui.h"
 #include "brave/browser/ui/webui/falcon_downloader_ui.h"
@@ -160,6 +161,8 @@ void RegisterChromeWebUIConfigs() {
   map.AddWebUIConfig(std::make_unique<FalconDownloaderPanelUIConfig>());
   map.AddWebUIConfig(std::make_unique<FalconControlUIConfig>());
   map.AddWebUIConfig(std::make_unique<FalconCommandDeckUIConfig>());
+  map.AddWebUIConfig(std::make_unique<FalconCollectionsUIConfig>());
+  map.AddWebUIConfig(std::make_unique<FalconCollectionsPanelUIConfig>());
 #endif
 #if BUILDFLAG(ENABLE_BRAVE_ADS)
   map.AddWebUIConfig(std::make_unique<AdsInternalsUIConfig>());

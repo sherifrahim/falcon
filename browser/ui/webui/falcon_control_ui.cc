@@ -10,6 +10,7 @@
 #include <optional>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/check_op.h"
 #include "base/command_line.h"
@@ -25,6 +26,7 @@
 #include "brave/browser/falcon/media/media_service.h"
 #include "brave/browser/falcon/sidecars/sidecar_installer.h"
 #include "brave/browser/falcon/ux/boost_tab_helper.h"
+#include "brave/browser/falcon/ux/command_chain_runner.h"
 #include "brave/browser/falcon/ux/mini_menu_tab_helper.h"
 #include "brave/browser/falcon/ux/tab_archiver.h"
 #include "brave/browser/falcon/vault/bitwarden_service.h"
@@ -44,6 +46,8 @@
 #include "brave/components/constants/falcon_version.h"
 #include "brave/components/version_info/version_info.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
+#include "chrome/browser/ui/browser_window/public/profile_browser_collection.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "components/grit/brave_components_resources.h"
@@ -126,6 +130,18 @@ class FalconControlMessageHandler
         base::BindRepeating(&FalconControlMessageHandler::SetBoosts,
                             base::Unretained(this)));
     web_ui()->RegisterMessageCallback(
+        "falcon_control.getChains",
+        base::BindRepeating(&FalconControlMessageHandler::GetChains,
+                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "falcon_control.setChains",
+        base::BindRepeating(&FalconControlMessageHandler::SetChains,
+                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "falcon_control.runChain",
+        base::BindRepeating(&FalconControlMessageHandler::RunChain,
+                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
         "falcon_control.getSessions",
         base::BindRepeating(&FalconControlMessageHandler::GetSessions,
                             base::Unretained(this)));
@@ -169,6 +185,69 @@ class FalconControlMessageHandler
   }
 
   // args: [list of {id, host, name, css, js, enabled}] — replaces the list.
+  base::DictValue ChainsState() {
+    base::DictValue out;
+    out.Set("chains", Profile::FromWebUI(web_ui())
+                          ->GetPrefs()
+                          ->GetList(falcon::prefs::kCommandChains)
+                          .Clone());
+    base::ListValue known;
+    for (const auto& k : falcon::CommandChainRunner::KnownCommands()) {
+      base::DictValue d;
+      d.Set("key", k.key);
+      d.Set("title", k.title);
+      known.Append(std::move(d));
+    }
+    out.Set("known", std::move(known));
+    return out;
+  }
+
+  void GetChains(const base::ListValue& args) {
+    CHECK_EQ(1U, args.size());
+    AllowJavascript();
+    ResolveJavascriptCallback(args[0], ChainsState());
+  }
+
+  // (callbackId, chains) → the validated list as stored.
+  void SetChains(const base::ListValue& args) {
+    CHECK_EQ(2U, args.size());
+    AllowJavascript();
+    if (args[1].is_list()) {
+      falcon::CommandChainRunner::SetChains(Profile::FromWebUI(web_ui()),
+                                            args[1].GetList());
+    }
+    ResolveJavascriptCallback(args[0], ChainsState().Find("chains")->Clone());
+  }
+
+  // Runs an (unsaved) chain from the editor on the last active window.
+  void RunChain(const base::ListValue& args) {
+    CHECK_EQ(1U, args.size());
+    const base::DictValue* chain = args[0].GetIfDict();
+    const base::ListValue* steps = chain ? chain->FindList("steps") : nullptr;
+    BrowserWindowInterface* browser =
+        ProfileBrowserCollection::GetForProfile(Profile::FromWebUI(web_ui()))
+            ->GetLastActiveBrowser();
+    if (!steps || !browser) {
+      return;
+    }
+    std::vector<falcon::CommandChainStep> list;
+    for (const base::Value& v : *steps) {
+      const base::DictValue* d = v.GetIfDict();
+      if (!d) {
+        continue;
+      }
+      falcon::CommandChainStep step;
+      if (const std::string* t = d->FindString("type")) {
+        step.type = *t;
+      }
+      if (const std::string* s = d->FindString("value")) {
+        step.value = *s;
+      }
+      list.push_back(std::move(step));
+    }
+    falcon::CommandChainRunner::RunSteps(browser, std::move(list));
+  }
+
   void SetBoosts(const base::ListValue& args) {
     CHECK_EQ(1U, args.size());
     if (!args[0].is_list()) {

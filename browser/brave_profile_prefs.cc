@@ -140,8 +140,10 @@
 #include "brave/browser/themes/pref_names.h"
 #include "brave/browser/ui/tabs/brave_tab_prefs.h"
 #include "brave/browser/ui/webui/brave_welcome_page/brave_welcome_page_prefs.h"
+#include "brave/browser/falcon/collections/collections_service.h"
 #include "brave/browser/falcon/download/pref_names.h"
 #include "brave/browser/falcon/ux/boost_tab_helper.h"
+#include "brave/browser/falcon/ux/command_chain_runner.h"
 #include "brave/browser/falcon/ux/mini_menu_tab_helper.h"
 #include "brave/browser/falcon/ux/mouse_gesture_tab_helper.h"
 #include "brave/browser/falcon/ux/tab_archiver.h"
@@ -435,6 +437,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   falcon::prefs::RegisterBoostPrefs(registry);
   falcon::prefs::RegisterMiniMenuPrefs(registry);
   falcon::prefs::RegisterTabArchiverPrefs(registry);
+  falcon::prefs::RegisterCollectionsPrefs(registry);
+  falcon::prefs::RegisterChainPrefs(registry);
 #endif
 
   brave_perf_predictor::PerfPredictorTabHelper::RegisterProfilePrefs(registry);

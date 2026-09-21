@@ -1,8 +1,8 @@
 diff --git a/chrome/browser/ui/actions/chrome_action_id.h b/chrome/browser/ui/actions/chrome_action_id.h
-index 637e84f591e0a459094c0e74a29894293bcdf986..51e7ca8d6a7e128fd5e9c6bb9460bb83e784d2ce 100644
+index 637e84f591e0a459094c0e74a29894293bcdf986..fadc8581851710279a486212803b5662dec3051d 100644
 --- a/chrome/browser/ui/actions/chrome_action_id.h
 +++ b/chrome/browser/ui/actions/chrome_action_id.h
-@@ -476,6 +476,11 @@
+@@ -476,6 +476,12 @@
  // Should be reinserted into CHROME_COMMON_ACTION_IDS when general solution to
  // add action id mappings is implemented.
  #define SIDE_PANEL_ACTION_IDS \
@@ -11,10 +11,11 @@ index 637e84f591e0a459094c0e74a29894293bcdf986..51e7ca8d6a7e128fd5e9c6bb9460bb83
 +  E(kActionSidePanelShowBraveNews) \
 +  E(kActionSidePanelShowWallet) \
 +  E(kActionSidePanelShowFalconDownloads) \
++  E(kActionSidePanelShowFalconCollections) \
    /* Side Panel items */ \
    E(kActionSidePanelShowAboutThisSite) \
    E(kActionSidePanelShowAssistant) \
-@@ -505,6 +510,13 @@
+@@ -505,6 +511,13 @@
      IDC_SHOW_TABS_FROM_OTHER_DEVICES_SIDE_PANEL)
  
  #define TOOLBAR_PINNABLE_ACTION_IDS \

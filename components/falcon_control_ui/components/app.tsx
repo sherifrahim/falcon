@@ -9,6 +9,7 @@ import * as React from 'react'
 import styled from 'styled-components'
 import { sendWithPromise, addWebUiListener } from 'chrome://resources/js/cr.js'
 import { ShellPreview } from './preview'
+import { Chains } from './chains'
 
 export interface Boost {
   id: string
@@ -344,7 +345,7 @@ export function App() {
   const [updateLog, setUpdateLog] = React.useState<string | null>(null)
   const [active, setActive] = React.useState('look')
   React.useEffect(() => {
-    const ids = ['look', 'behaviour', 'keys', 'boosts', 'sessions', 'engines', 'about']
+    const ids = ['look', 'behaviour', 'keys', 'boosts', 'sessions', 'chains', 'passwords', 'engines', 'about']
     const onScroll = () => {
       let best = 'look'
       for (const id of ids) { const el = document.getElementById(id); if (el && el.getBoundingClientRect().top < 140) best = id }
@@ -458,7 +459,7 @@ export function App() {
   const sections: Array<[string, string]> = [
     ['look', 'Look & Feel'], ['behaviour', 'Behaviour'], ['keys', 'Shortcuts'], ['boosts', 'Boosts'],
     ...(s.sessionsAvailable ? [['sessions', 'Sessions'] as [string, string]] : []),
-    ['passwords', 'Passwords'], ['engines', 'Engines'], ['about', 'About'],
+    ['chains', 'Chains'], ['passwords', 'Passwords'], ['engines', 'Engines'], ['about', 'About'],
   ]
   return (
     <Shell>
@@ -615,6 +616,12 @@ export function App() {
           </Card>
         </>
       )}
+
+      <h2 id="chains">Command chains</h2>
+      <p className="hint" style={{ marginTop: -6 }}>Macros: a named list of steps (open URLs, run browser commands, wait) that runs as one command — from Quick commands (Ctrl+Space › "Run chain: …") or the app menu › Command chains.</p>
+      <Card>
+        <Chains onGoTo={() => setTimeout(() => document.getElementById('chains')?.scrollIntoView({ behavior: 'smooth' }), 50)} />
+      </Card>
 
       <h2 id="passwords">Passwords</h2>
       <p className="hint" style={{ marginTop: -6 }}>Three sources, one autofill list: what you import, Google's export, and a connected Bitwarden vault.</p>

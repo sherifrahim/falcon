@@ -1,12 +1,12 @@
 diff --git a/chrome/browser/ui/side_panel/side_panel_entry_id.h b/chrome/browser/ui/side_panel/side_panel_entry_id.h
-index 3e9dc27c0b3e393ecef67e31ce2f5a73e1cccab7..a2c31836490e8112e247845f757c6fbbdde9d490 100644
+index 3e9dc27c0b3e393ecef67e31ce2f5a73e1cccab7..8f82cd1fe75debbf0ab3b3216a85b2651e88f10d 100644
 --- a/chrome/browser/ui/side_panel/side_panel_entry_id.h
 +++ b/chrome/browser/ui/side_panel/side_panel_entry_id.h
 @@ -30,6 +30,7 @@
    V(kSideSearch, kActionSidePanelShowSideSearch, "SideSearch")                \
    V(kLens, kActionSidePanelShowLens, "Lens")                                  \
    V(kAssistant, kActionSidePanelShowAssistant, "Assistant")                   \
-+  V(kPlaylist, kActionSidePanelShowPlaylist, "Playlist") V(kChatUI, kActionSidePanelShowChatUI, "ChatUI") V(kBraveNews, kActionSidePanelShowBraveNews, "BraveNews") V(kWallet, kActionSidePanelShowWallet, "Wallet") V(kFalconDownloads, kActionSidePanelShowFalconDownloads, "FalconDownloads") \
++  V(kPlaylist, kActionSidePanelShowPlaylist, "Playlist") V(kChatUI, kActionSidePanelShowChatUI, "ChatUI") V(kBraveNews, kActionSidePanelShowBraveNews, "BraveNews") V(kWallet, kActionSidePanelShowWallet, "Wallet") V(kFalconDownloads, kActionSidePanelShowFalconDownloads, "FalconDownloads") V(kFalconCollections, kActionSidePanelShowFalconCollections, "FalconCollections") \
    V(kAboutThisSite, kActionSidePanelShowAboutThisSite, "AboutThisSite")       \
    V(kCustomizeChrome, kActionSidePanelShowCustomizeChrome, "CustomizeChrome") \
    V(kSearchCompanion, kActionSidePanelShowSearchCompanion, "Companion")       \

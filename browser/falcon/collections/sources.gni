@@ -1,0 +1,18 @@
+# Copyright (c) 2026 Falcon. Personal fork of Brave.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this file,
+# You can obtain one at https://mozilla.org/MPL/2.0/.
+
+brave_browser_falcon_collections_sources = [
+  "//brave/browser/falcon/collections/collections_service.cc",
+  "//brave/browser/falcon/collections/collections_service.h",
+  "//brave/browser/falcon/collections/collections_service_factory.cc",
+  "//brave/browser/falcon/collections/collections_service_factory.h",
+]
+
+brave_browser_falcon_collections_deps = [
+  "//base",
+  "//components/keyed_service/core",
+  "//components/pref_registry",
+  "//components/prefs",
+]

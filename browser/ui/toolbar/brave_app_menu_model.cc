@@ -6,6 +6,8 @@
 #include "brave/browser/ui/toolbar/brave_app_menu_model.h"
 
 #include "brave/browser/falcon/falcon_command_ids.h"
+#include "base/strings/utf_string_conversions.h"
+#include "brave/browser/falcon/ux/command_chain_runner.h"
 #include "brave/browser/ui/views/falcon/peek_window.h"
 
 #include <memory>
@@ -188,6 +190,30 @@ void BraveAppMenuModel::BuildBraveProductsSection() {
                u"Falcon Downloads");
   InsertItemAt(GetNextIndexOfBraveProductsSection(), IDC_FALCON_SHOW_CONTROL,
                u"Falcon control panel");
+  if (IsCommandIdEnabled(IDC_FALCON_SHOW_COLLECTIONS)) {
+    InsertItemAt(GetNextIndexOfBraveProductsSection(),
+                 IDC_FALCON_SHOW_COLLECTIONS, u"Collections");
+  }
+  {
+    const auto chains =
+        falcon::CommandChainRunner::Chains(browser()->GetProfile());
+    if (!chains.empty()) {
+      sub_menus().push_back(std::make_unique<ui::SimpleMenuModel>(this));
+      ui::SimpleMenuModel* chains_menu = sub_menus().back().get();
+      size_t n = 0;
+      for (const falcon::CommandChain& chain : chains) {
+        if (IDC_FALCON_CHAIN_FIRST + static_cast<int>(n) > IDC_FALCON_CHAIN_LAST) {
+          break;
+        }
+        chains_menu->AddItem(
+            IDC_FALCON_CHAIN_FIRST + static_cast<int>(n++),
+            base::UTF8ToUTF16(chain.name));
+      }
+      InsertSubMenuAt(GetNextIndexOfBraveProductsSection(),
+                      IDC_FALCON_CHAINS_MENU, u"Command chains",
+                      chains_menu);
+    }
+  }
   // (Quick commands / IDC_COMMANDER already lives under More tools; the app
   // menu DCHECKs on duplicate command ids.)
   if (IsCommandIdEnabled(IDC_TOGGLE_FOCUS_MODE)) {

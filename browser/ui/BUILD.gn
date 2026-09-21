@@ -160,8 +160,12 @@ source_set("ui") {
       "views/falcon/peek_window.h",
       "views/falcon/telemetry_edge_view.cc",
       "views/falcon/telemetry_edge_view.h",
+      "views/side_panel/falcon/falcon_collections_side_panel_web_view.cc",
+      "views/side_panel/falcon/falcon_collections_side_panel_web_view.h",
       "views/side_panel/falcon/falcon_downloads_side_panel_web_view.cc",
       "views/side_panel/falcon/falcon_downloads_side_panel_web_view.h",
+      "webui/falcon_collections_ui.cc",
+      "webui/falcon_collections_ui.h",
       "webui/falcon_command_deck_ui.cc",
       "webui/falcon_command_deck_ui.h",
       "webui/falcon_control_ui.cc",
@@ -172,6 +176,7 @@ source_set("ui") {
       "webui/falcon_newtab_ui.h",
     ]
     deps += [
+      "//brave/components/falcon_collections_ui:generated_resources",
       "//brave/components/falcon_command_deck_ui:generated_resources",
       "//brave/components/falcon_control_ui:generated_resources",
       "//brave/components/falcon_downloader_ui:generated_resources",

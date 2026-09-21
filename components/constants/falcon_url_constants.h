@@ -19,6 +19,9 @@ inline constexpr char kFalconDownloaderPanelHost[] = "downloader.top-chrome";
 // falcon://falcon — the control panel.
 inline constexpr char kFalconControlHost[] = "falcon";
 inline constexpr char kFalconCommandDeckHost[] = "command-deck.top-chrome";
+// falcon://collections (tab page) and the same UI in the side panel.
+inline constexpr char kFalconCollectionsHost[] = "collections";
+inline constexpr char kFalconCollectionsPanelHost[] = "collections.top-chrome";
 }  // namespace falcon
 
 #endif  // BRAVE_COMPONENTS_CONSTANTS_FALCON_URL_CONSTANTS_H_

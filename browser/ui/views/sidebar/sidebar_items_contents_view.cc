@@ -603,6 +603,8 @@ ui::ImageModel SidebarItemsContentsView::GetImageForBuiltInItems(
       return get_image_model(kLeoHistoryIcon, state);
     case sidebar::SidebarItem::BuiltInItemType::kFalconDownloads:
       return get_image_model(kLeoDownloadIcon, state);
+    case sidebar::SidebarItem::BuiltInItemType::kFalconCollections:
+      return get_image_model(kLeoGrid04Icon, state);
 #if BUILDFLAG(ENABLE_PLAYLIST)
     case sidebar::SidebarItem::BuiltInItemType::kPlaylist:
       return get_image_model(kLeoProductPlaylistIcon, state);

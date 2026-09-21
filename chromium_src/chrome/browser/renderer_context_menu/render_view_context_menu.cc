@@ -18,6 +18,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "brave/browser/autocomplete/brave_autocomplete_scheme_classifier.h"
 #include "brave/browser/brave_browser_process.h"
+#include "brave/browser/falcon/collections/collections_service.h"
+#include "brave/browser/falcon/collections/collections_service_factory.h"
 #include "brave/browser/falcon/download/download_interceptor.h"
 #include "brave/browser/falcon/download/pref_names.h"
 #include "brave/browser/falcon/falcon_command_ids.h"
@@ -42,6 +44,9 @@
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_window/public/browser_window_features.h"
+#include "chrome/browser/ui/side_panel/side_panel_entry_key.h"
+#include "chrome/browser/ui/side_panel/side_panel_enums.h"
+#include "chrome/browser/ui/side_panel/side_panel_ui.h"
 #include "chrome/browser/ui/browser_window/public/global_browser_collection.h"
 #include "chrome/common/channel_info.h"
 #include "components/grit/brave_components_strings.h"
@@ -382,6 +387,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_FALCON_DOWNLOAD_ALL_IMAGES:
     case IDC_FALCON_DOWNLOAD_MEDIA:
     case IDC_FALCON_BOOST_SITE:
+    case IDC_FALCON_COLLECT:
     case IDC_FALCON_RELOAD_OFF:
     case IDC_FALCON_RELOAD_30S:
     case IDC_FALCON_RELOAD_1M:
@@ -485,6 +491,44 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     return;
   }
   switch (id) {
+    case IDC_FALCON_COLLECT: {
+      // Adds the clicked thing (selection > image > link > page) to the last
+      // used collection and reveals it in the side panel.
+      auto* collections =
+          falcon::CollectionsServiceFactory::GetForProfile(GetProfile());
+      if (!collections) {
+        return;
+      }
+      base::DictValue item;
+      const std::string page_title = base::UTF16ToUTF8(
+          source_web_contents_ ? source_web_contents_->GetTitle()
+                               : std::u16string());
+      if (!params_.selection_text.empty()) {
+        item = falcon::CollectionsService::MakeItem(
+            "text", page_title, params_.page_url.spec(),
+            base::UTF16ToUTF8(params_.selection_text));
+      } else if (params_.media_type ==
+                     blink::mojom::ContextMenuDataMediaType::kImage &&
+                 params_.src_url.is_valid()) {
+        item = falcon::CollectionsService::MakeItem(
+            "image", base::UTF16ToUTF8(params_.title_text),
+            params_.src_url.spec(), std::string());
+      } else if (params_.link_url.is_valid()) {
+        std::string title = base::UTF16ToUTF8(params_.link_text);
+        item = falcon::CollectionsService::MakeItem(
+            "link", title.empty() ? params_.link_url.spec() : title,
+            params_.link_url.spec(), std::string());
+      } else {
+        item = falcon::CollectionsService::MakeItem(
+            "page", page_title, params_.page_url.spec(), std::string());
+      }
+      collections->AddItem(collections->LastCollectionId(), std::move(item));
+      if (auto* browser = GetBrowser()) {
+        browser->GetFeatures().side_panel_ui()->Show(
+            SidePanelEntryKey(SidePanelEntryId::kFalconCollections));
+      }
+      return;
+    }
     case IDC_FALCON_BOOST_SITE: {
       // falcon://falcon#boost=<host> opens the Boosts editor on that site.
       const std::string host(params_.page_url.host());
@@ -1060,6 +1104,29 @@ void RenderViewContextMenu::InitMenu() {
                           u"Download all files on page with Falcon");
       menu_model_.AddItem(IDC_FALCON_DOWNLOAD_ALL_IMAGES,
                           u"Download all images with Falcon");
+    }
+  }
+
+  // Falcon Collections: whatever was right-clicked goes to the last used
+  // collection.
+  if (GetProfile() && !GetProfile()->IsOffTheRecord() &&
+      params_.page_url.SchemeIsHTTPOrHTTPS()) {
+    std::u16string label;
+    if (!params_.selection_text.empty()) {
+      label = u"Add selection to Collection";
+    } else if (params_.media_type ==
+                   blink::mojom::ContextMenuDataMediaType::kImage &&
+               params_.src_url.is_valid()) {
+      label = u"Add image to Collection";
+    } else if (params_.link_url.is_valid()) {
+      label = u"Add link to Collection";
+    } else if (content_type_->SupportsGroup(
+                   ContextMenuContentType::ITEM_GROUP_PAGE)) {
+      label = u"Add page to Collection";
+    }
+    if (!label.empty()) {
+      menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+      menu_model_.AddItem(IDC_FALCON_COLLECT, label);
     }
   }
 

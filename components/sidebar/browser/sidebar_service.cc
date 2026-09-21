@@ -100,6 +100,10 @@ SidebarItem::BuiltInItemType GetBuiltInItemTypeForLegacyURL(
     return SidebarItem::BuiltInItemType::kFalconDownloads;
   }
 
+  if (url == "chrome://collections/") {
+    return SidebarItem::BuiltInItemType::kFalconCollections;
+  }
+
   NOTREACHED() << url;
 }
 
@@ -526,6 +530,7 @@ std::optional<SidebarItem> SidebarService::GetDefaultPanelItem() const {
       SidebarItem::BuiltInItemType::kBraveNews,
 #endif
       SidebarItem::BuiltInItemType::kFalconDownloads,
+      SidebarItem::BuiltInItemType::kFalconCollections,
       SidebarItem::BuiltInItemType::kReadingList,
       SidebarItem::BuiltInItemType::kBookmarks,
 #if BUILDFLAG(ENABLE_PLAYLIST)
@@ -719,6 +724,12 @@ SidebarItem SidebarService::GetBuiltInItemForType(
           GURL("chrome://downloader/"), u"Downloads",
           SidebarItem::Type::kTypeBuiltIn,
           SidebarItem::BuiltInItemType::kFalconDownloads,
+          /* open_in_panel = */ true);
+    case SidebarItem::BuiltInItemType::kFalconCollections:
+      return SidebarItem::Create(
+          GURL("chrome://collections/"), u"Collections",
+          SidebarItem::Type::kTypeBuiltIn,
+          SidebarItem::BuiltInItemType::kFalconCollections,
           /* open_in_panel = */ true);
     case SidebarItem::BuiltInItemType::kBookmarks:
       return SidebarItem::Create(

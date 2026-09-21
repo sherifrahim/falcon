@@ -18,6 +18,9 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "brave/browser/falcon/collections/collections_service.h"
+#include "brave/browser/falcon/collections/collections_service_factory.h"
+#include "brave/browser/falcon/ux/command_chain_runner.h"
 #include "brave/browser/falcon/ux/mouse_gesture_tab_helper.h"
 #include "brave/browser/ui/brave_scheme_utils.h"
 #include "brave/browser/ui/commander/fuzzy_finder.h"
@@ -29,7 +32,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/navigator/browser_navigator.h"
 #include "chrome/browser/ui/navigator/browser_navigator_params.h"
+#include "chrome/browser/ui/browser_window/public/browser_window_features.h"
 #include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
+#include "chrome/browser/ui/side_panel/side_panel_entry_key.h"
+#include "chrome/browser/ui/side_panel/side_panel_enums.h"
+#include "chrome/browser/ui/side_panel/side_panel_ui.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "components/url_formatter/url_formatter.h"
@@ -109,6 +116,94 @@ void TogglePref(base::WeakPtr<BrowserWindowInterface> browser,
   }
   PrefService* prefs = browser->GetProfile()->GetPrefs();
   prefs->SetBoolean(pref, !prefs->GetBoolean(pref));
+}
+
+// Composite step: pick the collection the active page goes to.
+CommandSource::CommandResults CollectionItems(
+    base::WeakPtr<BrowserWindowInterface> browser,
+    const std::u16string& input) {
+  CommandSource::CommandResults results;
+  if (!browser) {
+    return results;
+  }
+  auto* service = falcon::CollectionsServiceFactory::GetForProfile(
+      browser->GetProfile());
+  if (!service) {
+    return results;
+  }
+  FuzzyFinder finder(input);
+  std::vector<gfx::Range> ranges;
+  for (const base::Value& v : service->Collections()) {
+    const base::DictValue* d = v.GetIfDict();
+    const std::string* id = d ? d->FindString("id") : nullptr;
+    const std::string* name = d ? d->FindString("name") : nullptr;
+    if (!id || !name) {
+      continue;
+    }
+    const std::u16string title = base::UTF8ToUTF16(*name);
+    double score = input.empty() ? 1.0 : finder.Find(title, ranges);
+    if (score <= 0) {
+      continue;
+    }
+    auto item = std::make_unique<CommandItem>(title, score, ranges);
+    const base::ListValue* items = d->FindList("items");
+    item->annotation = base::UTF8ToUTF16(base::StrCat(
+        {base::NumberToString(items ? items->size() : 0), " items"}));
+    item->command = base::BindOnce(
+        [](base::WeakPtr<BrowserWindowInterface> browser, std::string id) {
+          if (!browser) {
+            return;
+          }
+          auto* service = falcon::CollectionsServiceFactory::GetForProfile(
+              browser->GetProfile());
+          content::WebContents* contents =
+              browser->GetTabStripModel()->GetActiveWebContents();
+          if (!service || !contents) {
+            return;
+          }
+          const GURL& url = contents->GetLastCommittedURL();
+          if (!url.SchemeIsHTTPOrHTTPS()) {
+            return;
+          }
+          service->AddItem(id, falcon::CollectionsService::MakeItem(
+                                   "page", base::UTF16ToUTF8(contents->GetTitle()),
+                                   url.spec(), std::string()));
+          browser->GetFeatures().side_panel_ui()->Show(
+              SidePanelEntryKey(SidePanelEntryId::kFalconCollections));
+        },
+        browser, *id);
+    results.push_back(std::move(item));
+  }
+  if (!input.empty()) {
+    auto item = std::make_unique<CommandItem>(
+        base::StrCat({u"New collection \"", input, u"\""}), 0.5,
+        std::vector<gfx::Range>());
+    item->command = base::BindOnce(
+        [](base::WeakPtr<BrowserWindowInterface> browser, std::string name) {
+          if (!browser) {
+            return;
+          }
+          auto* service = falcon::CollectionsServiceFactory::GetForProfile(
+              browser->GetProfile());
+          content::WebContents* contents =
+              browser->GetTabStripModel()->GetActiveWebContents();
+          if (!service) {
+            return;
+          }
+          const std::string id = service->Create(name);
+          if (contents && contents->GetLastCommittedURL().SchemeIsHTTPOrHTTPS()) {
+            service->AddItem(
+                id, falcon::CollectionsService::MakeItem(
+                        "page", base::UTF16ToUTF8(contents->GetTitle()),
+                        contents->GetLastCommittedURL().spec(), std::string()));
+          }
+          browser->GetFeatures().side_panel_ui()->Show(
+              SidePanelEntryKey(SidePanelEntryId::kFalconCollections));
+        },
+        browser, base::UTF16ToUTF8(input));
+    results.push_back(std::move(item));
+  }
+  return results;
 }
 
 WorkspaceService* Sessions(BrowserWindowInterface* browser) {
@@ -252,6 +347,8 @@ CommandSource::CommandResults FalconCommandSource::GetCommands(
       {u"Falcon Downloads", "chrome://downloader"},
       {u"Falcon download settings", "chrome://downloader#settings"},
       {u"Falcon control panel", "chrome://falcon"},
+      {u"Collections", "chrome://collections"},
+      {u"Command chains (macros)", "chrome://falcon#chains"},
       {u"Falcon Boosts (per-site CSS/JS)", "chrome://falcon#boosts"},
       {u"New tab page settings", "chrome://newtab#settings"},
   };
@@ -274,6 +371,48 @@ CommandSource::CommandResults FalconCommandSource::GetCommands(
   for (const Toggle& toggle : kToggles) {
     if (auto item = ItemForTitle(toggle.title, finder, ranges)) {
       item->command = base::BindOnce(&TogglePref, weak, toggle.pref);
+      results.push_back(std::move(item));
+    }
+  }
+
+  if (!browser->GetProfile()->IsOffTheRecord()) {
+    const std::u16string collect = u"Add page to collection…";
+    if (auto item = ItemForTitle(collect, finder, ranges)) {
+      item->command = std::make_pair(
+          std::u16string(u"Which collection?"),
+          base::BindRepeating(&CollectionItems, weak));
+      results.push_back(std::move(item));
+    }
+    const std::u16string toggle = u"Toggle Collections panel";
+    if (auto item = ItemForTitle(toggle, finder, ranges)) {
+      item->command = base::BindOnce(
+          [](base::WeakPtr<BrowserWindowInterface> browser) {
+            if (browser) {
+              browser->GetFeatures().side_panel_ui()->Toggle(
+                  SidePanelEntryKey(SidePanelEntryId::kFalconCollections),
+                  SidePanelOpenTrigger::kAppMenu);
+            }
+          },
+          weak);
+      results.push_back(std::move(item));
+    }
+  }
+
+  // Command chains: each saved chain is a deck command.
+  for (const falcon::CommandChain& chain :
+       falcon::CommandChainRunner::Chains(browser->GetProfile())) {
+    const std::u16string title =
+        base::StrCat({u"Run chain: ", base::UTF8ToUTF16(chain.name)});
+    if (auto item = ItemForTitle(title, finder, ranges)) {
+      item->annotation = base::UTF8ToUTF16(base::StrCat(
+          {base::NumberToString(chain.steps.size()), " steps"}));
+      item->command = base::BindOnce(
+          [](base::WeakPtr<BrowserWindowInterface> browser, std::string id) {
+            if (browser) {
+              falcon::CommandChainRunner::Run(browser.get(), id);
+            }
+          },
+          weak, chain.id);
       results.push_back(std::move(item));
     }
   }

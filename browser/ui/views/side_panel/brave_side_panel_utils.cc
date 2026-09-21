@@ -25,6 +25,7 @@
 #include "brave/components/brave_wallet/common/features.h"
 #endif
 
+#include "brave/browser/ui/views/side_panel/falcon/falcon_collections_side_panel_web_view.h"
 #include "brave/browser/ui/views/side_panel/falcon/falcon_downloads_side_panel_web_view.h"
 
 namespace brave {
@@ -43,6 +44,11 @@ void RegisterContextualSidePanel(SidePanelRegistry* registry,
     registry->Register(std::make_unique<SidePanelEntry>(
         SidePanelEntry::Key(SidePanelEntry::Id::kFalconDownloads),
         base::BindRepeating(&FalconDownloadsSidePanelWebView::CreateView,
+                            profile),
+        /*default_content_width_callback=*/base::NullCallback()));
+    registry->Register(std::make_unique<SidePanelEntry>(
+        SidePanelEntry::Key(SidePanelEntry::Id::kFalconCollections),
+        base::BindRepeating(&FalconCollectionsSidePanelWebView::CreateView,
                             profile),
         /*default_content_width_callback=*/base::NullCallback()));
   }

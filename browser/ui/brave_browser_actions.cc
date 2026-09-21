@@ -375,4 +375,18 @@ void BraveBrowserActions::InitializeBrowserActions() {
               ui::ImageModel::FromVectorIcon(kLeoDownloadIcon, ui::kColorIcon))
           .SetProperty(actions::kActionItemPinnableKey, true)
           .Build());
+
+  // Falcon collections in the side panel.
+  root_action_item_->AddChild(
+      actions::ActionItem::Builder(CreateToggleSidePanelActionCallback(
+                                       SidePanelEntryKey(
+                                           SidePanelEntryId::kFalconCollections),
+                                       bwi))
+          .SetActionId(kActionSidePanelShowFalconCollections)
+          .SetText(u"Collections")
+          .SetTooltipText(u"Falcon Collections")
+          .SetImage(
+              ui::ImageModel::FromVectorIcon(kLeoGrid04Icon, ui::kColorIcon))
+          .SetProperty(actions::kActionItemPinnableKey, true)
+          .Build());
 }

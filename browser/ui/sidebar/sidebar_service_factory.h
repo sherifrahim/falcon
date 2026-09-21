@@ -52,6 +52,7 @@ class SidebarServiceFactory : public BrowserContextKeyedServiceFactory {
           SidebarItem::BuiltInItemType::kWallet,
 #endif
           SidebarItem::BuiltInItemType::kFalconDownloads,
+          SidebarItem::BuiltInItemType::kFalconCollections,
           SidebarItem::BuiltInItemType::kBookmarks,
           SidebarItem::BuiltInItemType::kReadingList,
           SidebarItem::BuiltInItemType::kHistory,
