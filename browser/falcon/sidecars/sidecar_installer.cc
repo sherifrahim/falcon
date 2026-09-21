@@ -16,12 +16,13 @@
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/strings/pattern.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/thread_pool.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "brave/browser/falcon/download/aria2_service.h"
-#include "brave/components/resources/grit/brave_components_resources.h"
+#include "components/grit/brave_components_resources.h"
 #include "chrome/common/chrome_paths.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
@@ -177,7 +178,7 @@ void SidecarInstaller::LoadManifest() {
   std::string json =
       ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
           IDR_FALCON_SIDECARS_JSON);
-  std::optional<base::Value> root = base::JSONReader::Read(json);
+  std::optional<base::Value> root = base::JSONReader::Read(json, base::JSON_PARSE_RFC);
   if (!root || !root->is_dict()) {
     LOG(ERROR) << "falcon: sidecars.json is not a JSON object";
     return;
