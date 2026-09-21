@@ -268,7 +268,7 @@ This file contains all "about" strings.  It is set to NOT be translated, in tran
         Turn on Falcon notifications
       </message>
       <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_BRAVE_SHIELDS" desc="Content description for the button that is enable, disable Brave Shields.">
-        Enable/Disable Brave Shields
+        Enable/Disable Shields
       </message>
     <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_BRAVE_PIP" desc="Content description for the button that triggers picture-in-picture mode for YouTube videos.">
       Enter picture-in-picture mode
@@ -376,7 +376,7 @@ This file contains all "about" strings.  It is set to NOT be translated, in tran
         Analytics
       </message>
       <message name="IDS_BRAVE_SHIELDS_AND_PRIVACY" desc="Label for the settings related to shields and privacy">
-        Brave Shields &amp; privacy
+        Shields &amp; privacy
       </message>
       <message name="IDS_BRAVE_SEARCH_ENGINES" desc="Label for the settings related to the search engines">
         Search engines
@@ -911,7 +911,7 @@ This file contains all "about" strings.  It is set to NOT be translated, in tran
         Skip
       </message>
       <message name="IDS_BRAVE_SHIELDS_ONBOARDING_TITLE" desc="Title for brave shield page">
-        Brave Shields
+        Shields
       </message>
       <message name="IDS_TERMS_OF_SERVICE" desc="Text for terms of service">
         Terms of Service
@@ -3914,7 +3914,7 @@ If you don't accept this request, VPN will not reconnect and your internet conne
       Support our mission &amp; open-source work
     </message>
     <message name="IDS_ORIGIN_PAYWALL_TEXT_2" desc="Brave Origin paywall text">
-      Minimalist browser UI centered on Brave Shields
+      Minimalist browser UI centered on Shields
     </message>
     <message name="IDS_ORIGIN_PAYWALL_TEXT_3" desc="Brave Origin paywall text">
       Maintain core adblock, privacy, &amp; speed
