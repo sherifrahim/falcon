@@ -1,0 +1,18 @@
+# Copyright (c) 2026 Falcon. Personal fork of Brave.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this file,
+# You can obtain one at https://mozilla.org/MPL/2.0/.
+
+brave_browser_falcon_sidecars_sources = [
+  "//brave/browser/falcon/sidecars/sidecar_installer.cc",
+  "//brave/browser/falcon/sidecars/sidecar_installer.h",
+]
+
+brave_browser_falcon_sidecars_deps = [
+  "//base",
+  "//brave/components/resources:grit",
+  "//crypto",
+  "//third_party/zlib/google:zip",
+  "//ui/base",
+  "//url",
+]

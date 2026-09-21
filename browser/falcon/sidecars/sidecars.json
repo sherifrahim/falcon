@@ -1,0 +1,40 @@
+{
+    "generated":  "2026-09-21",
+    "sidecars":  [
+                     {
+                         "name":  "yt-dlp",
+                         "version":  "2026.08.19",
+                         "url":  "https://github.com/yt-dlp/yt-dlp/releases/download/2026.08.19/yt-dlp.exe",
+                         "sha256":  "66674953fe251b89f4d08c5f0e35e0728679bd67ab3d7d05c0562af101dd3e7a",
+                         "size":  17840399,
+                         "kind":  "exe",
+                         "files":  [
+                                       "yt-dlp.exe"
+                                   ]
+                     },
+                     {
+                         "name":  "ffmpeg",
+                         "version":  "autobuild-2026-09-20-17-29",
+                         "url":  "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/autobuild-2026-09-20-17-29/ffmpeg-N-126732-g5d3cb3dc17-win64-gpl-shared.zip",
+                         "sha256":  "55bd2a44cc157bd3e75da04c4397fae364f5885162895302c57be43f3897da1c",
+                         "size":  86331465,
+                         "kind":  "zip",
+                         "files":  [
+                                       "bin/ffmpeg.exe",
+                                       "bin/ffprobe.exe",
+                                       "bin/*.dll"
+                                   ]
+                     },
+                     {
+                         "name":  "bitwarden-cli",
+                         "version":  "cli-v2026.9.0",
+                         "url":  "https://github.com/bitwarden/clients/releases/download/cli-v2026.9.0/bw-oss-windows-2026.9.0.zip",
+                         "sha256":  "45d1dd1aef57cc2ce38b787fe153da54acea61a15f1ed48b00bc8557b457b809",
+                         "size":  38796070,
+                         "kind":  "zip",
+                         "files":  [
+                                       "bw.exe"
+                                   ]
+                     }
+                 ]
+}

@@ -4,6 +4,7 @@
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include "brave/browser/falcon/vault/bitwarden_service.h"
+#include "brave/browser/falcon/sidecars/sidecar_installer.h"
 
 #include <utility>
 
@@ -105,10 +106,9 @@ PrefService* local_state() {
 }
 
 base::FilePath CliExe() {
-  // Version dir (see aria2_service.cc): DIR_EXE only in dev out/ dirs.
-  base::FilePath dir;
-  base::PathService::Get(base::DIR_MODULE, &dir);
-  return dir.AppendASCII("bw.exe");
+  // Bundled next to the browser in dev builds, otherwise installed on demand
+  // into the profile (falcon://falcon › Engines › Sidecars).
+  return falcon::SidecarInstaller::Get()->ExePath("bitwarden-cli", "bw.exe");
 }
 
 base::FilePath VaultDir() {
@@ -144,7 +144,15 @@ std::unique_ptr<BitwardenService::CliResult> RunCli(
     base::FilePath password_file) {
   auto result = std::make_unique<BitwardenService::CliResult>();
   base::CreateDirectory(VaultDir());
-  base::CommandLine cmd(CliExe());
+  base::FilePath exe = CliExe();
+  if (exe.empty()) {
+    result->exit_code = -1;
+    result->output =
+        "Bitwarden CLI is not installed. Install it from falcon://falcon "
+        "(Engines > Sidecars).";
+    return result;
+  }
+  base::CommandLine cmd(exe);
   for (const auto& a : args) {
     cmd.AppendArg(a);
   }

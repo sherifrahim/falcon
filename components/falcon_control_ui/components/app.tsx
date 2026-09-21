@@ -7,7 +7,7 @@
 
 import * as React from 'react'
 import styled from 'styled-components'
-import { sendWithPromise } from 'chrome://resources/js/cr.js'
+import { sendWithPromise, addWebUiListener } from 'chrome://resources/js/cr.js'
 import { ShellPreview } from './preview'
 
 export interface Boost {
@@ -230,6 +230,44 @@ const Field = styled.input`
   &:focus { outline: none; border-color: #38bdf8; }
 `
 type BwStatus = { configured: boolean; serving: boolean; state: string; email: string; server: string; lastSync: string; error: string }
+type Sidecar = { name: string; version: string; size: number; bundled: boolean; installed: boolean; installing: boolean; progress: number; error: string }
+const sidecarLabel: Record<string, string> = { 'yt-dlp': 'yt-dlp', 'ffmpeg': 'ffmpeg', 'bitwarden-cli': 'Bitwarden CLI' }
+const sidecarWhy: Record<string, string> = {
+  'yt-dlp': 'Media downloads from YouTube-class sites and HLS/DASH playlists.',
+  'ffmpeg': 'Merges the video and audio streams yt-dlp fetches.',
+  'bitwarden-cli': 'The vault sidecar behind Falcon Passwords (bw serve).',
+}
+function Sidecars() {
+  const [list, setList] = React.useState<Sidecar[]>([])
+  const refresh = React.useCallback(() => sendWithPromise('falcon_control.getSidecars').then((r: Sidecar[]) => setList(r)).catch(() => {}), [])
+  React.useEffect(() => {
+    refresh()
+    const cb = () => refresh()
+    addWebUiListener('falcon-sidecars-changed', cb)
+    const t = window.setInterval(refresh, 3000)
+    return () => window.clearInterval(t)
+  }, [refresh])
+  const install = async (name: string) => {
+    try { await sendWithPromise('falcon_control.installSidecar', name) } catch {}
+    refresh()
+  }
+  const mb = (n: number) => `${Math.round(n / 1048576)} MB`
+  return (
+    <Card>
+      <Row as="div"><span>Sidecars<span className="sub">Fetched on demand from their GitHub releases and verified by SHA-256, so the installer stays small. Installed into your profile.</span></span></Row>
+      {list.map((c) => (
+        <Row as="div" key={c.name}>
+          <span>{sidecarLabel[c.name] || c.name}<span className="sub">{sidecarWhy[c.name]} {c.version} · {mb(c.size)}{c.error ? ` · ${c.error}` : ''}</span></span>
+          {c.bundled ? <span style={{ opacity: 0.7 }}>bundled</span>
+            : c.installing ? <span style={{ opacity: 0.8 }}>{Math.round(c.progress * 100)}%</span>
+            : c.installed ? <span style={{ opacity: 0.7 }}>installed</span>
+            : <Btn $primary onClick={() => install(c.name)}>Install</Btn>}
+        </Row>
+      ))}
+    </Card>
+  )
+}
+
 function Bitwarden({ s, update }: { s: State; update: (patch: Partial<State>) => void }) {
   const [st, setSt] = React.useState<BwStatus | null>(null)
   const [busy, setBusy] = React.useState('')
@@ -593,6 +631,7 @@ export function App() {
       <Bitwarden s={s} update={update} />
 
       <h2 id="engines">Engines</h2>
+      <Sidecars />
       <Card>
         <Row as="div">
           <span>yt-dlp<span className="sub">Site extractors change often — update when YouTube breaks. Version {s.ytDlpVersion || '?'}</span></span>

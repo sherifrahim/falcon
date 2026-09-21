@@ -9,6 +9,7 @@ import("//brave/browser/brave_account/android/sources.gni")
 import("//brave/browser/brave_referrals/sources.gni")
 import("//brave/browser/brave_vpn/sources.gni")
 import("//brave/browser/falcon/download/sources.gni")
+import("//brave/browser/falcon/sidecars/sources.gni")
 import("//brave/browser/falcon/media/sources.gni")
 import("//brave/browser/falcon/ux/sources.gni")
 import("//brave/browser/falcon/vault/sources.gni")
@@ -817,6 +818,7 @@ brave_chrome_browser_sources += brave_browser_brave_vpn_sources
 if (!is_android) {
   brave_chrome_browser_sources += brave_browser_falcon_download_sources
   brave_chrome_browser_sources += brave_browser_falcon_media_sources
+  brave_chrome_browser_sources += brave_browser_falcon_sidecars_sources
   brave_chrome_browser_sources += brave_browser_falcon_ux_sources
   brave_chrome_browser_sources += brave_browser_falcon_vault_sources
 }
@@ -846,6 +848,7 @@ brave_chrome_browser_deps += brave_browser_brave_vpn_deps
 if (!is_android) {
   brave_chrome_browser_deps += brave_browser_falcon_download_deps
   brave_chrome_browser_deps += brave_browser_falcon_media_deps
+  brave_chrome_browser_deps += brave_browser_falcon_sidecars_deps
   brave_chrome_browser_deps += brave_browser_falcon_ux_deps
   brave_chrome_browser_deps += brave_browser_falcon_vault_deps
 }

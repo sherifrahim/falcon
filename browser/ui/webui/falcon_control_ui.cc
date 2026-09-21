@@ -23,6 +23,7 @@
 #include "base/version_info/version_info.h"
 #include "brave/browser/falcon/download/pref_names.h"
 #include "brave/browser/falcon/media/media_service.h"
+#include "brave/browser/falcon/sidecars/sidecar_installer.h"
 #include "brave/browser/falcon/ux/boost_tab_helper.h"
 #include "brave/browser/falcon/ux/mini_menu_tab_helper.h"
 #include "brave/browser/falcon/ux/tab_archiver.h"
@@ -80,10 +81,23 @@ ToolResult RunYtDlp(const std::string& arg, base::TimeDelta timeout) {
   return r;
 }
 
-class FalconControlMessageHandler : public content::WebUIMessageHandler {
+class FalconControlMessageHandler
+    : public content::WebUIMessageHandler,
+      public falcon::SidecarInstaller::Observer {
  public:
-  FalconControlMessageHandler() = default;
-  ~FalconControlMessageHandler() override = default;
+  FalconControlMessageHandler() {
+    falcon::SidecarInstaller::Get()->AddObserver(this);
+  }
+  ~FalconControlMessageHandler() override {
+    falcon::SidecarInstaller::Get()->RemoveObserver(this);
+  }
+
+  // falcon::SidecarInstaller::Observer:
+  void OnSidecarsChanged() override {
+    if (IsJavascriptAllowed()) {
+      FireWebUIListener("falcon-sidecars-changed");
+    }
+  }
 
  private:
   void RegisterMessages() override {
@@ -94,6 +108,14 @@ class FalconControlMessageHandler : public content::WebUIMessageHandler {
     web_ui()->RegisterMessageCallback(
         "falcon_control.setState",
         base::BindRepeating(&FalconControlMessageHandler::SetState,
+                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "falcon_control.getSidecars",
+        base::BindRepeating(&FalconControlMessageHandler::GetSidecars,
+                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "falcon_control.installSidecar",
+        base::BindRepeating(&FalconControlMessageHandler::InstallSidecar,
                             base::Unretained(this)));
     web_ui()->RegisterMessageCallback(
         "falcon_control.updateYtDlp",
@@ -357,6 +379,48 @@ class FalconControlMessageHandler : public content::WebUIMessageHandler {
   }
 
   // args: [callbackId]
+  static base::ListValue SidecarList() {
+    base::ListValue list;
+    for (const auto& st : falcon::SidecarInstaller::Get()->GetStatuses()) {
+      base::DictValue d;
+      d.Set("name", st.name);
+      d.Set("version", st.version);
+      d.Set("size", static_cast<double>(st.size));
+      d.Set("bundled", st.bundled);
+      d.Set("installed", st.installed);
+      d.Set("installing", st.installing);
+      d.Set("progress", st.progress);
+      d.Set("error", st.error);
+      list.Append(std::move(d));
+    }
+    return list;
+  }
+
+  void GetSidecars(const base::ListValue& args) {
+    CHECK_EQ(1U, args.size());
+    AllowJavascript();
+    ResolveJavascriptCallback(args[0], SidecarList());
+  }
+
+  void InstallSidecar(const base::ListValue& args) {
+    CHECK_EQ(2U, args.size());
+    AllowJavascript();
+    falcon::SidecarInstaller::Get()->Install(
+        args[1].GetString(),
+        base::BindOnce(
+            [](base::WeakPtr<FalconControlMessageHandler> self,
+               base::Value callback_id, bool ok, const std::string& error) {
+              if (!self || !self->IsJavascriptAllowed()) {
+                return;
+              }
+              base::DictValue d;
+              d.Set("ok", ok);
+              d.Set("error", error);
+              self->ResolveJavascriptCallback(callback_id, d);
+            },
+            weak_factory_.GetWeakPtr(), args[0].Clone()));
+  }
+
   void GetState(const base::ListValue& args) {
     CHECK_EQ(1U, args.size());
     AllowJavascript();

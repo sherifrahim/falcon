@@ -1,8 +1,8 @@
 diff --git a/chrome/installer/mini_installer/chrome.release b/chrome/installer/mini_installer/chrome.release
-index 173c8590146cf453dca7880ecf16323cd6378b31..684a46de18e67df6bdc057bb02b81f76b58f3eb4 100644
+index 173c859014..f57851b0ac 100644
 --- a/chrome/installer/mini_installer/chrome.release
 +++ b/chrome/installer/mini_installer/chrome.release
-@@ -6,9 +6,25 @@
+@@ -6,9 +6,14 @@
  #
  # Chrome Application dir entries, sorted alphabetically.
  #
@@ -14,22 +14,11 @@ index 173c8590146cf453dca7880ecf16323cd6378b31..684a46de18e67df6bdc057bb02b81f76
 +# manages brave.exe and chrome_proxy.exe at the Application root.
 +#
 +aria2c.exe: %(VersionDir)s\
-+yt-dlp.exe: %(VersionDir)s\
-+bw.exe: %(VersionDir)s\
-+ffmpeg\avcodec-63.dll: %(VersionDir)s\ffmpeg\
-+ffmpeg\avdevice-63.dll: %(VersionDir)s\ffmpeg\
-+ffmpeg\avfilter-12.dll: %(VersionDir)s\ffmpeg\
-+ffmpeg\avformat-63.dll: %(VersionDir)s\ffmpeg\
-+ffmpeg\avutil-61.dll: %(VersionDir)s\ffmpeg\
-+ffmpeg\ffmpeg.exe: %(VersionDir)s\ffmpeg\
-+ffmpeg\ffprobe.exe: %(VersionDir)s\ffmpeg\
-+ffmpeg\swresample-7.dll: %(VersionDir)s\ffmpeg\
-+ffmpeg\swscale-10.dll: %(VersionDir)s\ffmpeg\
 +#
  # Chrome version dir assembly manifest.
  # The name of this file must match the name of the version dir, so we cannot
  # hard-code it.
-@@ -18,9 +34,19 @@ chrome_proxy.exe: %(ChromeDir)s\
+@@ -18,9 +23,19 @@ chrome_proxy.exe: %(ChromeDir)s\
  #
  # Chrome version dir entries, sorted alphabetically.
  #
@@ -49,7 +38,7 @@ index 173c8590146cf453dca7880ecf16323cd6378b31..684a46de18e67df6bdc057bb02b81f76
  chrome_elf.dll: %(VersionDir)s\
  chrome_pwa_launcher.exe: %(VersionDir)s\
  chrome_renderer.dll: %(VersionDir)s\
-@@ -73,6 +99,7 @@ IwaKeyDistribution\manifest.json: %(VersionDir)s\IwaKeyDistribution\
+@@ -73,6 +88,7 @@ IwaKeyDistribution\manifest.json: %(VersionDir)s\IwaKeyDistribution\
  
  [HIDPI]
  chrome_200_percent.pak: %(VersionDir)s\

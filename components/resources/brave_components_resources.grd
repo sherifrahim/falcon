@@ -24,6 +24,7 @@
       <include name="IDR_FALCON_DOWNLOADER_HTML" file="../falcon_downloader_ui/falcon_downloader.html" type="BINDATA" />
       <include name="IDR_FALCON_NEWTAB_HTML" file="../falcon_newtab_ui/falcon_newtab.html" type="BINDATA" />
       <include name="IDR_FALCON_CONTROL_HTML" file="../falcon_control_ui/falcon_control.html" type="BINDATA" />
+      <include name="IDR_FALCON_SIDECARS_JSON" file="../../browser/falcon/sidecars/sidecars.json" type="BINDATA" />
       <include name="IDR_FALCON_COMMAND_DECK_HTML" file="../falcon_command_deck_ui/falcon_command_deck.html" type="BINDATA" />
 
       <!-- WebUI webcompat reporter resources -->

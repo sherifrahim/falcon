@@ -85,6 +85,10 @@ class Aria2Service {
   void Call(const std::string& method,
             base::ListValue params,
             RpcCallback callback);
+  // Same, but launches the engine if needed and waits for the endpoint.
+  void CallWhenReady(const std::string& method,
+                     base::ListValue params,
+                     RpcCallback callback);
 
   // Push the engine prefs (connections, concurrency, limits, seeding) to the
   // running aria2 instance.

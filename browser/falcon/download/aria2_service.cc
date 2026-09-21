@@ -408,6 +408,20 @@ void Aria2Service::AddUri(const GURL& url, base::DictValue options) {
   tracker_->Poke();
 }
 
+void Aria2Service::CallWhenReady(const std::string& method,
+                                 base::ListValue params,
+                                 RpcCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  EnsureRunning();
+  if (!ready_) {
+    queued_.push_back(base::BindOnce(&Aria2Service::CallWhenReady,
+                                     weak_factory_.GetWeakPtr(), method,
+                                     std::move(params), std::move(callback)));
+    return;
+  }
+  Call(method, std::move(params), std::move(callback));
+}
+
 void Aria2Service::ApplyEnginePrefs() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!ready_) {

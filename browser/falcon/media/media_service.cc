@@ -4,6 +4,7 @@
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include "brave/browser/falcon/media/media_service.h"
+#include "brave/browser/falcon/sidecars/sidecar_installer.h"
 
 #include <algorithm>
 #include <optional>
@@ -55,15 +56,6 @@ constexpr char kTitlePrefix[] = "FALCONT|";
 constexpr char kFilePrefix[] = "FALCONF|";
 constexpr char kPostPrefix[] = "FALCONM|";
 
-// Sidecars ship in the version dir (base::DIR_MODULE): setup.exe only manages
-// brave.exe and chrome_proxy.exe at the Application root. In a dev out/ dir
-// DIR_MODULE is the same directory as brave.exe.
-base::FilePath ExeDir() {
-  base::FilePath dir;
-  base::PathService::Get(base::DIR_MODULE, &dir);
-  return dir;
-}
-
 std::string PresetSelector(const std::string& preset) {
   if (preset == "best" || preset.empty()) return "bv*+ba/b";
   if (preset == "audio") return "ba/b";
@@ -111,12 +103,14 @@ struct MediaService::Launch {
 #endif
 };
 
+// Bundled next to the browser in dev builds, otherwise installed on demand
+// into the profile (falcon://falcon › Engines › Sidecars).
 base::FilePath YtDlpPath() {
-  return ExeDir().AppendASCII("yt-dlp.exe");
+  return falcon::SidecarInstaller::Get()->ExePath("yt-dlp", "yt-dlp.exe");
 }
 
 base::FilePath FfmpegDirectory() {
-  return ExeDir().AppendASCII("ffmpeg");
+  return falcon::SidecarInstaller::Get()->DirFor("ffmpeg");
 }
 
 base::FilePath MediaDownloadDirectory(Profile* profile) {
@@ -134,10 +128,8 @@ MediaService::~MediaService() = default;
 
 // static
 bool MediaService::IsAvailable() {
-  // yt-dlp.exe and ffmpeg/ are build outputs next to the browser
-  // (//brave/third_party/yt-dlp, //brave/third_party/ffmpeg-bin); a missing
-  // binary surfaces as a launch failure on the job instead.
-  return true;
+  auto* sidecars = falcon::SidecarInstaller::Get();
+  return sidecars->IsAvailable("yt-dlp") && sidecars->IsAvailable("ffmpeg");
 }
 
 namespace {
@@ -260,7 +252,9 @@ void MediaService::Probe(Profile* profile,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::DictValue err;
   if (!IsAvailable()) {
-    err.Set("error", "yt-dlp is not bundled with this build");
+    err.Set("error",
+            "Media engine not installed: open falcon://falcon > Engines > "
+            "Sidecars and install yt-dlp and ffmpeg");
     std::move(callback).Run(std::move(err));
     return;
   }
