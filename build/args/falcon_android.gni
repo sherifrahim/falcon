@@ -12,6 +12,12 @@
 # native-facing code and nothing calls a native that is not linked. Falcon's
 # policies (LoadFalconPolicies) keep the UI for them hidden either way.
 
+# Brave's Android Java still declares the natives of the services below; with JNI
+# multiplexing (official builds' default) a generated registration table references
+# every one of them and the link fails. Hashed, lazily-resolved JNI names instead: a
+# native that is compiled out only matters if it is called, and the Java is gated.
+enable_jni_multiplexing = false
+
 # Leo / AI
 enable_ai_chat = false
 enable_local_ai = false
