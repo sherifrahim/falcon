@@ -530,12 +530,6 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
         }
     }
 
-    private void updateSummary(String preferenceString, int summary) {
-        Preference p = findPreference(preferenceString);
-        assumeNonNull(p);
-        p.setSummary(summary);
-    }
-
     private void updateSummaries() {
     }
 

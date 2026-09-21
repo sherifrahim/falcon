@@ -1759,7 +1759,10 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     private void drawFalconCapsule(Canvas canvas) {
         final CapsuleDrawable capsule = mFalconCapsule;
         if (capsule == null) return;
-        int l = Integer.MAX_VALUE, t = Integer.MAX_VALUE, r = 0, b = 0;
+        int l = Integer.MAX_VALUE;
+        int t = Integer.MAX_VALUE;
+        int r = 0;
+        int b = 0;
         for (int i = 0; i < getChildCount(); i++) {
             View c = getChildAt(i);
             if (c.getVisibility() != VISIBLE || c.getWidth() == 0 || c.getHeight() == 0) continue;
