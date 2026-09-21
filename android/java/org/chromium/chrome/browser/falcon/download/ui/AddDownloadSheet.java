@@ -32,6 +32,17 @@ import java.util.Locale;
 
 /** New download (mock v6 screen 6). The clipboard's link, if any, is offered up front. */
 public class AddDownloadSheet extends BottomSheetDialogFragment {
+    private static final String ARG_URL = "url";
+
+    /** A sheet pre-filled with |url| (from the share sheet or a link handler). */
+    public static AddDownloadSheet forUrl(String url) {
+        AddDownloadSheet sheet = new AddDownloadSheet();
+        Bundle args = new Bundle();
+        args.putString(ARG_URL, url);
+        sheet.setArguments(args);
+        return sheet;
+    }
+
     private EditText mUrl;
     private EditText mName;
     private EditText mSha;
@@ -64,10 +75,16 @@ public class AddDownloadSheet extends BottomSheetDialogFragment {
         connections.setText(String.valueOf(FalconPrefs.getDownloaderConnections()));
         mWifiOnly.setChecked(FalconPrefs.isDownloaderWifiOnly());
 
-        String clip = clipboardLink();
-        if (clip != null) {
-            mUrl.setText(clip);
-            hint.setText(R.string.falcon_new_download_hint_clipboard);
+        String preset = getArguments() == null ? null : getArguments().getString(ARG_URL);
+        if (!TextUtils.isEmpty(preset)) {
+            mUrl.setText(preset);
+            hint.setText(R.string.falcon_new_download_hint_shared);
+        } else {
+            String clip = clipboardLink();
+            if (clip != null) {
+                mUrl.setText(clip);
+                hint.setText(R.string.falcon_new_download_hint_clipboard);
+            }
         }
         mUrl.setOnEditorActionListener(
                 (tv, action, event) -> {

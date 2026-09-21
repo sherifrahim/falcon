@@ -1638,6 +1638,15 @@ Are you sure you want to do this?
       <message name="IDS_FALCON_NEW_DOWNLOAD_HINT_CLIPBOARD" desc="Add sheet hint when the clipboard holds a link">
         Your clipboard already has a link.
       </message>
+      <message name="IDS_FALCON_NEW_DOWNLOAD_HINT_SHARED" desc="Add sheet hint when a link arrived from the share sheet">
+        Shared link. Check the name, then download.
+      </message>
+      <message name="IDS_FALCON_SHARE_DOWNLOAD" desc="Share-sheet target label: send a link to the Falcon downloader">
+        Download with Falcon
+      </message>
+      <message name="IDS_FALCON_SHARE_NO_LINK" desc="Toast when shared text holds no http(s) link">
+        No link found in the shared text.
+      </message>
       <message name="IDS_FALCON_FILE_NAME_OPTIONAL" desc="Field hint">
         File name (optional)
       </message>

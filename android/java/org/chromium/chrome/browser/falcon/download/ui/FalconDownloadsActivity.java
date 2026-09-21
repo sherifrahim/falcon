@@ -19,6 +19,9 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -58,6 +61,8 @@ public class FalconDownloadsActivity extends AsyncInitializationActivity
     private DownloadRowAdapter mAdapter;
     private int mTab = TAB_ALL;
     private String mQuery = "";
+    private static final Pattern LINK = Pattern.compile("https?://[^\\s<>\"']+");
+    private Intent mPendingShare;
 
     public static void launch(Context context) {
         Intent intent = new Intent(context, FalconDownloadsActivity.class);
@@ -133,6 +138,40 @@ public class FalconDownloadsActivity extends AsyncInitializationActivity
                     }
                 });
         onInitialLayoutInflationComplete();
+        mPendingShare = getIntent();
+    }
+
+    @Override
+    public void finishNativeInitialization() {
+        super.finishNativeInitialization();
+        handleShare(mPendingShare);
+        mPendingShare = null;
+    }
+
+    @Override
+    public void onNewIntentWithNative(Intent intent) {
+        super.onNewIntentWithNative(intent);
+        handleShare(intent);
+    }
+
+    /** "Download with Falcon" from the share sheet: first http(s) link → add sheet. */
+    private void handleShare(Intent intent) {
+        if (intent == null || !Intent.ACTION_SEND.equals(intent.getAction())) return;
+        // Consume it so a rotation does not re-open the sheet.
+        intent.setAction(null);
+        CharSequence text = intent.getCharSequenceExtra(Intent.EXTRA_TEXT);
+        String url = null;
+        if (text != null) {
+            Matcher m = LINK.matcher(text);
+            if (m.find()) url = m.group();
+        }
+        if (url == null) {
+            Toast.makeText(this, R.string.falcon_share_no_link, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (getSupportFragmentManager().findFragmentByTag("falcon-add") == null) {
+            AddDownloadSheet.forUrl(url).show(getSupportFragmentManager(), "falcon-add");
+        }
     }
 
     @Override

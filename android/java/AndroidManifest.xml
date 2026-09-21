@@ -169,6 +169,19 @@
     android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
     android:exported="false" />
 
+<!-- Falcon: "Download with Falcon" in the system share sheet (links in shared text). -->
+<activity-alias
+    android:name="org.chromium.chrome.browser.falcon.download.ui.FalconShareTarget"
+    android:targetActivity="org.chromium.chrome.browser.falcon.download.ui.FalconDownloadsActivity"
+    android:label="@string/falcon_share_download"
+    android:exported="true">
+    <intent-filter>
+        <action android:name="android.intent.action.SEND" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <data android:mimeType="text/plain" />
+    </intent-filter>
+</activity-alias>
+
 <!-- Falcon: keeps downloads alive and shows their progress. -->
 <service
     android:name="org.chromium.chrome.browser.falcon.download.FalconDownloadService"
