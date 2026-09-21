@@ -20,6 +20,7 @@ import android.graphics.Canvas;
 import android.graphics.PorterDuff;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -1722,6 +1723,8 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     @Nullable private CapsuleDrawable mFalconCapsule;
     @Nullable private ValueAnimator mCapsuleMorph;
 
+    private final Rect mCapsuleRect = new Rect();
+
     private void maybeApplyFalconCapsule() {
         if (!BraveReflectionUtil.equalTypes(this.getClass(), ToolbarPhone.class)) return;
         if (org.chromium.chrome.browser.falcon.FalconPrefs.getBottomBarMode()
@@ -1730,18 +1733,58 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         }
         if (!BottomToolbarConfiguration.isToolbarBottomAnchored()) return;
         float d = getResources().getDisplayMetrics().density;
-        int side = Math.round(14 * d);
+        // Drawn by dispatchDraw around whatever ToolbarPhone lays out (it positions the
+        // location bar from its own math, so a padded background cannot contain it).
         mFalconCapsule =
                 new CapsuleDrawable(
                         org.chromium.chrome.browser.falcon.ui.FalconTheme.glassSolid(getContext()),
                         getContext().getColor(R.color.falcon_hair_2),
                         d,
                         26 * d,
-                        side,
-                        2 * d,
-                        6 * d);
-        setBackground(mFalconCapsule);
-        setPadding(side + Math.round(4 * d), getPaddingTop(), side + Math.round(4 * d), getPaddingBottom());
+                        0,
+                        0,
+                        0);
+        mFalconCapsule.setCallback(this);
+        setBackground(null);
+        int side = Math.round(10 * d);
+        setPadding(side, getPaddingTop(), side, getPaddingBottom());
+    }
+
+    @Override
+    protected boolean verifyDrawable(Drawable who) {
+        return who == mFalconCapsule || super.verifyDrawable(who);
+    }
+
+    /** The pill hugs the laid-out children (+ breathing room); focused, it fills the bar. */
+    private void drawFalconCapsule(Canvas canvas) {
+        final CapsuleDrawable capsule = mFalconCapsule;
+        if (capsule == null) return;
+        int l = Integer.MAX_VALUE, t = Integer.MAX_VALUE, r = 0, b = 0;
+        for (int i = 0; i < getChildCount(); i++) {
+            View c = getChildAt(i);
+            if (c.getVisibility() != VISIBLE || c.getWidth() == 0 || c.getHeight() == 0) continue;
+            if (c.getWidth() >= getWidth()) continue; // full-width helpers (hairline, progress)
+            l = Math.min(l, c.getLeft());
+            t = Math.min(t, c.getTop());
+            r = Math.max(r, c.getRight());
+            b = Math.max(b, c.getBottom());
+        }
+        if (l >= r || t >= b) return;
+        float d = getResources().getDisplayMetrics().density;
+        int padX = Math.round(8 * d);
+        int padY = Math.round(4 * d);
+        l = Math.max(0, l - padX);
+        r = Math.min(getWidth(), r + padX);
+        t = Math.max(0, t - padY);
+        b = Math.min(getHeight(), b + padY);
+        float m = capsule.getMorph();
+        mCapsuleRect.set(
+                Math.round(l * (1 - m)),
+                Math.round(t * (1 - m)),
+                Math.round(r + (getWidth() - r) * m),
+                Math.round(b + (getHeight() - b) * m));
+        capsule.setBounds(mCapsuleRect);
+        capsule.draw(canvas);
     }
 
     private void morphCapsule(boolean flat) {
@@ -1780,6 +1823,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     @Override
     protected void dispatchDraw(Canvas canvas) {
         clearToolbarBackdrop();
+        drawFalconCapsule(canvas);
         super.dispatchDraw(canvas);
     }
 

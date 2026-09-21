@@ -61,7 +61,7 @@
 
     <!-- Theme colors -->
     <color name="brave_white">@android:color/white</color>
-    <color name="brave_link">#4C54D2</color>
+    <color name="brave_link">#0284C7</color>
     <color name="menu_icon_color">#212529</color>
     <color name="url_text_primary">#1b1b1f</color>
 
@@ -94,7 +94,7 @@
     <color name="brave_wallet_dn_panel_bg">#EDEEF1</color>
 
     <color name="text_on_primary">#FFFFFF</color>
-    <color name="icon_interactive">#434fcf</color>
+    <color name="icon_interactive">#0284C7</color>
     <color name="system_feedback_error">#B3002A</color>
 
     <!-- Text colors -->
@@ -166,7 +166,7 @@
     <color name="news_settings_item_highlight">@color/material_primary_95</color>
 
     <!-- Incognito mode colors -->
-    <color name="toolbar_background_primary_dark">@color/primitive_private_window_5</color>
+    <color name="toolbar_background_primary_dark">#0B1120</color>
     <color name="toolbar_background_incognito">@color/primitive_private_window_5</color>
     <color name="brave_private_tabs_bg_color">#13052A</color>
     <color name="brave_private_reauth_unlock_button_bg_color">#4B415D</color>

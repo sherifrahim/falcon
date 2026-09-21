@@ -77,6 +77,17 @@ public class BraveSettingsActivity extends SettingsActivity {
     }
 
     @Override
+    protected void applyThemeOverlays() {
+        super.applyThemeOverlays();
+        org.chromium.chrome.browser.falcon.ui.FalconTheme.applyPitchBlack(this);
+    }
+
+    @Override
+    protected boolean shouldApplyDynamicColors() {
+        return false;
+    }
+
+    @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         getSupportFragmentManager()
                 .registerFragmentLifecycleCallbacks(
