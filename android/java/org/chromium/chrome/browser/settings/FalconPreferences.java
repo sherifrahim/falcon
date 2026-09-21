@@ -9,7 +9,6 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.DocumentsContract;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -156,15 +155,11 @@ public class FalconPreferences extends BravePreferenceFragment
     private void updateSaveToSummary() {
         Preference saveTo = findPreference(PREF_SAVE_TO);
         if (saveTo == null) return;
-        String tree = FalconPrefs.getSaveTreeUri();
-        if (tree.isEmpty()) {
+        if (FalconPrefs.getSaveTreeUri().isEmpty()) {
             saveTo.setSummary(R.string.falcon_save_to_default);
-            return;
+        } else {
+            saveTo.setSummary(FalconPrefs.saveToLabel());
         }
-        // "primary:Movies/Falcon" → "Movies/Falcon"
-        String id = DocumentsContract.getTreeDocumentId(Uri.parse(tree));
-        int colon = id.indexOf(':');
-        saveTo.setSummary(colon >= 0 && colon < id.length() - 1 ? id.substring(colon + 1) : id);
     }
 
     private void bindSwitch(String key, boolean checked) {

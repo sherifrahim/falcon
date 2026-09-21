@@ -93,7 +93,7 @@ public class DownloadDetailSheet extends BottomSheetDialogFragment
                 String.valueOf(FalconPrefs.getDownloaderConnections()));
         tile(v, R.id.falcon_tile_when_done, R.string.falcon_when_done,
                 FalconPrefs.isDownloaderVerifyEnabled() ? "Verify · keep" : "Keep");
-        tile(v, R.id.falcon_tile_save_to, R.string.falcon_save_to, "Downloads");
+        tile(v, R.id.falcon_tile_save_to, R.string.falcon_save_to, FalconPrefs.saveToLabel());
 
         v.findViewById(R.id.falcon_detail_copy).setOnClickListener(x -> copyUrl());
         mSecondary.setOnClickListener(x -> onSecondary());

@@ -1740,9 +1740,6 @@ Are you sure you want to do this?
       <message name="IDS_FALCON_BOTTOM_BAR" desc="Bottom bar mode setting">
         Bottom bar
       </message>
-      <message name="IDS_FALCON_SAVE_TO" desc="Downloads setting: destination folder">
-        Save to
-      </message>
       <message name="IDS_FALCON_SAVE_TO_DEFAULT" desc="Downloads destination summary: the device Downloads collection">
         Downloads (default)
       </message>

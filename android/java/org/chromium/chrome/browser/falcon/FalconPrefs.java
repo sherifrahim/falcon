@@ -106,6 +106,20 @@ public final class FalconPrefs {
         prefs().writeString(SAVE_TREE_URI, uri == null ? "" : uri);
     }
 
+    /** "Downloads" or the picked folder's path ("Movies/Falcon") for labels. */
+    public static String saveToLabel() {
+        String tree = getSaveTreeUri();
+        if (tree.isEmpty()) return "Downloads";
+        try {
+            String id = android.provider.DocumentsContract.getTreeDocumentId(
+                    android.net.Uri.parse(tree));
+            int colon = id.indexOf(':');
+            return colon >= 0 && colon < id.length() - 1 ? id.substring(colon + 1) : id;
+        } catch (IllegalArgumentException e) {
+            return "Downloads";
+        }
+    }
+
     /** Hours before an idle tab is archived (Chromium tab declutter); 0 = never. */
     public static int getArchiveHours() {
         TabArchiveSettings settings = new TabArchiveSettings(ChromeSharedPreferences.getInstance());
