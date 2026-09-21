@@ -9,7 +9,7 @@
 
 #include "base/android/jni_string.h"
 #include "brave/build/android/jni_headers/BravePrefServiceBridge_jni.h"
-#include "brave/components/brave_news/common/pref_names.h"
+#include "brave/components/brave_news/common/buildflags/buildflags.h"
 #include "brave/components/brave_perf_predictor/common/pref_names.h"
 #include "brave/components/brave_rewards/core/pref_names.h"
 #include "brave/components/brave_shields/core/browser/brave_shields_utils.h"
@@ -27,6 +27,10 @@
 #include "components/prefs/pref_service.h"
 #include "third_party/blink/public/common/peerconnection/webrtc_ip_handling_policy.h"
 #include "url/gurl.h"
+
+#if BUILDFLAG(ENABLE_BRAVE_NEWS)
+#include "brave/components/brave_news/common/pref_names.h"
+#endif
 
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaRef;
@@ -207,24 +211,38 @@ void JNI_BravePrefServiceBridge_SetWebrtcPolicy(JNIEnv* env, jint policy) {
       GetWebRTCIPHandlingPreference((WebRTCIPHandlingPolicy)policy));
 }
 
+// Falcon: the Java side skips these when Brave News is compiled out
+// (BraveConfig.ENABLE_NEWS); the natives stay linkable either way.
 void JNI_BravePrefServiceBridge_SetNewsOptIn(JNIEnv* env, jboolean value) {
+#if BUILDFLAG(ENABLE_BRAVE_NEWS)
   GetOriginalProfile()->GetPrefs()->SetBoolean(
       brave_news::prefs::kBraveNewsOptedIn, value);
+#endif
 }
 
 jboolean JNI_BravePrefServiceBridge_GetNewsOptIn(JNIEnv* env) {
+#if BUILDFLAG(ENABLE_BRAVE_NEWS)
   return GetOriginalProfile()->GetPrefs()->GetBoolean(
       brave_news::prefs::kBraveNewsOptedIn);
+#else
+  return false;
+#endif
 }
 
 void JNI_BravePrefServiceBridge_SetShowNews(JNIEnv* env, jboolean value) {
+#if BUILDFLAG(ENABLE_BRAVE_NEWS)
   GetOriginalProfile()->GetPrefs()->SetBoolean(
       brave_news::prefs::kNewTabPageShowToday, value);
+#endif
 }
 
 jboolean JNI_BravePrefServiceBridge_GetShowNews(JNIEnv* env) {
+#if BUILDFLAG(ENABLE_BRAVE_NEWS)
   return GetOriginalProfile()->GetPrefs()->GetBoolean(
       brave_news::prefs::kNewTabPageShowToday);
+#else
+  return false;
+#endif
 }
 
 }  // namespace android
