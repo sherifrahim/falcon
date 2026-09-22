@@ -6,6 +6,7 @@
 #include "brave/browser/falcon/shields/adblock_seed.h"
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -79,7 +80,7 @@ void OnResourcesWritten(base::WeakPtr<brave_shields::AdBlockService> service,
 
 void OnResourcesFetched(std::unique_ptr<network::SimpleURLLoader> loader,
                         base::WeakPtr<brave_shields::AdBlockService> service,
-                        std::unique_ptr<std::string> body) {
+                        std::optional<std::string> body) {
   if (!body || body->size() < 1024 || body->front() != '[') {
     VLOG(1) << "falcon: adblock resources fetch failed";
     return;
