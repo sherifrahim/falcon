@@ -22,6 +22,8 @@ inline constexpr char kFalconCommandDeckHost[] = "command-deck.top-chrome";
 // falcon://collections (tab page) and the same UI in the side panel.
 inline constexpr char kFalconCollectionsHost[] = "collections";
 inline constexpr char kFalconCollectionsPanelHost[] = "collections.top-chrome";
+// Falcon's own brave/go-sync instance (Sherif's Oracle box, behind the TFII
+// nginx). Overridden by --sync-url; the SyncDisabled policy only applies when
 }  // namespace falcon
 
 #endif  // BRAVE_COMPONENTS_CONSTANTS_FALCON_URL_CONSTANTS_H_

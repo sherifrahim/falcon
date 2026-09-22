@@ -10,6 +10,7 @@
 #include <optional>
 #include <string>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "base/check_op.h"
@@ -41,11 +42,24 @@
 #include "brave/browser/workspaces/workspace_service_factory.h"
 #include "brave/common/pref_names.h"
 #include "brave/components/constants/webui_url_constants.h"
+#include "brave/components/brave_sync/brave_sync_prefs.h"
+#include "url/gurl.h"
+#include "url/url_constants.h"
 #include "brave/components/falcon_control_ui/resources/grit/falcon_control_generated_map.h"
 #include "brave/components/sidebar/browser/pref_names.h"
 #include "brave/components/constants/falcon_version.h"
 #include "brave/components/version_info/version_info.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/password_manager/factories/profile_password_store_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
+#include "components/password_manager/core/browser/password_store/password_store_consumer.h"
+#include "components/password_manager/core/browser/password_store/password_store_interface.h"
+#include "components/sync/base/data_type.h"
+#include "components/sync/service/sync_service.h"
+#include "components/sync/service/sync_user_settings.h"
+#include "components/sync_device_info/device_info_sync_service.h"
+#include "components/sync_device_info/device_info_tracker.h"
+#include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/ui/browser_window/public/browser_window_interface.h"
 #include "chrome/browser/ui/browser_window/public/profile_browser_collection.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -87,6 +101,7 @@ ToolResult RunYtDlp(const std::string& arg, base::TimeDelta timeout) {
 
 class FalconControlMessageHandler
     : public content::WebUIMessageHandler,
+      public password_manager::PasswordStoreConsumer,
       public falcon::SidecarInstaller::Observer {
  public:
   FalconControlMessageHandler() {
@@ -156,6 +171,19 @@ class FalconControlMessageHandler
     web_ui()->RegisterMessageCallback(
         "falcon_control.deleteSession",
         base::BindRepeating(&FalconControlMessageHandler::DeleteSession,
+                            base::Unretained(this)));
+    // Falcon Sync: status, manual sync, password count.
+    web_ui()->RegisterMessageCallback(
+        "falcon_control.getSync",
+        base::BindRepeating(&FalconControlMessageHandler::GetSync,
+                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "falcon_control.setSyncServer",
+        base::BindRepeating(&FalconControlMessageHandler::SetSyncServer,
+                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "falcon_control.syncNow",
+        base::BindRepeating(&FalconControlMessageHandler::SyncNow,
                             base::Unretained(this)));
     // Falcon Passwords: Bitwarden vault.
     web_ui()->RegisterMessageCallback(
@@ -294,6 +322,100 @@ class FalconControlMessageHandler
   }
 
   // args: [callbackId] -> [{name, modified, windows, tabs}]
+  // Sync state for the control panel: chain, devices, last sync, item counts.
+  base::DictValue SyncState() {
+    base::DictValue d;
+    Profile* profile = Profile::FromWebUI(web_ui());
+    syncer::SyncService* sync = SyncServiceFactory::GetForProfile(profile);
+    const bool in_chain =
+        sync && sync->GetUserSettings()->IsInitialSyncFeatureSetupComplete();
+    d.Set("inChain", in_chain);
+    d.Set("serverUrl", profile->GetPrefs()->GetString(
+                           brave_sync::kCustomSyncServiceUrl));
+    if (sync) {
+      d.Set("active", sync->IsSyncFeatureActive());
+      const base::Time last = sync->GetLastSyncedTimeForDebugging();
+      d.Set("lastSynced", last.is_null()
+                              ? 0.0
+                              : last.InMillisecondsFSinceUnixEpoch());
+      base::ListValue types;
+      for (syncer::DataType type : sync->GetActiveDataTypes()) {
+        types.Append(syncer::DataTypeToDebugString(type));
+      }
+      d.Set("activeTypes", std::move(types));
+      if (auto* device_sync =
+              DeviceInfoSyncServiceFactory::GetForProfile(profile)) {
+        d.Set("devices",
+              static_cast<int>(device_sync->GetDeviceInfoTracker()
+                                   ->GetAllDeviceInfo()
+                                   .size()));
+      }
+    }
+    d.Set("passwords", password_count_);
+    return d;
+  }
+
+  // PasswordStoreConsumer: the saved-password count for the Sync card.
+  void OnGetPasswordStoreResultsOrErrorFrom(
+      password_manager::PasswordStoreInterface* store,
+      password_manager::LoginsResultOrError results_or_error) override {
+    if (auto* logins =
+            std::get_if<password_manager::LoginsResult>(&results_or_error)) {
+      password_count_ = static_cast<int>(logins->size());
+    }
+    if (!password_callback_id_.is_none() && IsJavascriptAllowed()) {
+      ResolveJavascriptCallback(password_callback_id_, SyncState());
+    }
+    password_callback_id_ = base::Value();
+  }
+
+  void GetSync(const base::ListValue& args) {
+    CHECK_EQ(1U, args.size());
+    AllowJavascript();
+    scoped_refptr<password_manager::PasswordStoreInterface> store =
+        ProfilePasswordStoreFactory::GetForProfile(
+            Profile::FromWebUI(web_ui()), ServiceAccessType::EXPLICIT_ACCESS);
+    if (!store) {
+      ResolveJavascriptCallback(args[0], SyncState());
+      return;
+    }
+    // The count arrives asynchronously; the state resolves with it.
+    password_callback_id_ = args[0].Clone();
+    store->GetAllLogins(weak_factory_.GetWeakPtr());
+  }
+
+  // The sync server is per install: Falcon has no Brave services key, so it
+  // talks to a self-hosted brave/go-sync the owner points it at. Takes effect
+  // when the sync service is next built, i.e. after a restart.
+  void SetSyncServer(const base::ListValue& args) {
+    CHECK_EQ(2U, args.size());
+    AllowJavascript();
+    std::string url = args[1].is_string() ? args[1].GetString() : std::string();
+    base::TrimWhitespaceASCII(url, base::TRIM_ALL, &url);
+    GURL parsed(url);
+    if (!url.empty() && (!parsed.is_valid() || !parsed.SchemeIs(url::kHttpsScheme))) {
+      ResolveJavascriptCallback(args[0], base::Value(false));
+      return;
+    }
+    Profile::FromWebUI(web_ui())->GetPrefs()->SetString(
+        brave_sync::kCustomSyncServiceUrl, url);
+    ResolveJavascriptCallback(args[0], base::Value(true));
+  }
+
+  // "Sync now": push local changes and pull remote ones for every active type.
+  void SyncNow(const base::ListValue& args) {
+    CHECK_EQ(1U, args.size());
+    AllowJavascript();
+    syncer::SyncService* sync =
+        SyncServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
+    if (sync) {
+      sync->TriggerRefresh(
+          syncer::SyncService::TriggerRefreshSource::kSyncInternals,
+          sync->GetActiveDataTypes());
+    }
+    ResolveJavascriptCallback(args[0], SyncState());
+  }
+
   void GetSessions(const base::ListValue& args) {
     CHECK_EQ(1U, args.size());
     AllowJavascript();
@@ -634,6 +756,8 @@ class FalconControlMessageHandler
   }
 
   std::string yt_dlp_version_;
+  int password_count_ = 0;
+  base::Value password_callback_id_;
   base::WeakPtrFactory<FalconControlMessageHandler> weak_factory_{this};
 };
 

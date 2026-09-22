@@ -1764,6 +1764,45 @@ Are you sure you want to do this?
       <message name="IDS_FALCON_WALLPAPER_PHOTOS_SUMMARY" desc="Setting summary: photo wallpapers on the new tab page">
         Bundled photos behind the new tab page instead of the plain space colour
       </message>
+      <message name="IDS_FALCON_SYNC_SECTION" desc="Settings section: sync">
+        Sync
+      </message>
+      <message name="IDS_FALCON_SYNC_SERVER" desc="Setting: the self-hosted sync server address">
+        Sync server
+      </message>
+      <message name="IDS_FALCON_SYNC_SERVER_SUMMARY" desc="Setting summary: the self-hosted sync server address">
+        Falcon syncs through a server you host. The address stays on this device.
+      </message>
+      <message name="IDS_FALCON_SYNC_SERVER_INVALID" desc="Error when the typed sync server address is not https">
+        That needs to be an https:// address.
+      </message>
+      <message name="IDS_FALCON_SYNC_NOW" desc="Setting: force a sync right now">
+        Sync now
+      </message>
+      <message name="IDS_FALCON_SYNC_OFF" desc="Sync status: this device is not in a sync chain">
+        Not in a sync chain
+      </message>
+      <message name="IDS_FALCON_SYNC_NEVER" desc="Sync status: nothing has synced yet">
+        Nothing synced yet
+      </message>
+      <message name="IDS_FALCON_SYNC_LAST" desc="Sync status: when the last sync happened">
+        Last synced <ph name="WHEN">%1$s<ex>2 minutes ago</ex></ph>
+      </message>
+      <message name="IDS_FALCON_SYNC_STARTED" desc="Toast after tapping Sync now">
+        Syncing…
+      </message>
+      <message name="IDS_FALCON_SYNC_PASSWORDS" desc="Setting: how many logins are saved on this device">
+        Saved passwords
+      </message>
+      <message name="IDS_FALCON_SYNC_PASSWORDS_SUMMARY" desc="Setting summary: saved login count">
+        <ph name="COUNT">%1$d<ex>330</ex></ph> on this device
+      </message>
+      <message name="IDS_FALCON_SYNC_CHAIN" desc="Setting: open the sync chain screen">
+        Sync chain
+      </message>
+      <message name="IDS_FALCON_SYNC_CHAIN_SUMMARY" desc="Setting summary: the sync chain screen">
+        Devices, what syncs, and the sync code
+      </message>
       <message name="IDS_FALCON_GOOD_MORNING" desc="New tab greeting">
         Good morning
       </message>

@@ -5,6 +5,7 @@
 
 package org.chromium.chrome.browser.settings;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.net.Uri;
@@ -14,6 +15,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 
 import android.text.InputType;
+import android.text.format.DateUtils;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import androidx.preference.ListPreference;
@@ -23,6 +25,8 @@ import androidx.preference.Preference.OnPreferenceChangeListener;
 import org.chromium.base.supplier.MonotonicObservableSupplier;
 import org.chromium.base.supplier.ObservableSuppliers;
 import org.chromium.base.supplier.SettableMonotonicObservableSupplier;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BraveRelaunchUtils;
 import org.chromium.chrome.browser.falcon.FalconPrefs;
@@ -30,10 +34,17 @@ import org.chromium.chrome.browser.settings.BackgroundImagesPreferences;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.falcon.ntp.FalconWeather;
 import org.chromium.chrome.browser.night_mode.NightModeMetrics;
+import org.chromium.chrome.browser.password_manager.PasswordStoreBridge;
+import org.chromium.chrome.browser.password_manager.PasswordStoreCredential;
+import org.chromium.chrome.browser.sync.SyncServiceFactory;
+import org.chromium.chrome.browser.preferences.BravePref;
+import org.chromium.components.user_prefs.UserPrefs;
+import org.chromium.components.sync.SyncService;
 import org.chromium.chrome.browser.night_mode.settings.ThemeSettingsFragment;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
+import org.chromium.ui.widget.Toast;
 
 /** falcon settings: bottom bar mode, downloader, look. Everything Falcon adds on Android. */
 public class FalconPreferences extends BravePreferenceFragment
@@ -50,8 +61,12 @@ public class FalconPreferences extends BravePreferenceFragment
     public static final String PREF_YOUR_NAME = "falcon_your_name";
     public static final String PREF_WEATHER_CITY = "falcon_weather_city";
     public static final String PREF_WALLPAPER_PHOTOS = "falcon_wallpaper_photos";
+    public static final String PREF_SYNC_SERVER = "falcon_sync_server";
+    public static final String PREF_SYNC_NOW = "falcon_sync_now";
+    public static final String PREF_SYNC_PASSWORDS = "falcon_sync_passwords";
 
     private ActivityResultLauncher<Uri> mPickFolder;
+    private PasswordStoreBridge mPasswordStore;
 
     private final SettableMonotonicObservableSupplier<String> mPageTitle =
             ObservableSuppliers.createMonotonic();
@@ -175,6 +190,125 @@ public class FalconPreferences extends BravePreferenceFragment
                 FalconWeather.getCity(),
                 InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS,
                 FalconWeather::setCity);
+
+        bindSync();
+    }
+
+    // Sync section: a forced push/pull and the saved-login count. Sync runs on
+    // its own schedule; the row is for "do it now, before I put the phone down".
+    private void bindSync() {
+        // The server address is per install: Falcon has no Brave services key,
+        // so it is never built into the binary.
+        bindText(
+                PREF_SYNC_SERVER,
+                R.string.falcon_sync_server_summary,
+                UserPrefs.get(getProfile()).getString(BravePref.CUSTOM_SYNC_SERVICE_URL),
+                InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI,
+                this::setSyncServer);
+
+        Preference syncNow = findPreference(PREF_SYNC_NOW);
+        if (syncNow != null) {
+            updateSyncSummary();
+            syncNow.setOnPreferenceClickListener(
+                    p -> {
+                        SyncService sync = SyncServiceFactory.getForProfile(getProfile());
+                        if (sync == null || !sync.isEngineInitialized()) {
+                            updateSyncSummary();
+                            return true;
+                        }
+                        triggerRefresh(sync);
+                        Toast.makeText(
+                                        requireContext(),
+                                        R.string.falcon_sync_started,
+                                        Toast.LENGTH_SHORT)
+                                .show();
+                        PostTask.postDelayedTask(
+                                TaskTraits.UI_DEFAULT, this::updateSyncSummary, 2500);
+                        return true;
+                    });
+        }
+
+        Preference passwords = findPreference(PREF_SYNC_PASSWORDS);
+        if (passwords == null) return;
+        mPasswordStore = new PasswordStoreBridge(getProfile());
+        mPasswordStore.addObserver(
+                new PasswordStoreBridge.PasswordStoreObserver() {
+                    @Override
+                    public void onSavedPasswordsChanged(int count) {
+                        Preference row = findPreference(PREF_SYNC_PASSWORDS);
+                        if (row != null) {
+                            row.setSummary(
+                                    getString(R.string.falcon_sync_passwords_summary, count));
+                        }
+                    }
+
+                    @Override
+                    public void onEdit(PasswordStoreCredential credential) {}
+                },
+                true);
+    }
+
+    private void setSyncServer(String url) {
+        String trimmed = url == null ? "" : url.trim();
+        if (!trimmed.isEmpty() && !trimmed.startsWith("https://")) {
+            Toast.makeText(
+                            requireContext(),
+                            R.string.falcon_sync_server_invalid,
+                            Toast.LENGTH_LONG)
+                    .show();
+            return;
+        }
+        UserPrefs.get(getProfile()).setString(BravePref.CUSTOM_SYNC_SERVICE_URL, trimmed);
+        // The sync service reads the URL when it is built.
+        BraveRelaunchUtils.askForRelaunch(getActivity());
+    }
+
+    // triggerRefresh / getLastSyncedTimeForDebugging are marked for tests upstream;
+    // they are the only way to ask for a sync cycle from Java.
+    @SuppressLint("VisibleForTests")
+    private void triggerRefresh(SyncService sync) {
+        sync.triggerRefresh();
+    }
+
+    @SuppressLint("VisibleForTests")
+    private void updateSyncSummary() {
+        Preference syncNow = findPreference(PREF_SYNC_NOW);
+        if (syncNow == null || !isAdded()) return;
+        SyncService sync = SyncServiceFactory.getForProfile(getProfile());
+        if (sync == null || !sync.isEngineInitialized()) {
+            syncNow.setSummary(R.string.falcon_sync_off);
+            syncNow.setEnabled(false);
+            return;
+        }
+        syncNow.setEnabled(true);
+        long micros = sync.getLastSyncedTimeForDebugging();
+        if (micros <= 0) {
+            syncNow.setSummary(R.string.falcon_sync_never);
+            return;
+        }
+        syncNow.setSummary(
+                getString(
+                        R.string.falcon_sync_last,
+                        DateUtils.getRelativeTimeSpanString(
+                                        micros / 1000,
+                                        System.currentTimeMillis(),
+                                        DateUtils.MINUTE_IN_MILLIS)
+                                .toString()));
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateSyncSummary();
+    }
+
+    @Override
+    public void onDestroy() {
+        if (mPasswordStore != null) {
+            mPasswordStore.destroy();
+            mPasswordStore = null;
+        }
+        super.onDestroy();
     }
 
     private void updateSaveToSummary() {

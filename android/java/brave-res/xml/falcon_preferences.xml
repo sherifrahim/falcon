@@ -63,6 +63,33 @@
         android:summary="@string/falcon_downloader_wifi_only_summary" />
 
     <PreferenceCategory
+        android:key="falcon_sync_section"
+        android:title="@string/falcon_sync_section" />
+
+    <Preference
+        android:fragment="org.chromium.chrome.browser.settings.BraveSyncScreensPreference"
+        android:key="falcon_sync_chain"
+        android:title="@string/falcon_sync_chain"
+        android:summary="@string/falcon_sync_chain_summary" />
+
+    <Preference
+        android:persistent="false"
+        android:key="falcon_sync_server"
+        android:title="@string/falcon_sync_server"
+        android:summary="@string/falcon_sync_server_summary" />
+
+    <Preference
+        android:persistent="false"
+        android:key="falcon_sync_now"
+        android:title="@string/falcon_sync_now" />
+
+    <Preference
+        android:persistent="false"
+        android:selectable="false"
+        android:key="falcon_sync_passwords"
+        android:title="@string/falcon_sync_passwords" />
+
+    <PreferenceCategory
         android:key="falcon_look_section"
         android:title="@string/falcon_look_section" />
 

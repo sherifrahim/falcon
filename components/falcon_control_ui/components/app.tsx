@@ -269,6 +269,60 @@ function Sidecars() {
   )
 }
 
+// Sync: Falcon's own server (go-sync). Status, a manual push/pull, and how many
+// logins the local store holds.
+type SyncInfo = { inChain: boolean; serverUrl: string; active: boolean; lastSynced: number; activeTypes: string[]; devices: number; passwords: number }
+function Sync() {
+  const [si, setSi] = React.useState<SyncInfo | null>(null)
+  const [busy, setBusy] = React.useState(false)
+  const [msg, setMsg] = React.useState('')
+  const [server, setServer] = React.useState<string | null>(null)
+  const refresh = React.useCallback(() => sendWithPromise('falcon_control.getSync').then((r: SyncInfo) => setSi(r)).catch(() => {}), [])
+  React.useEffect(() => { refresh(); const t = window.setInterval(refresh, 15000); return () => window.clearInterval(t) }, [refresh])
+  React.useEffect(() => { if (si && server === null) setServer(si.serverUrl) }, [si])
+  const saveServer = async () => {
+    const ok: boolean = await sendWithPromise('falcon_control.setSyncServer', (server || '').trim())
+    setMsg(ok ? 'Saved. Restart Falcon for it to take effect.' : 'That needs to be an https:// URL.')
+    if (ok) refresh()
+  }
+  const syncNow = async () => {
+    setBusy(true); setMsg('')
+    try {
+      setSi(await sendWithPromise('falcon_control.syncNow'))
+      setMsg('Sent. Devices pull within a few seconds.')
+      window.setTimeout(refresh, 4000)
+    } catch (e: any) { setMsg(String(e?.message || e)) }
+    setBusy(false)
+  }
+  const dot = !si ? '#64748b' : si.active ? '#22c55e' : si.inChain ? '#f59e0b' : '#64748b'
+  const label = !si ? '…' : si.active ? 'Syncing' : si.inChain ? 'Starting…' : 'Not in a sync chain'
+  const last = si?.lastSynced ? new Date(si.lastSynced).toLocaleString() : 'never'
+  const types = (si?.activeTypes || []).join(', ')
+  return (
+    <Card>
+      <Row as="div">
+        <span>Falcon Sync<span className="sub">{si?.serverUrl ? `Last sync ${last}` : 'Set your sync server below to start'}{si?.devices ? ` · ${si.devices} device${si.devices === 1 ? '' : 's'}` : ''}</span></span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13 }}><i style={{ width: 8, height: 8, borderRadius: 4, background: dot, boxShadow: `0 0 8px ${dot}`, display: 'inline-block' }} />{label}</span>
+      </Row>
+      <Row as="div" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 10, alignItems: 'center' }}>
+        <span style={{ gridColumn: '1 / -1' }}>Sync server<span className="sub">Falcon has no Brave services key, so it syncs through a brave/go-sync you host. The address stays on this device — it is not built into Falcon.</span></span>
+        <Field placeholder="https://example.com/sync/v2" value={server ?? ''} onChange={(e) => setServer(e.target.value)} spellCheck={false} autoComplete="off" />
+        <Btn $primary onClick={saveServer}>Save</Btn>
+      </Row>
+      <Row as="div">
+        <span>Saved passwords<span className="sub">In this profile's password store (imports, saved logins and Bitwarden items)</span></span>
+        <span style={{ fontSize: 20, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{si ? si.passwords : '—'}</span>
+      </Row>
+      {types && <Row as="div"><span>Syncing<span className="sub">{types}</span></span></Row>}
+      <Row as="div" style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        {msg && <span style={{ fontSize: 12, opacity: 0.7, marginRight: 'auto' }}>{msg}</span>}
+        <Btn onClick={() => window.open('chrome://settings/braveSync', '_blank')}>Sync settings…</Btn>
+        <Btn $primary disabled={busy || !si?.inChain} onClick={syncNow}>{busy ? 'Syncing…' : 'Sync now'}</Btn>
+      </Row>
+    </Card>
+  )
+}
+
 function Bitwarden({ s, update }: { s: State; update: (patch: Partial<State>) => void }) {
   const [st, setSt] = React.useState<BwStatus | null>(null)
   const [busy, setBusy] = React.useState('')
@@ -345,7 +399,7 @@ export function App() {
   const [updateLog, setUpdateLog] = React.useState<string | null>(null)
   const [active, setActive] = React.useState('look')
   React.useEffect(() => {
-    const ids = ['look', 'behaviour', 'keys', 'boosts', 'sessions', 'chains', 'passwords', 'engines', 'about']
+    const ids = ['look', 'behaviour', 'keys', 'boosts', 'sessions', 'chains', 'sync', 'passwords', 'engines', 'about']
     const onScroll = () => {
       let best = 'look'
       for (const id of ids) { const el = document.getElementById(id); if (el && el.getBoundingClientRect().top < 140) best = id }
@@ -459,7 +513,7 @@ export function App() {
   const sections: Array<[string, string]> = [
     ['look', 'Look & Feel'], ['behaviour', 'Behaviour'], ['keys', 'Shortcuts'], ['boosts', 'Boosts'],
     ...(s.sessionsAvailable ? [['sessions', 'Sessions'] as [string, string]] : []),
-    ['chains', 'Chains'], ['passwords', 'Passwords'], ['engines', 'Engines'], ['about', 'About'],
+    ['chains', 'Chains'], ['sync', 'Sync'], ['passwords', 'Passwords'], ['engines', 'Engines'], ['about', 'About'],
   ]
   return (
     <Shell>
@@ -622,6 +676,10 @@ export function App() {
       <Card>
         <Chains onGoTo={() => setTimeout(() => document.getElementById('chains')?.scrollIntoView({ behavior: 'smooth' }), 50)} />
       </Card>
+
+      <h2 id="sync">Sync</h2>
+      <p className="hint" style={{ marginTop: -6 }}>Bookmarks, passwords, history and open tabs travel between your devices through Falcon's own sync server. Sync runs on its own; the button below pushes and pulls right now.</p>
+      <Sync />
 
       <h2 id="passwords">Passwords</h2>
       <p className="hint" style={{ marginTop: -6 }}>Three sources, one autofill list: what you import, Google's export, and a connected Bitwarden vault.</p>

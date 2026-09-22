@@ -17,22 +17,22 @@ namespace syncer {
 GURL BraveGetSyncServiceURL(const base::CommandLine& command_line,
                             version_info::Channel channel,
                             PrefService* prefs) {
-  // Allow group policy to override sync service URL.
-  // This has a higher priority than the --sync-url command-line param.
+  // Allow group policy, or the user, to override the sync service URL. This
+  // has a higher priority than the --sync-url command-line param. Falcon needs
+  // the user-set case: it has no Brave services key, so every install points
+  // itself at a self-hosted brave/go-sync.
   // https://github.com/brave/brave-browser/issues/20431
-  if (prefs && prefs->IsManagedPreference(brave_sync::kCustomSyncServiceUrl)) {
+  if (prefs) {
     std::string value(prefs->GetString(brave_sync::kCustomSyncServiceUrl));
     if (!value.empty()) {
       GURL custom_sync_url(value);
       // Provided URL must be HTTPS.
       if (custom_sync_url.is_valid() &&
           custom_sync_url.SchemeIs(url::kHttpsScheme)) {
-        DVLOG(2) << "Sync URL specified via GPO: "
-                 << prefs->GetString(brave_sync::kCustomSyncServiceUrl);
+        DVLOG(2) << "Sync URL from prefs: " << value;
         return custom_sync_url;
       } else {
-        LOG(WARNING) << "The following sync URL specified via GPO "
-                     << "is invalid: " << value;
+        LOG(WARNING) << "The configured sync URL is invalid: " << value;
       }
     }
   }
