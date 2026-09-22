@@ -16,6 +16,7 @@
 #include "base/barrier_closure.h"
 #include "base/functional/bind.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
@@ -112,6 +113,7 @@ bool WriteRuleFile(const base::FilePath& dir,
 
 void OnRuleFileFetched(std::unique_ptr<network::SimpleURLLoader> loader,
                        std::string name,
+                       scoped_refptr<base::RefCountedData<int>> written,
                        base::RepeatingClosure done,
                        std::optional<std::string> body) {
   // debounce.json and clean-urls.json are arrays; the permissions file is an
@@ -127,21 +129,35 @@ void OnRuleFileFetched(std::unique_ptr<network::SimpleURLLoader> loader,
       base::BindOnce(&WriteRuleFile,
                      RulesDir().AppendASCII(kRulesVersionDir), std::move(name),
                      *body),
-      base::BindOnce([](base::RepeatingClosure done, bool ok) { done.Run(); },
-                     std::move(done)));
+      base::BindOnce(
+          [](scoped_refptr<base::RefCountedData<int>> written,
+             base::RepeatingClosure done, bool ok) {
+            if (ok) {
+              ++written->data;
+            }
+            done.Run();
+          },
+          std::move(written), std::move(done)));
 }
 
-void OnAllRulesFetched() {
-  g_browser_process->local_state()->SetTime(kRulesFetchedPref,
-                                            base::Time::Now());
-  NotifyRuleInstallers();
+// Only a complete set counts as "fetched today"; a partial one is retried on
+// the next start rather than being left stale for a day.
+void OnAllRulesFetched(scoped_refptr<base::RefCountedData<int>> written) {
+  if (written->data == static_cast<int>(std::size(kRuleFiles))) {
+    g_browser_process->local_state()->SetTime(kRulesFetchedPref,
+                                              base::Time::Now());
+  }
+  if (written->data > 0) {
+    NotifyRuleInstallers();
+  }
 }
 
 // Debounce and the URL sanitizer are compiled in but their rules ship in a
 // Brave component, so without this they are dead code in Falcon.
 void FetchRules() {
+  auto written = base::MakeRefCounted<base::RefCountedData<int>>(0);
   base::RepeatingClosure done = base::BarrierClosure(
-      std::size(kRuleFiles), base::BindOnce(&OnAllRulesFetched));
+      std::size(kRuleFiles), base::BindOnce(&OnAllRulesFetched, written));
   for (const auto& entry : kRuleFiles) {
     auto request = std::make_unique<network::ResourceRequest>();
     request->url = GURL(entry[1]);
@@ -165,7 +181,8 @@ void FetchRules() {
     network::SimpleURLLoader* raw = loader.get();
     raw->DownloadToString(
         g_browser_process->shared_url_loader_factory().get(),
-        base::BindOnce(&OnRuleFileFetched, std::move(loader), entry[0], done),
+        base::BindOnce(&OnRuleFileFetched, std::move(loader), entry[0],
+                       written, done),
         kRulesMaxBytes);
   }
 }
