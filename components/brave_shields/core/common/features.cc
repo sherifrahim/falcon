@@ -163,11 +163,9 @@ BASE_FEATURE(kShowUpdatedShieldsPanel,
 // When enabled, adblock engines are serialized to DAT files on disk after
 // filter set loading. On subsequent startups, the cached DAT is loaded
 // instead of reprocessing filter lists, improving startup time.
-BASE_FEATURE(kAdblockDATCache,
-#if BUILDFLAG(IS_IOS)
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#else
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#endif
+// Falcon: off everywhere. The cache path swallows the first provider change
+// after startup, expecting a cached DAT; Falcon's lists arrive as subscriptions
+// (no Brave component), so with the cache on the engine never built.
+BASE_FEATURE(kAdblockDATCache, base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace brave_shields::features
