@@ -5,6 +5,8 @@
 
 #include "brave/browser/brave_browser_process_impl.h"
 
+#include "brave/browser/falcon/shields/adblock_seed.h"
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -343,6 +345,9 @@ void BraveBrowserProcessImpl::StartBraveServices() {
   URLSanitizerComponentInstaller();
   // Now start the local data files service, which calls all observers.
   local_data_files_service()->Start();
+
+  // Falcon: Shields lists from their public sources (no Brave updater key).
+  falcon::SeedAdblockSubscriptions(local_state(), ad_block_service());
 
 #if BUILDFLAG(ENABLE_BRAVE_WALLET)
   brave_wallet::WalletDataFilesInstaller::GetInstance().SetDelegate(

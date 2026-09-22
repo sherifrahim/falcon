@@ -83,6 +83,7 @@
 #include "brave/components/tor/tor_profile_service.h"
 #endif
 
+#include "brave/browser/falcon/shields/adblock_seed.h"
 #include "brave/browser/ui/webui/new_tab_page/brave_new_tab_message_handler.h"
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -178,6 +179,7 @@ void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   brave_shields::RegisterPrefsForAdBlockService(registry);
+  falcon::RegisterAdblockSeedPrefs(registry);
 #if !BUILDFLAG(IS_ANDROID)
   falcon::prefs::RegisterLocalStatePrefs(registry);
   falcon::prefs::RegisterBitwardenLocalPrefs(registry);

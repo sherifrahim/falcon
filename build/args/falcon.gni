@@ -46,3 +46,11 @@ brave_variations_server_url = "https://no-thanks.invalid/seed"
 # the usage ping (also off by policy) get a host that fails fast.
 webcompat_report_api_endpoint = "https://no-thanks.invalid/webcompat"
 brave_stats_updater_url = "https://no-thanks.invalid/usage"
+
+# Component updates: Brave's go-updater only answers builds with Brave's private
+# services key, so every component (CRLSet, PKI metadata, Safety Tips, Widevine…)
+# sat at 0.0.0.0. Chromium's own components come from Google's public server;
+# Brave-only ones (adblock lists, NTP images) are replaced by public filter-list
+# subscriptions seeded by browser/falcon/shields/adblock_seed.cc.
+updater_prod_endpoint = "https://update.googleapis.com/service/update2/json"
+updater_dev_endpoint = "https://update.googleapis.com/service/update2/json"

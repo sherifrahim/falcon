@@ -1,0 +1,15 @@
+# Copyright (c) 2026 Falcon. Personal fork of Brave.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this file,
+# You can obtain one at https://mozilla.org/MPL/2.0/.
+
+brave_browser_falcon_shields_sources = [
+  "//brave/browser/falcon/shields/adblock_seed.cc",
+  "//brave/browser/falcon/shields/adblock_seed.h",
+]
+
+brave_browser_falcon_shields_deps = [
+  "//brave/components/brave_shields/content/browser",
+  "//components/prefs",
+  "//url",
+]

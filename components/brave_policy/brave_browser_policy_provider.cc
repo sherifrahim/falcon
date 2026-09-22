@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/command_line.h"
 #include "base/values.h"
 #include "brave/components/brave_origin/brave_origin_utils.h"
 #include "build/build_config.h"
@@ -71,7 +72,24 @@ policy::PolicyBundle BraveBrowserPolicyProvider::LoadPolicies() {
 #if BUILDFLAG(IS_ANDROID)
   LoadFalconPolicies(bundle);
 #endif
+  LoadFalconSyncPolicy(bundle);
   return bundle;
+}
+
+void BraveBrowserPolicyProvider::LoadFalconSyncPolicy(
+    policy::PolicyBundle& bundle) {
+  // Brave Sync talks to sync-v2.brave.com with Brave's private services key,
+  // which Falcon does not have, so a chain code / QR pairing can never finish.
+  // Sync stays off until a self-hosted brave/go-sync is passed with
+  // --sync-url (the switch Brave already honours in brave_main_delegate.cc).
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch("sync-url")) {
+    return;
+  }
+  policy::PolicyMap& map = bundle.Get(
+      policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string()));
+  map.Set(policy::key::kSyncDisabled, policy::POLICY_LEVEL_MANDATORY,
+          policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_PLATFORM,
+          base::Value(true), nullptr);
 }
 
 void BraveBrowserPolicyProvider::LoadFalconPolicies(

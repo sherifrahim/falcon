@@ -48,6 +48,7 @@ class BraveBrowserPolicyProvider : public policy::ConfigurationPolicyProvider,
   // Falcon (Android): Brave's services stay compiled in but are switched off
   // through the same mandatory policies an enterprise would use.
   void LoadFalconPolicies(policy::PolicyBundle& bundle);
+  void LoadFalconSyncPolicy(policy::PolicyBundle& bundle);
   void LoadBraveOriginPolicy(policy::PolicyMap& policy_map,
                              std::string_view policy_key,
                              bool enabled);
