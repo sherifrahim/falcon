@@ -121,7 +121,12 @@ void AdBlockComponentFiltersProvider::OnComponentReady(
 }
 
 bool AdBlockComponentFiltersProvider::IsInitialized() const {
-  return !component_path_.empty();
+  // Falcon: Brave's list components never arrive (the updater needs Brave's
+  // private key), and AdBlockFiltersProviderManager refuses to build an engine
+  // while any provider is uninitialized — which left Shields with zero filters.
+  // LoadFilterSet() already contributes nothing for an empty path and pushes an
+  // update if a component does show up, so report ready straight away.
+  return true;
 }
 
 base::FilePath AdBlockComponentFiltersProvider::GetFilterSetPath() {
