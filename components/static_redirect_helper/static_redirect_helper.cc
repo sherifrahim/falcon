@@ -35,14 +35,15 @@ void SetSafeBrowsingEndpointForTesting(bool testing) {
   g_safebrowsing_api_endpoint_for_testing_ = testing;
 }
 
-void StaticRedirectHelper(const GURL& request_url, GURL* new_url) {
-  // Falcon: Brave's proxies (redirector/safebrowsing/static/favicons.brave.com)
-  // only serve builds with Brave's private services key, so component
-  // downloads, Safe Browsing, autofill data and favicons all died at the
-  // proxy. Go to the original hosts instead (Safe Browsing then needs a
-  // google_api_key GN arg to work; without one it is silently off, as in
-  // plain Chromium).
-  return;
+// Falcon: Brave's proxies (redirector/safebrowsing/static/favicons.brave.com)
+// only serve builds with Brave's private services key, so component downloads,
+// Safe Browsing, autofill data and favicons all died at the proxy. Requests go
+// to the original hosts instead (Safe Browsing then needs a google_api_key GN
+// arg to work; without one it is silently off, as in plain Chromium). Brave's
+// table is kept below, unused, for reference.
+void StaticRedirectHelper(const GURL& request_url, GURL* new_url) {}
+
+void StaticRedirectHelper_Brave(const GURL& request_url, GURL* new_url) {
   GURL::Replacements replacements;
   static base::NoDestructor<URLPattern> geo_pattern(URLPattern::SCHEME_HTTPS,
                                                     kGeoLocationsPattern);

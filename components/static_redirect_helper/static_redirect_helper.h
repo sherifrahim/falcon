@@ -13,6 +13,8 @@ namespace brave {
 inline constexpr char kSafeBrowsingTestingEndpoint[] = "test.safebrowsing.com";
 
 void StaticRedirectHelper(const GURL& request_url, GURL* new_url);
+// Brave's original proxy table (unused in Falcon).
+void StaticRedirectHelper_Brave(const GURL& request_url, GURL* new_url);
 
 void SetSafeBrowsingEndpointForTesting(bool testing);
 
