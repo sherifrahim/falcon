@@ -321,7 +321,7 @@ export function App() {
                   />
                 ) : current.name}
               </h1>
-              <Btn $primary onClick={() => chrome.send('collections.addCurrentPage', [current.id])}>+ Add this page</Btn>
+              {isPanel && <Btn $primary onClick={() => chrome.send('collections.addCurrentPage', [current.id])}>+ Add this page</Btn>}
               <Btn disabled={openableCount === 0} onClick={() => chrome.send('collections.openAll', [current.id])}>Open all ({openableCount})</Btn>
               <Btn disabled={current.items.length === 0} onClick={copyMarkdown}>{copied ? 'Copied' : 'Copy as Markdown'}</Btn>
               {!isPanel && <Btn onClick={() => { setNameDraft(current.name); setEditing(true) }}>Rename</Btn>}
@@ -339,7 +339,7 @@ export function App() {
             {current.items.length === 0 ? (
               <Empty>
                 <b>Nothing here yet.</b><br />
-                Right-click a page, link, image or selected text and choose <b>Add to Collection</b>, or press <b>Add this page</b>.
+                Right-click a page, link, image or selected text and choose <b>Add to Collection</b>{isPanel ? <>, or press <b>Add this page</b></> : <>, or open this panel from the sidebar to add the page you are on</>}.
               </Empty>
             ) : (
               <Grid

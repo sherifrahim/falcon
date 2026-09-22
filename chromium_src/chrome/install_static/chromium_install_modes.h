@@ -35,7 +35,10 @@ inline constexpr wchar_t kCompanyPathName[] = L"Falcon";
 // side-by-side installation with Brave Browser.
 inline constexpr wchar_t kProductPathName[] = L"Brave-Origin";
 #else
-inline constexpr wchar_t kProductPathName[] = L"Brave-Browser";
+// Falcon: same identity as the developer build (see below), so an official
+// Falcon install lands in %LOCALAPPDATA%\Falcon\Falcon and never registers
+// as Brave (ProgIDs, app GUID, uninstall key).
+inline constexpr wchar_t kProductPathName[] = L"Falcon";
 #endif  // BUILDFLAG(IS_BRAVE_ORIGIN_BRANDED)
 #else
 // If you change this, then you also need to change occurrences of this string
@@ -271,32 +274,32 @@ inline constexpr auto kInstallModes = std::to_array<InstallConstants>({
         .install_suffix =
             L"",  // Empty install_suffix for the primary install mode.
         .logo_suffix = L"",  // No logo suffix for the primary install mode.
-        .app_guid = L"{AFE6A462-C574-4B8A-AF43-4CC60DF4563B}",
-        .base_app_name = L"Brave",               // A distinct base_app_name.
-        .base_app_id = L"Brave",                 // A distinct base_app_id.
-        .browser_prog_id_prefix = L"BraveHTML",  // Browser ProgID prefix.
+        .app_guid = L"{AB4F9326-6CB6-4AEA-A867-755EB432632B}",
+        .base_app_name = L"Falcon",              // A distinct base_app_name.
+        .base_app_id = L"Falcon",                // A distinct base_app_id.
+        .browser_prog_id_prefix = L"FalconHTM",  // Browser ProgID prefix.
         .browser_prog_id_description =
-            L"Brave HTML Document",  // Browser ProgID description.
-        .direct_launch_url_scheme = "brave-browser",
-        .pdf_prog_id_prefix = L"BravePDF",  // PDF ProgID prefix.
+            L"Falcon HTML Document",  // Browser ProgID description.
+        .direct_launch_url_scheme = "falcon-browser",
+        .pdf_prog_id_prefix = L"FalconPDF",  // PDF ProgID prefix.
         .pdf_prog_id_description =
-            L"Brave PDF Document",  // PDF ProgID description.
+            L"Falcon PDF Document",  // PDF ProgID description.
         .active_setup_guid =
-            L"{AFE6A462-C574-4B8A-AF43-4CC60DF4563B}",  // Active Setup GUID.
-        .toast_activator_clsid = {0x6c9646d,
-                                  0x2807,
-                                  0x44c0,
-                                  {0x97, 0xd2, 0x6d, 0xa0, 0xdb, 0x62, 0x3d,
-                                   0xb4}},  // Toast activator CLSID.
-        .elevator_clsid = {0x576b31af,
-                           0x6369,
-                           0x4b6b,
-                           {0x85, 0x60, 0xe4, 0xb2, 0x3, 0xa9, 0x7a,
-                            0x8b}},  // Elevator CLSID.
-        .elevator_iid = {0xf396861e,
-                         0x0c8e,
-                         0x4c71,
-                         {0x82, 0x56, 0x2f, 0xae, 0x6d, 0x75, 0x9c, 0xe9}},
+            L"{94BE434E-8365-4223-B32C-2F03544AEEDC}",  // Active Setup GUID.
+        .toast_activator_clsid = {0x25340684,
+                                  0x37fe,
+                                  0x475b,
+                                  {0xb4, 0x26, 0x96, 0xc7, 0x6d, 0x2a, 0x9e,
+                                   0xa1}},  // Toast activator CLSID.
+        .elevator_clsid = {0x28a0ee1d,
+                           0x6d98,
+                           0x428a,
+                           {0x9d, 0xa6, 0x20, 0x61, 0xc4, 0x7d, 0x1b,
+                            0x4c}},  // Elevator CLSID.
+        .elevator_iid = {0x61767c05,
+                         0x6888,
+                         0x4dba,
+                         {0x87, 0xb6, 0xa1, 0xe7, 0x84, 0xf2, 0xac, 0xcb}},
         .default_channel_name = L"",  // The empty string means "stable".
         .channel_strategy = ChannelStrategy::FLOATING,
         .supports_system_level = true,  // Supports system-level installs.
