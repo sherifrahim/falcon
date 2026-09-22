@@ -1773,6 +1773,20 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             b = Math.max(b, c.getBottom());
         }
         if (l >= r || t >= b) return;
+        // ToolbarPhone paints the location field from its own background rect, which starts
+        // left of the LocationBar view (status icon inset); the pill must wrap that rect.
+        Object bgBounds =
+                BraveReflectionUtil.getField(
+                        ToolbarPhone.class, "mLocationBarBackgroundBounds", this);
+        if (bgBounds instanceof Rect) {
+            Rect lb = (Rect) bgBounds;
+            if (!lb.isEmpty()) {
+                l = Math.min(l, lb.left);
+                t = Math.min(t, lb.top);
+                r = Math.max(r, lb.right);
+                b = Math.max(b, lb.bottom);
+            }
+        }
         float d = getResources().getDisplayMetrics().density;
         // Equal padding all round + a stadium radius: the inner location field (itself a
         // stadium) then sits concentric inside the capsule instead of poking out of the corner.

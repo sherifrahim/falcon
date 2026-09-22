@@ -21,6 +21,7 @@
 # Falcon: the Arc capsule clears ToolbarPhone's full-width backdrop by reflection.
 -keep class org.chromium.chrome.browser.toolbar.top.ToolbarPhone {
     *** mToolbarBackground;
+    *** mLocationBarBackgroundBounds;
 }
 
 -keep class org.chromium.chrome.browser.omnibox.suggestions.AutocompleteMediator {
@@ -118,3 +119,8 @@
 -keep class org.chromium.chrome.browser.tab.TabImpl$DeferredContentViewStub {
     <init>(android.content.Context, org.chromium.content_public.browser.WebContents);
 }
+
+# Falcon: falcon_preferences.xml inflates these by name (R8 otherwise renames them and the
+# settings screen dies with ClassNotFoundException).
+-keep class androidx.preference.EditTextPreference { *; }
+-keep class androidx.preference.ListPreference { *; }
