@@ -46,7 +46,7 @@ DownloadHistory::~DownloadHistory() = default;
 void DownloadHistory::OnDownloadFinished(
     const DownloadTracker::Finished& finished) {
   PrefService* ls = LocalState();
-  if (!ls) {
+  if (!ls || finished.internal) {
     return;
   }
   base::DictValue entry;

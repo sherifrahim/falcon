@@ -61,6 +61,9 @@ DownloadNotifier::~DownloadNotifier() = default;
 void DownloadNotifier::OnDownloadFinished(
     const DownloadTracker::Finished& finished) {
   Profile* profile = ProfileManager::GetLastUsedProfileIfLoaded();
+  if (finished.internal) {
+    return;
+  }
   if (!profile ||
       !profile->GetPrefs()->GetBoolean(prefs::kDownloadNotificationsEnabled)) {
     return;

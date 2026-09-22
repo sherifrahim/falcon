@@ -46,6 +46,8 @@ class DownloadTracker
     std::vector<std::string> paths;  // every completed file (torrents)
     std::string source_url;          // first URI, may be empty (torrent)
     bool is_torrent = false;
+    // Browser-internal transfer (sidecar install): not for history/notifications.
+    bool internal = false;
     bool success = false;
     int error_code = 0;
     std::string error_message;

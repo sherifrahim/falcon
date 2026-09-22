@@ -304,6 +304,7 @@ void DownloadTracker::HandleStopped(const Status& s) {
   f.paths = s.paths;
   f.source_url = s.first_uri;
   f.is_torrent = s.is_torrent;
+  f.internal = s.dir.find("Falcon Sidecars") != std::string::npos;
   f.success = s.status == "complete";
   f.error_code = s.error_code;
   f.error_message = s.error_message;
