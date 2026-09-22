@@ -121,7 +121,7 @@ public final class FalconWeather {
                 () -> {
                     Reading r = fetch(city);
                     if (r == null) return;
-                    PostTask.postTask(TaskTraits.UI_DEFAULT, () -> onFresh.onResult(r));
+                    PostTask.postTask(TaskTraits.UI_DEFAULT, onFresh.bind(r));
                 });
     }
 
