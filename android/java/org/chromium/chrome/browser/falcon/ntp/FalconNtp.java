@@ -135,11 +135,13 @@ public final class FalconNtp {
                                                 : R.string.falcon_good_night;
         String name = FalconPrefs.getUserName();
         greeting.setText(
-                name.isEmpty() ? activity.getString(part) : activity.getString(part) + ", " + name);
+                name.isEmpty()
+                        ? activity.getString(part)
+                        : String.format(Locale.US, "%s, %s", activity.getString(part), name));
 
         long day = System.currentTimeMillis() / 86_400_000L;
         String[] q = QUOTES[(int) (day % QUOTES.length)];
-        quote.setText("\u201C" + q[0] + "\u201D \u2014 " + q[1]);
+        quote.setText(String.format(Locale.US, "\u201C%s\u201D \u2014 %s", q[0], q[1]));
 
         FalconWeather.Reading cached = FalconWeather.cached();
         showWeather(weather, cached);
