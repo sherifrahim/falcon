@@ -62,6 +62,7 @@ import com.wireguard.android.backend.GoBackend;
 import org.jni_zero.JNINamespace;
 import org.jni_zero.NativeMethods;
 
+import org.chromium.chrome.browser.BraveConfig;
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ApplicationStateListener;
@@ -1432,7 +1433,8 @@ public abstract class BraveActivity extends ChromeActivity
         checkFingerPrintingOnUpgrade(isFirstInstall);
         checkForVpnCallout();
 
-        if (ChromeFeatureList.isEnabled(BraveFeatureList.BRAVE_VPN_LINK_SUBSCRIPTION_ANDROID_UI)
+        if (BraveConfig.ENABLE_VPN
+                && ChromeFeatureList.isEnabled(BraveFeatureList.BRAVE_VPN_LINK_SUBSCRIPTION_ANDROID_UI)
                 && BraveVpnPrefUtils.isSubscriptionPurchase()
                 && !BraveVpnPrefUtils.isLinkSubscriptionDialogShown()
                 && !BraveVpnPolicy.isDisabledByPolicy(mTabModelProfileSupplier.get())) {

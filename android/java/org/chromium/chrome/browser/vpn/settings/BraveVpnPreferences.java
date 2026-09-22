@@ -24,6 +24,7 @@ import androidx.preference.PreferenceCategory;
 import com.wireguard.android.backend.GoBackend;
 import com.wireguard.crypto.KeyPair;
 
+import org.chromium.chrome.browser.BraveConfig;
 import org.chromium.base.BraveFeatureList;
 import org.chromium.base.Log;
 import org.chromium.base.supplier.MonotonicObservableSupplier;
@@ -209,7 +210,8 @@ public class BraveVpnPreferences extends BravePreferenceFragment implements Brav
                 getResources().getString(R.string.link_subscription_text));
         mLinkSubscriptionPreference.setKey(PREF_LINK_SUBSCRIPTION);
         mLinkSubscriptionPreference.setVisible(
-                ChromeFeatureList.isEnabled(BraveFeatureList.BRAVE_VPN_LINK_SUBSCRIPTION_ANDROID_UI)
+                (BraveConfig.ENABLE_VPN
+                        && ChromeFeatureList.isEnabled(BraveFeatureList.BRAVE_VPN_LINK_SUBSCRIPTION_ANDROID_UI))
                 && BraveVpnPrefUtils.isSubscriptionPurchase());
         mLinkSubscriptionPreference.setOnPreferenceClickListener(
                 new Preference.OnPreferenceClickListener() {
@@ -272,8 +274,9 @@ public class BraveVpnPreferences extends BravePreferenceFragment implements Brav
         }
         if (mLinkSubscriptionPreference != null) {
             mLinkSubscriptionPreference.setVisible(
-                    ChromeFeatureList.isEnabled(
-                                    BraveFeatureList.BRAVE_VPN_LINK_SUBSCRIPTION_ANDROID_UI)
+                    (BraveConfig.ENABLE_VPN
+                                    && ChromeFeatureList.isEnabled(
+                                    BraveFeatureList.BRAVE_VPN_LINK_SUBSCRIPTION_ANDROID_UI))
                             && BraveVpnPrefUtils.isSubscriptionPurchase());
         }
         // Ensures preference screen is fully loaded before updating summaries

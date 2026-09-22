@@ -20,6 +20,7 @@ import androidx.annotation.VisibleForTesting;
 import androidx.fragment.app.FragmentManager;
 import androidx.preference.Preference;
 
+import org.chromium.chrome.browser.BraveConfig;
 import org.chromium.base.BraveFeatureList;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
@@ -120,7 +121,8 @@ public class BraveManageSyncSettings extends ManageSyncSettings {
         if (prefAutofill != null) prefAutofill.setTitle(R.string.brave_sync_autofill);
 
         assertNonNull(mSyncTypeSwitchPreferencesMap);
-        if (ChromeFeatureList.isEnabled(BraveFeatureList.BRAVE_SYNC_AI_CHAT)) {
+        if ((BraveConfig.ENABLE_AI_CHAT
+                        && ChromeFeatureList.isEnabled(BraveFeatureList.BRAVE_SYNC_AI_CHAT))) {
             ChromeSwitchPreference syncAIChat =
                     new ChromeSwitchPreference(getPreferenceManager().getContext(), null);
             syncAIChat.setKey(PREF_SYNC_AI_CHAT);
@@ -359,7 +361,8 @@ public class BraveManageSyncSettings extends ManageSyncSettings {
 
                 @Override
                 public void updateDynamicPreferences(Context context, SettingsIndexData indexData) {
-                    if (ChromeFeatureList.isEnabled(BraveFeatureList.BRAVE_SYNC_AI_CHAT)) {
+                    if ((BraveConfig.ENABLE_AI_CHAT
+                        && ChromeFeatureList.isEnabled(BraveFeatureList.BRAVE_SYNC_AI_CHAT))) {
                         indexData.addEntryForKey(
                                 ManageSyncSettings.class.getName(),
                                 PREF_SYNC_AI_CHAT,

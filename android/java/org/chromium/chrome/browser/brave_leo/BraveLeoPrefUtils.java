@@ -171,6 +171,7 @@ public class BraveLeoPrefUtils {
     }
 
     public static boolean isLeoEnabled() {
+        if (!BraveConfig.ENABLE_AI_CHAT) return false;
         if (!ChromeFeatureList.isEnabled(BraveFeatureList.AI_CHAT)) {
             return false;
         }

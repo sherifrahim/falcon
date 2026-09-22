@@ -110,7 +110,8 @@ public class BraveOriginPreferences extends BravePreferenceFragment
         setupTogglePreference(PREF_REWARDS_SWITCH);
         setupTogglePreference(PREF_PRIVACY_PRESERVING_ANALYTICS_SWITCH);
         if (BraveConfig.ENABLE_EMAIL_ALIASES
-                && ChromeFeatureList.isEnabled(BraveFeatureList.EMAIL_ALIASES)) {
+                && (BraveConfig.ENABLE_EMAIL_ALIASES
+                        && ChromeFeatureList.isEnabled(BraveFeatureList.EMAIL_ALIASES))) {
             setupTogglePreference(PREF_EMAIL_ALIASES_SWITCH);
         } else {
             ChromeSwitchPreference emailAliasesPref =
@@ -549,7 +550,8 @@ public class BraveOriginPreferences extends BravePreferenceFragment
                     // origin_description is an informational widget with no title; exclude it.
                     indexData.removeEntryForKey(frag, "origin_description");
                     if (!BraveConfig.ENABLE_EMAIL_ALIASES
-                            || !ChromeFeatureList.isEnabled(BraveFeatureList.EMAIL_ALIASES)) {
+                            || !(BraveConfig.ENABLE_EMAIL_ALIASES
+                        && ChromeFeatureList.isEnabled(BraveFeatureList.EMAIL_ALIASES))) {
                         indexData.removeEntryForKey(frag, PREF_EMAIL_ALIASES_SWITCH);
                     }
                 }
