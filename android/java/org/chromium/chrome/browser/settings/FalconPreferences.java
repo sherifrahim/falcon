@@ -13,6 +13,7 @@ import android.os.Bundle;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 
+import androidx.preference.EditTextPreference;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.Preference.OnPreferenceChangeListener;
@@ -23,6 +24,9 @@ import org.chromium.base.supplier.SettableMonotonicObservableSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BraveRelaunchUtils;
 import org.chromium.chrome.browser.falcon.FalconPrefs;
+import org.chromium.chrome.browser.settings.BackgroundImagesPreferences;
+import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
+import org.chromium.chrome.browser.falcon.ntp.FalconWeather;
 import org.chromium.chrome.browser.night_mode.NightModeMetrics;
 import org.chromium.chrome.browser.night_mode.settings.ThemeSettingsFragment;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
@@ -41,6 +45,9 @@ public class FalconPreferences extends BravePreferenceFragment
     public static final String PREF_THEME = "falcon_theme";
     public static final String PREF_ARCHIVE_TABS = "falcon_archive_tabs";
     public static final String PREF_SAVE_TO = "falcon_save_to";
+    public static final String PREF_YOUR_NAME = "falcon_your_name";
+    public static final String PREF_WEATHER_CITY = "falcon_weather_city";
+    public static final String PREF_WALLPAPER_PHOTOS = "falcon_wallpaper_photos";
 
     private ActivityResultLauncher<Uri> mPickFolder;
 
@@ -150,6 +157,12 @@ public class FalconPreferences extends BravePreferenceFragment
         bindSwitch(PREF_DOWNLOADER_VERIFY, FalconPrefs.isDownloaderVerifyEnabled());
         bindSwitch(PREF_DOWNLOADER_WIFI_ONLY, FalconPrefs.isDownloaderWifiOnly());
         bindSwitch(PREF_PITCH_BLACK, FalconPrefs.isPitchBlack());
+        bindSwitch(
+                PREF_WALLPAPER_PHOTOS,
+                ChromeSharedPreferences.getInstance()
+                        .readBoolean(BackgroundImagesPreferences.PREF_SHOW_BACKGROUND_IMAGES, false));
+        bindText(PREF_YOUR_NAME, FalconPrefs.getUserName());
+        bindText(PREF_WEATHER_CITY, FalconWeather.getCity());
     }
 
     private void updateSaveToSummary() {
@@ -160,6 +173,13 @@ public class FalconPreferences extends BravePreferenceFragment
         } else {
             saveTo.setSummary(FalconPrefs.saveToLabel());
         }
+    }
+
+    private void bindText(String key, String value) {
+        EditTextPreference pref = (EditTextPreference) findPreference(key);
+        if (pref == null) return;
+        pref.setText(value);
+        pref.setOnPreferenceChangeListener(this);
     }
 
     private void bindSwitch(String key, boolean checked) {
@@ -201,6 +221,18 @@ public class FalconPreferences extends BravePreferenceFragment
             return true;
         } else if (PREF_DOWNLOADER_WIFI_ONLY.equals(key)) {
             FalconPrefs.setDownloaderWifiOnly((boolean) newValue);
+            return true;
+        } else if (PREF_YOUR_NAME.equals(key)) {
+            FalconPrefs.setUserName((String) newValue);
+            return true;
+        } else if (PREF_WEATHER_CITY.equals(key)) {
+            FalconWeather.setCity((String) newValue);
+            return true;
+        } else if (PREF_WALLPAPER_PHOTOS.equals(key)) {
+            ChromeSharedPreferences.getInstance()
+                    .writeBoolean(
+                            BackgroundImagesPreferences.PREF_SHOW_BACKGROUND_IMAGES,
+                            (boolean) newValue);
             return true;
         } else if (PREF_PITCH_BLACK.equals(key)) {
             FalconPrefs.setPitchBlack((boolean) newValue);

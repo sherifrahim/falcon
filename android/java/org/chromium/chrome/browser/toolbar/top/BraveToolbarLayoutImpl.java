@@ -1740,7 +1740,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                         org.chromium.chrome.browser.falcon.ui.FalconTheme.glassSolid(getContext()),
                         getContext().getColor(R.color.falcon_hair_2),
                         d,
-                        26 * d,
+                        40 * d,  // capped to a stadium in CapsuleDrawable.draw
                         0,
                         0,
                         0);
@@ -1774,8 +1774,10 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         }
         if (l >= r || t >= b) return;
         float d = getResources().getDisplayMetrics().density;
-        int padX = Math.round(8 * d);
-        int padY = Math.round(4 * d);
+        // Equal padding all round + a stadium radius: the inner location field (itself a
+        // stadium) then sits concentric inside the capsule instead of poking out of the corner.
+        int padX = Math.round(6 * d);
+        int padY = Math.round(6 * d);
         l = Math.max(0, l - padX);
         r = Math.min(getWidth(), r + padX);
         t = Math.max(0, t - padY);

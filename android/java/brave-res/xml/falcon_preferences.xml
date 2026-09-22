@@ -72,6 +72,28 @@
         android:title="@string/theme_settings"
         android:summary="@string/falcon_theme_summary" />
 
+    <EditTextPreference
+        android:persistent="false"
+        android:key="falcon_your_name"
+        android:title="@string/falcon_your_name"
+        android:summary="@string/falcon_your_name_summary"
+        android:dialogTitle="@string/falcon_your_name"
+        android:inputType="textPersonName|textCapWords" />
+
+    <EditTextPreference
+        android:persistent="false"
+        android:key="falcon_weather_city"
+        android:title="@string/falcon_weather_city"
+        android:summary="@string/falcon_weather_city_summary"
+        android:dialogTitle="@string/falcon_weather_city"
+        android:inputType="text|textCapWords" />
+
+    <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
+        android:persistent="false"
+        android:key="falcon_wallpaper_photos"
+        android:title="@string/falcon_wallpaper_photos"
+        android:summary="@string/falcon_wallpaper_photos_summary" />
+
     <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
         android:persistent="false"
         android:key="falcon_pitch_black"

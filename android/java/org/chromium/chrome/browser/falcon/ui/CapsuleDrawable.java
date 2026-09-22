@@ -73,7 +73,9 @@ public class CapsuleDrawable extends Drawable {
                 b.top + mInsetTop * k + half,
                 b.right - mInsetSide * k - half,
                 b.bottom - mInsetBottom * k - half);
-        float r = mRadius * k;
+        // Never more than a stadium: the inner location field is a stadium too, so equal
+        // padding on every side keeps the two corners concentric.
+        float r = Math.min(mRadius, mRect.height() / 2f) * k;
         canvas.drawRoundRect(mRect, r, r, mFill);
         int alpha = Math.round(mStrokeAlpha * k);
         if (alpha > 0) {

@@ -1746,6 +1746,36 @@ Are you sure you want to do this?
       <message name="IDS_FALCON_SAVE_TO_CHOOSE" desc="Downloads destination dialog: pick a folder">
         Choose a folder…
       </message>
+      <message name="IDS_FALCON_YOUR_NAME" desc="Setting: name used in the new tab greeting">
+        Your name
+      </message>
+      <message name="IDS_FALCON_YOUR_NAME_SUMMARY" desc="Setting summary: name used in the new tab greeting">
+        For the greeting on the new tab page
+      </message>
+      <message name="IDS_FALCON_WEATHER_CITY" desc="Setting: city for the new tab weather">
+        Weather city
+      </message>
+      <message name="IDS_FALCON_WEATHER_CITY_SUMMARY" desc="Setting summary: city for the new tab weather">
+        Shown on the new tab page (Open-Meteo, no account). Leave empty to turn weather off.
+      </message>
+      <message name="IDS_FALCON_WALLPAPER_PHOTOS" desc="Setting: photo wallpapers on the new tab page">
+        Wallpaper photos
+      </message>
+      <message name="IDS_FALCON_WALLPAPER_PHOTOS_SUMMARY" desc="Setting summary: photo wallpapers on the new tab page">
+        Bundled photos behind the new tab page instead of the plain space colour
+      </message>
+      <message name="IDS_FALCON_GOOD_MORNING" desc="New tab greeting">
+        Good morning
+      </message>
+      <message name="IDS_FALCON_GOOD_AFTERNOON" desc="New tab greeting">
+        Good afternoon
+      </message>
+      <message name="IDS_FALCON_GOOD_EVENING" desc="New tab greeting">
+        Good evening
+      </message>
+      <message name="IDS_FALCON_GOOD_NIGHT" desc="New tab greeting">
+        Good night
+      </message>
       <message name="IDS_FALCON_ARCHIVE_TABS" desc="Setting: archive tabs not used for a while (Arc-style auto-archive)">
         Archive idle tabs after
       </message>

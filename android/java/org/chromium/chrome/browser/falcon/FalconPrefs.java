@@ -95,6 +95,17 @@ public final class FalconPrefs {
         prefs().writeBoolean(DOWNLOADER_ENABLED, enabled);
     }
 
+    private static final String USER_NAME = "falcon_user_name";
+
+    /** Name used in the new tab greeting; empty = none. */
+    public static String getUserName() {
+        return prefs().readString(USER_NAME, "");
+    }
+
+    public static void setUserName(String name) {
+        prefs().writeString(USER_NAME, name == null ? "" : name.trim());
+    }
+
     private static final String SAVE_TREE_URI = "falcon_save_tree_uri";
 
     /** SAF tree URI finished downloads are copied into; empty = the Downloads collection. */
