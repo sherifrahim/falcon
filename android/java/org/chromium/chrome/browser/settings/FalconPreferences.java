@@ -13,7 +13,9 @@ import android.os.Bundle;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 
-import androidx.preference.EditTextPreference;
+import android.text.InputType;
+import android.widget.EditText;
+import android.widget.FrameLayout;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.Preference.OnPreferenceChangeListener;
@@ -161,8 +163,18 @@ public class FalconPreferences extends BravePreferenceFragment
                 PREF_WALLPAPER_PHOTOS,
                 ChromeSharedPreferences.getInstance()
                         .readBoolean(BackgroundImagesPreferences.PREF_SHOW_BACKGROUND_IMAGES, false));
-        bindText(PREF_YOUR_NAME, FalconPrefs.getUserName());
-        bindText(PREF_WEATHER_CITY, FalconWeather.getCity());
+        bindText(
+                PREF_YOUR_NAME,
+                R.string.falcon_your_name_summary,
+                FalconPrefs.getUserName(),
+                InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS,
+                FalconPrefs::setUserName);
+        bindText(
+                PREF_WEATHER_CITY,
+                R.string.falcon_weather_city_summary,
+                FalconWeather.getCity(),
+                InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS,
+                FalconWeather::setCity);
     }
 
     private void updateSaveToSummary() {
@@ -175,11 +187,55 @@ public class FalconPreferences extends BravePreferenceFragment
         }
     }
 
-    private void bindText(String key, String value) {
-        EditTextPreference pref = (EditTextPreference) findPreference(key);
+    /** A text row: the current value as summary, an inline dialog to change it. */
+    private void bindText(
+            String key,
+            int emptySummary,
+            String value,
+            int inputType,
+            org.chromium.base.Callback<String> onChanged) {
+        Preference pref = findPreference(key);
         if (pref == null) return;
-        pref.setText(value);
-        pref.setOnPreferenceChangeListener(this);
+        if (value.isEmpty()) {
+            pref.setSummary(emptySummary);
+        } else {
+            pref.setSummary(value);
+        }
+        pref.setOnPreferenceClickListener(
+                p -> {
+                    EditText input = new EditText(requireContext());
+                    input.setInputType(inputType);
+                    input.setSingleLine(true);
+                    input.setText(
+                            pref.getSummary() != null
+                                            && !pref.getSummary()
+                                                    .toString()
+                                                    .equals(getString(emptySummary))
+                                    ? pref.getSummary().toString()
+                                    : "");
+                    input.setSelection(input.getText().length());
+                    FrameLayout box = new FrameLayout(requireContext());
+                    int pad = (int) (20 * getResources().getDisplayMetrics().density);
+                    box.setPadding(pad, pad / 2, pad, 0);
+                    box.addView(input);
+                    new AlertDialog.Builder(requireContext())
+                            .setTitle(pref.getTitle())
+                            .setView(box)
+                            .setNegativeButton(android.R.string.cancel, null)
+                            .setPositiveButton(
+                                    android.R.string.ok,
+                                    (d, w) -> {
+                                        String text = input.getText().toString().trim();
+                                        onChanged.onResult(text);
+                                        if (text.isEmpty()) {
+                                            pref.setSummary(emptySummary);
+                                        } else {
+                                            pref.setSummary(text);
+                                        }
+                                    })
+                            .show();
+                    return true;
+                });
     }
 
     private void bindSwitch(String key, boolean checked) {
@@ -221,12 +277,6 @@ public class FalconPreferences extends BravePreferenceFragment
             return true;
         } else if (PREF_DOWNLOADER_WIFI_ONLY.equals(key)) {
             FalconPrefs.setDownloaderWifiOnly((boolean) newValue);
-            return true;
-        } else if (PREF_YOUR_NAME.equals(key)) {
-            FalconPrefs.setUserName((String) newValue);
-            return true;
-        } else if (PREF_WEATHER_CITY.equals(key)) {
-            FalconWeather.setCity((String) newValue);
             return true;
         } else if (PREF_WALLPAPER_PHOTOS.equals(key)) {
             ChromeSharedPreferences.getInstance()

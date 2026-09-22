@@ -122,5 +122,4 @@
 
 # Falcon: falcon_preferences.xml inflates these by name (R8 otherwise renames them and the
 # settings screen dies with ClassNotFoundException).
--keep class androidx.preference.EditTextPreference { *; }
 -keep class androidx.preference.ListPreference { *; }

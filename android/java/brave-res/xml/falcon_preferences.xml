@@ -72,21 +72,17 @@
         android:title="@string/theme_settings"
         android:summary="@string/falcon_theme_summary" />
 
-    <EditTextPreference
+    <Preference
         android:persistent="false"
         android:key="falcon_your_name"
         android:title="@string/falcon_your_name"
-        android:summary="@string/falcon_your_name_summary"
-        android:dialogTitle="@string/falcon_your_name"
-        android:inputType="textPersonName|textCapWords" />
+        android:summary="@string/falcon_your_name_summary" />
 
-    <EditTextPreference
+    <Preference
         android:persistent="false"
         android:key="falcon_weather_city"
         android:title="@string/falcon_weather_city"
-        android:summary="@string/falcon_weather_city_summary"
-        android:dialogTitle="@string/falcon_weather_city"
-        android:inputType="text|textCapWords" />
+        android:summary="@string/falcon_weather_city_summary" />
 
     <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
         android:persistent="false"

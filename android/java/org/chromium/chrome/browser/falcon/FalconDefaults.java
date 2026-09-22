@@ -23,8 +23,11 @@ public final class FalconDefaults {
     private FalconDefaults() {}
 
     /** Safe to call from the application's onCreate (browser process) and again later. */
+    private static final String APPLIED_V2_KEY = "falcon_defaults_applied_v2";
+
     public static void applyOnce() {
         SharedPreferencesManager prefs = ChromeSharedPreferences.getInstance();
+        applyV2Once(prefs);
         if (prefs.readBoolean(APPLIED_KEY, false)) return;
         prefs.writeBoolean(APPLIED_KEY, true);
         // Dark-first (docs/design/android/mock-v6.html is a dark design; light comes later).
@@ -37,6 +40,12 @@ public final class FalconDefaults {
         // The space colour field is the backdrop; no wallpaper photos.
         prefs.writeBoolean(BackgroundImagesPreferences.PREF_SHOW_BACKGROUND_IMAGES, false);
         OnboardingPrefManager.getInstance().setBraveStatsEnabled(false);
+    }
+
+    /** Defaults added after 1.0's first installs; applied once to older profiles too. */
+    private static void applyV2Once(SharedPreferencesManager prefs) {
+        if (prefs.readBoolean(APPLIED_V2_KEY, false)) return;
+        prefs.writeBoolean(APPLIED_V2_KEY, true);
         // Arc-style: tabs untouched for three days move to the archive (Chromium's
         // default is 21 days).
         FalconPrefs.setArchiveHours(72);
