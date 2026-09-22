@@ -71,18 +71,18 @@ jobs:
             throw "Tag ${{ github.ref_name }} does not match falcon_version.h (v$v)"
           }
 
-      - name: Build + package (Static)
-        run: D:\falcon\tools\package.ps1 -Config Static -Version ${{ steps.ver.outputs.version }}
+      - name: Build + package (Release, official ThinLTO)
+        run: D:\falcon\tools\package.ps1 -Config Release -Version ${{ steps.ver.outputs.version }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: falcon-windows-x64
           path: |
-            D:\falcon\dist\*.exe
-            D:\falcon\dist\*.zip
-            D:\falcon\dist\SHA256SUMS.txt
-            D:\falcon\dist\RELEASE_NOTES.md
+            D:\falcon\dist-release\*.exe
+            D:\falcon\dist-release\*.zip
+            D:\falcon\dist-release\SHA256SUMS.txt
+            D:\falcon\dist-release\RELEASE_NOTES.md
           if-no-files-found: error
           retention-days: 14
 
