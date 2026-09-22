@@ -1011,7 +1011,9 @@ public class BraveTabbedAppMenuPropertiesDelegate extends TabbedAppMenuPropertie
                 R.id.quick_delete_menu_id,
                 R.id.quick_delete_divider_line_id,
                 R.id.ntp_customization_id,
-                R.id.help_id);
+                R.id.help_id,
+                // Falcon: Chromium's default-browser promo duplicates Brave's own item.
+                R.id.default_browser_promo_menu_id);
         if (!mIsTablet) {
             maybeRemoveMenuItems(modelList, R.id.share_menu_id);
         }
