@@ -114,4 +114,7 @@
          which leaves the app menu too narrow for the five buttons of Brave's icon row footer.
          Keep the previous width as the minimum. -->
     <dimen name="menu_width_min">@dimen/menu_width</dimen>
+    <!-- Falcon: the location field is a stadium so it sits concentric inside the Arc capsule
+         (100dp is clamped to half the field height by the drawable). -->
+    <dimen name="modern_toolbar_background_corner_radius">100dp</dimen>
 </resources>
