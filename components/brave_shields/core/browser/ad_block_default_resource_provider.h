@@ -37,6 +37,11 @@ class AdBlockDefaultResourceProvider : public AdBlockResourceProvider {
   void LoadResources(
       base::OnceCallback<void(AdblockResourceStorageBox)>) override;
 
+  // Falcon: a directory holding resources.json fetched outside the component
+  // updater (Brave's updater needs Brave's private key). Same effect as the
+  // component arriving.
+  void UseResourcesDirectory(const base::FilePath& dir) { OnComponentReady(dir); }
+
  private:
   friend class ::AdBlockServiceTest;
 

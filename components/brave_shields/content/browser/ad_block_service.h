@@ -150,6 +150,7 @@ class AdBlockService {
   AdBlockComponentServiceManager* component_service_manager();
   AdBlockSubscriptionServiceManager* subscription_service_manager();
   AdBlockDefaultResourceProvider* default_resource_provider();
+  base::WeakPtr<AdBlockService> AsWeakPtr() { return weak_factory_.GetWeakPtr(); }
   AdBlockCustomFiltersProvider* custom_filters_provider();
   AdBlockCustomResourceProvider* custom_resource_provider();
 

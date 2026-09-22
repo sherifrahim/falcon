@@ -10,6 +10,10 @@ brave_browser_falcon_shields_sources = [
 
 brave_browser_falcon_shields_deps = [
   "//brave/components/brave_shields/content/browser",
+  "//brave/components/brave_shields/core/browser",
+  "//chrome/common",
   "//components/prefs",
+  "//net",
+  "//services/network/public/cpp",
   "//url",
 ]
