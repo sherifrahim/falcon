@@ -20,7 +20,23 @@
         <ignore regexp="ContentSettingsType.BRAVE_CONTENT_SETTINGS_TYPES_LIST" />
     </issue>
     <!-- Falcon retires Brave surfaces one by one; their orphaned resources are expected. -->
-    <issue id="UnusedResources" severity="ignore" />
+    <issue id="UnusedResources" severity="ignore">
+        <ignore regexp="brave/android/java/" />
+        <ignore regexp="chrome/android/java/res/" />
+        <ignore regexp="falcon_" />
+        <ignore regexp="Falcon" />
+    </issue>
+    <!-- Falcon's Android UI: the downloader singleton holds the application context on purpose;
+         the sheet/list layouts weigh their columns on purpose. -->
+    <issue id="StaticFieldLeak">
+        <ignore regexp="falcon/download/FalconDownloadManager.java" />
+    </issue>
+    <issue id="DisableBaselineAlignment">
+        <ignore regexp="falcon_" />
+    </issue>
+    <issue id="NestedWeights">
+        <ignore regexp="falcon_" />
+    </issue>
     <issue id="ImpliedQuantity">
         <ignore regexp="brave/build/android/android_brave_strings_grd"/>
     </issue>
