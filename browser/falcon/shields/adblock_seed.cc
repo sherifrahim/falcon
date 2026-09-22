@@ -114,7 +114,10 @@ void OnRuleFileFetched(std::unique_ptr<network::SimpleURLLoader> loader,
                        std::string name,
                        base::RepeatingClosure done,
                        std::optional<std::string> body) {
-  if (!body || body->empty() || body->front() != '{') {
+  // debounce.json and clean-urls.json are arrays; the permissions file is an
+  // object. Anything else is an error page, not a rule file.
+  if (!body || body->empty() ||
+      (body->front() != '{' && body->front() != '[')) {
     VLOG(1) << "falcon: rules fetch failed for " << name;
     done.Run();
     return;
