@@ -73,6 +73,8 @@ public class AddDownloadSheet extends BottomSheetDialogFragment {
         TextView hint = v.findViewById(R.id.falcon_add_hint);
 
         connections.setText(String.valueOf(FalconPrefs.getDownloaderConnections()));
+        TextView saveTo = v.findViewById(R.id.falcon_add_save_to);
+        if (saveTo != null) saveTo.setText(FalconPrefs.saveToLabel());
         mWifiOnly.setChecked(FalconPrefs.isDownloaderWifiOnly());
 
         String preset = getArguments() == null ? null : getArguments().getString(ARG_URL);

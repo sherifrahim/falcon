@@ -128,6 +128,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="monospace"
+                android:id="@+id/falcon_add_save_to"
                 android:text="@string/falcon_save_to_downloads"
                 android:textColor="@color/falcon_ink_2"
                 android:textSize="11.5sp" />
