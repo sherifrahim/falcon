@@ -30,7 +30,7 @@ def CopyAllFilesToStagingDir(original_function, config, distribution,
                      'extension', 'brave_extension', '_locales'))
     CopyExtensionLocalization('brave_extension',
                               brave_extension_locales_src_dir_path, config,
-                              staging_dir, g_archive_inputs)
+                              staging_dir, g_archive_inputs, build_dir)
 
 
 @override_utils.override_function(globals())
@@ -93,7 +93,7 @@ def PrepareSetupExec(original_function, options, current_version, prev_version):
 
 
 def CopyExtensionLocalization(extension_name, locales_src_dir_path, config,
-                              staging_dir, g_archive_inputs):
+                              staging_dir, g_archive_inputs, build_dir=None):
     """Copies extension localization files from locales_src_dir_path to
     \\<out_gen_dir>\\chrome\\installer\\mini_installer\\mini_installer
     \\temp_installer_archive\\Chrome-bin\\<version>\\resources\\extension_name
@@ -110,8 +110,20 @@ def CopyExtensionLocalization(extension_name, locales_src_dir_path, config,
     # Transifex uses the latter. To integrate with Transifex, our code renames
     # "nb" to "no". But we still need to present "nb" to Chromium. The following
     # code achieves this:
-    os.rename(os.path.join(locales_dest_path, 'no'),
-              os.path.join(locales_dest_path, 'nb'))
+    if os.path.isdir(os.path.join(locales_dest_path, 'no')):
+        os.rename(os.path.join(locales_dest_path, 'no'),
+                  os.path.join(locales_dest_path, 'nb'))
+    # Falcon: the depfile below names <build_dir>/resources/<ext>/_locales/<l>
+    # as inputs, but the build only emits the platform_pak_locales subset
+    # (English-only). Ship exactly that subset so the depfile stays valid.
+    if build_dir:
+        built = os.path.join(build_dir, 'resources', extension_name, '_locales')
+        if os.path.isdir(built):
+            keep = set(os.listdir(built))
+            for name in os.listdir(locales_dest_path):
+                if name not in keep:
+                    shutil.rmtree(os.path.join(locales_dest_path, name),
+                                  ignore_errors=True)
     # Files are copied, but we need to inform g_archive_inputs about that
     for root, _, files in os.walk(locales_dest_path):
         for name in files:
