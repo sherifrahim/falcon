@@ -9,6 +9,7 @@
 
 import * as React from 'react'
 import styled from 'styled-components'
+import { dur, ease } from '$web-common/falcon_motion'
 import { loadTimeData } from '$web-common/loadTimeData'
 import { sendWithPromise, addWebUiListener } from 'chrome://resources/js/cr.js'
 
@@ -137,7 +138,7 @@ const Card = styled.article<{ $over: boolean; $drag: boolean }>`
   opacity: ${(p) => (p.$drag ? 0.4 : 1)};
   outline: ${(p) => (p.$over ? '2px solid rgba(56, 189, 248, 0.7)' : 'none')};
   outline-offset: -2px;
-  transition: transform 120ms ease, border-color 120ms ease;
+  transition: transform ${dur.fast} ${ease.move}, border-color ${dur.fast} ${ease.move};
   &:hover { border-color: rgba(56, 189, 248, 0.45); transform: translateY(-1px); }
   &:hover .x { opacity: 1; }
   img.hero { display: block; width: 100%; height: 140px; object-fit: cover; background: var(--f-bg-1, #0f172a); }

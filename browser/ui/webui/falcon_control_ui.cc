@@ -8,7 +8,10 @@
 #include <algorithm>
 #include <memory>
 #include <optional>
+#include <set>
 #include <string>
+#include <string_view>
+#include <tuple>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -361,7 +364,22 @@ class FalconControlMessageHandler
       password_manager::LoginsResultOrError results_or_error) override {
     if (auto* logins =
             std::get_if<password_manager::LoginsResult>(&results_or_error)) {
-      password_count_ = static_cast<int>(logins->size());
+      // Count what Android's password screen counts: distinct saved logins.
+      // The raw store also holds "never save" entries, federated stubs, and
+      // the same credential stored twice, none of which a user would count.
+      // The password is hashed straight out of secure_value() so no plaintext
+      // copy outlives the loop; the count only needs equality.
+      std::set<std::tuple<std::string, std::u16string, size_t>> seen;
+      for (const auto& login : *logins) {
+        if (login.blocked_by_user || login.federation_origin.IsValid()) {
+          continue;
+        }
+        const auto secure = login.password_value.secure_value();
+        seen.emplace(login.signon_realm, login.username_value,
+                     std::hash<std::u16string_view>{}(
+                         std::u16string_view(secure.data(), secure.size())));
+      }
+      password_count_ = static_cast<int>(seen.size());
     }
     if (!password_callback_id_.is_none() && IsJavascriptAllowed()) {
       ResolveJavascriptCallback(password_callback_id_, SyncState());
@@ -598,6 +616,9 @@ class FalconControlMessageHandler
   }
 
   void GetSidecars(const base::ListValue& args) {
+    // The panel polls this; kick an off-thread re-read so a sidecar that
+    // appeared since the last poll shows up, without blocking the UI thread.
+    falcon::SidecarInstaller::Get()->RefreshPresence();
     CHECK_EQ(1U, args.size());
     AllowJavascript();
     ResolveJavascriptCallback(args[0], SidecarList());

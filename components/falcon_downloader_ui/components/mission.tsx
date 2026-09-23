@@ -9,6 +9,7 @@
 
 import * as React from 'react'
 import styled, { keyframes } from 'styled-components'
+import { dur, ease } from '$web-common/falcon_motion'
 import { sendWithPromise } from 'chrome://resources/js/cr.js'
 import { loadTimeData } from '$web-common/loadTimeData'
 import { fmtBytes, fmtSpeed } from './common'
@@ -51,7 +52,7 @@ export const InspectorButton = styled.button<{ $on: boolean }>`
   font: inherit;
   font-size: 12px;
   cursor: pointer;
-  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+  transition: background-color ${dur.fast} ${ease.move}, border-color ${dur.fast} ${ease.move}, color ${dur.fast} ${ease.move};
   &:hover { background: rgba(255, 255, 255, 0.06); }
   svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 `
@@ -120,7 +121,7 @@ const SideBox = styled.aside`
   display: flex;
   flex-direction: column;
   gap: 12px;
-  animation: ${slideIn} 200ms ease-out both;
+  animation: ${slideIn} ${dur.base} ${ease.out} both;
 `
 
 const Panel = styled.div`

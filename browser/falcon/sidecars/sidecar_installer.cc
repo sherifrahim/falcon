@@ -170,6 +170,7 @@ SidecarInstaller* SidecarInstaller::Get() {
 
 SidecarInstaller::SidecarInstaller() {
   LoadManifest();
+  RefreshPresence();
 }
 
 SidecarInstaller::~SidecarInstaller() = default;
@@ -266,6 +267,49 @@ bool SidecarInstaller::IsAvailable(const std::string& name) const {
   return !DirFor(name).empty();
 }
 
+// Blocking: runs on a thread pool sequence, never on the UI thread.
+std::map<std::string, SidecarInstaller::Presence>
+SidecarInstaller::ComputePresence(
+    std::vector<SidecarInfo> manifest,
+    base::FilePath bundled_root,
+    std::map<std::string, base::FilePath> install_dirs) {
+  std::map<std::string, SidecarInstaller::Presence> out;
+  for (const SidecarInfo& info : manifest) {
+    base::FilePath bundled = bundled_root;
+    if (info.name == "ffmpeg") {
+      bundled = bundled.AppendASCII("ffmpeg");
+    }
+    SidecarInstaller::Presence p;
+    p.bundled = HasAllFiles(info, bundled);
+    p.installed = HasAllFiles(info, install_dirs[info.name]);
+    out[info.name] = p;
+  }
+  return out;
+}
+
+void SidecarInstaller::RefreshPresence() {
+  std::map<std::string, base::FilePath> install_dirs;
+  for (const SidecarInfo& info : manifest_) {
+    install_dirs[info.name] = InstallDir(info);
+  }
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(&SidecarInstaller::ComputePresence, manifest_,
+                     BundledDir(),
+                     std::move(install_dirs)),
+      base::BindOnce(&SidecarInstaller::OnPresenceRefreshed,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void SidecarInstaller::OnPresenceRefreshed(
+    std::map<std::string, Presence> presence) {
+  if (presence == presence_) {
+    return;
+  }
+  presence_ = std::move(presence);
+  NotifyChanged();
+}
+
 std::vector<SidecarInstaller::Status> SidecarInstaller::GetStatuses() const {
   std::vector<Status> out;
   for (const SidecarInfo& info : manifest_) {
@@ -273,12 +317,9 @@ std::vector<SidecarInstaller::Status> SidecarInstaller::GetStatuses() const {
     s.name = info.name;
     s.version = info.version;
     s.size = info.size;
-    base::FilePath bundled = BundledDir();
-    if (info.name == "ffmpeg") {
-      bundled = bundled.AppendASCII("ffmpeg");
-    }
-    s.bundled = HasAllFiles(info, bundled);
-    s.installed = HasAllFiles(info, InstallDir(info));
+    auto p = presence_.find(info.name);
+    s.bundled = p != presence_.end() && p->second.bundled;
+    s.installed = p != presence_.end() && p->second.installed;
     auto it = pending_.find(info.name);
     if (it != pending_.end()) {
       s.installing = true;
@@ -443,6 +484,8 @@ void SidecarInstaller::Finish(const std::string& name,
   for (InstallCallback& cb : callbacks) {
     std::move(cb).Run(ok, error);
   }
+  // The files just landed (or did not): re-read from disk.
+  RefreshPresence();
 }
 
 void SidecarInstaller::AddObserver(Observer* observer) {

@@ -10,6 +10,7 @@
 import * as React from 'react'
 import styled from 'styled-components'
 import { addWebUiListener, sendWithPromise } from 'chrome://resources/js/cr.js'
+import { dur, ease, enters, presses, reduced, shifts } from '$web-common/falcon_motion'
 
 interface Item {
   title: string
@@ -23,6 +24,7 @@ const GROUP: Record<number, string> = { 2: 'Tabs', 0: 'Commands', 1: 'Bookmarks'
 const GROUP_ORDER = [2, 0, 1, 3, 4]
 
 const Root = styled.div`
+  ${enters}
   width: 760px;
   box-sizing: border-box;
   border-radius: 16px;
@@ -49,7 +51,8 @@ const InputRow = styled.div`
     font: inherit; font-size: 18px; caret-color: #38bdf8;
   }
   input::placeholder { color: rgba(226, 232, 240, 0.45); }
-  .close { border: none; background: transparent; color: rgba(226,232,240,0.6); cursor: pointer; font-size: 16px; }
+  .close { border: none; background: transparent; color: rgba(226,232,240,0.6); cursor: pointer; font-size: 16px;
+    border-radius: 8px; ${presses} }
   .close:hover { color: #fff; }
 `
 
@@ -65,6 +68,7 @@ const Group = styled.div`
 `
 
 const Row = styled.div<{ $on: boolean }>`
+  ${shifts('background-color, border-color')}
   display: flex;
   align-items: center;
   gap: 12px;
@@ -73,7 +77,10 @@ const Row = styled.div<{ $on: boolean }>`
   cursor: pointer;
   background: ${(p) => (p.$on ? 'rgba(56, 189, 248, 0.14)' : 'transparent')};
   border: 1px solid ${(p) => (p.$on ? 'rgba(56, 189, 248, 0.35)' : 'transparent')};
-  .ico { width: 26px; height: 26px; border-radius: 8px; background: rgba(255,255,255,0.06); display: grid; place-items: center; font-size: 12px; opacity: 0.85; flex: none; }
+  .ico { width: 26px; height: 26px; border-radius: 8px; background: rgba(255,255,255,0.06); display: grid; place-items: center; font-size: 12px; opacity: 0.85; flex: none;
+    transition: background-color ${dur.fast} ${ease.move}, opacity ${dur.fast} ${ease.move}; }
+  &:hover .ico { background: rgba(255,255,255,0.1); opacity: 1; }
+  ${reduced} { .ico { transition-duration: 1ms; } }
   .t { flex: 1; min-width: 0; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .t mark { background: transparent; color: #7dd3fc; font-weight: 600; }
   .k { font-family: "Cascadia Mono", Consolas, "JetBrains Mono", monospace; font-size: 11px; opacity: 0.65; white-space: nowrap; }

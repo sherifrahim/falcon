@@ -8,6 +8,7 @@
 import * as React from 'react'
 import styled from 'styled-components'
 import { sendWithPromise, addWebUiListener } from 'chrome://resources/js/cr.js'
+import { dur, ease, enters, focusRing, presses, reduced, shifts } from '$web-common/falcon_motion'
 import { ShellPreview } from './preview'
 import { Chains } from './chains'
 
@@ -80,7 +81,12 @@ const Nav = styled.nav`
     display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 10px;
     color: inherit; text-decoration: none; font-size: 13px; opacity: 0.75;
     border: 1px solid transparent;
+    transition: background-color ${dur.fast} ${ease.move}, border-color ${dur.fast} ${ease.move},
+      opacity ${dur.fast} ${ease.move}, color ${dur.fast} ${ease.move};
+    ${focusRing}
   }
+  a i { transition: background-color ${dur.fast} ${ease.move}, box-shadow ${dur.base} ${ease.out}; }
+  ${reduced} { a, a i { transition-duration: 1ms; } }
   a:hover { opacity: 1; background: var(--f-bg-3, #1e293b); }
   a.on { opacity: 1; background: rgba(56, 189, 248, 0.12); border-color: rgba(56, 189, 248, 0.3); color: #e0f2fe; }
   a i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 0.5; }
@@ -97,6 +103,7 @@ const Page = styled.div`
 `
 
 const Card = styled.div`
+  ${enters}
   background: var(--leo-color-container-background, var(--f-bg-3, #1e293b));
   border: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
   border-radius: 14px;
@@ -104,6 +111,11 @@ const Card = styled.div`
 `
 
 const Row = styled.label`
+  ${shifts('background-color, border-color')}
+  border-radius: 8px;
+  margin: 0 -8px;
+  padding-inline: 8px;
+  &:hover { background: rgba(255, 255, 255, 0.03); }
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -115,7 +127,8 @@ const Row = styled.label`
   cursor: pointer;
   &:last-child { border-bottom: none; }
   .sub { display: block; font-size: 12px; opacity: 0.65; margin-top: 2px; }
-  input[type='checkbox'] { width: 18px; height: 18px; accent-color: #0ea5e9; }
+  input[type='checkbox'] { width: 18px; height: 18px; accent-color: #0ea5e9; ${presses} }
+  select { ${shifts('background-color, border-color')} ${focusRing} }
   select { padding: 6px 10px; border-radius: 10px; border: 1px solid var(--f-border, #334155); background: var(--f-bg-1, #0f172a); color: inherit; font-size: 13px; }
 `
 
@@ -124,7 +137,9 @@ const Seg = styled.div`
   border: 1px solid var(--f-border, #334155);
   border-radius: 999px;
   overflow: hidden;
-  button { padding: 6px 14px; border: none; background: transparent; color: inherit; cursor: pointer; font-size: 13px; }
+  button { padding: 6px 14px; border: none; background: transparent; color: inherit; cursor: pointer; font-size: 13px;
+    ${shifts('background-color, color')} ${focusRing} }
+  button:hover { background: rgba(255, 255, 255, 0.06); }
   button.on { background: rgba(56, 189, 248, 0.2); color: #e0f2fe; }
   button { white-space: nowrap; }
 `
@@ -138,8 +153,10 @@ const Btn = styled.button<{ $primary?: boolean }>`
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  ${presses}
+  ${focusRing}
   &:hover { filter: brightness(1.15); }
-  &:disabled { opacity: 0.5; cursor: default; }
+  &:disabled { opacity: 0.5; cursor: default; transform: none; }
 `
 
 const Editor = styled.div`
@@ -174,7 +191,10 @@ const Links = styled.div`
     display: block; padding: 14px 16px; border-radius: 14px; color: inherit; text-decoration: none;
     background: var(--leo-color-container-background, var(--f-bg-3, #1e293b)); border: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
   }
-  a:hover { border-color: #38bdf8; }
+  a { transition: border-color ${dur.fast} ${ease.move}, transform ${dur.fast} ${ease.move},
+      box-shadow ${dur.base} ${ease.out}; }
+  a:hover { border-color: #38bdf8; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28); }
+  ${reduced} { a { transition-duration: 1ms; } a:hover { transform: none; } }
   a b { display: block; font-size: 14px; margin-bottom: 2px; }
   a span { font-size: 12px; opacity: 0.65; }
 `
@@ -310,7 +330,7 @@ function Sync() {
         <Btn $primary onClick={saveServer}>Save</Btn>
       </Row>
       <Row as="div">
-        <span>Saved passwords<span className="sub">In this profile's password store (imports, saved logins and Bitwarden items)</span></span>
+        <span>Saved passwords<span className="sub">Distinct logins in this profile — imports, saved logins and Bitwarden items. Matches the count on your other devices.</span></span>
         <span style={{ fontSize: 20, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{si ? si.passwords : '—'}</span>
       </Row>
       {types && <Row as="div"><span>Syncing<span className="sub">{types}</span></span></Row>}

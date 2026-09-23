@@ -75,6 +75,10 @@ class SidecarInstaller : public DownloadTracker::Observer {
       base::OnceCallback<void(bool ok, const std::string& error)>;
   void Install(const std::string& name, InstallCallback callback);
 
+  // Re-reads which sidecars are on disk, off the UI thread; observers are
+  // notified if anything changed.
+  void RefreshPresence();
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
@@ -104,9 +108,25 @@ class SidecarInstaller : public DownloadTracker::Observer {
   void Finish(const std::string& name, bool ok, const std::string& error);
   void NotifyChanged();
 
+  // Whether each sidecar's files are on disk. GetStatuses() is polled by the
+  // control panel while it is open, so it reads this cache instead of the
+  // disk; the cache is refilled on a blocking-allowed sequence.
+  struct Presence {
+    bool bundled = false;
+    bool installed = false;
+    friend bool operator==(const Presence&, const Presence&) = default;
+  };
+  // Blocking; runs on a thread pool sequence.
+  static std::map<std::string, Presence> ComputePresence(
+      std::vector<SidecarInfo> manifest,
+      base::FilePath bundled_root,
+      std::map<std::string, base::FilePath> install_dirs);
+  void OnPresenceRefreshed(std::map<std::string, Presence> presence);
+
   std::vector<SidecarInfo> manifest_;
   std::map<std::string, Pending> pending_;  // by name
   std::map<std::string, std::string> errors_;  // by name, last failure
+  std::map<std::string, Presence> presence_;  // by name, refreshed off-thread
   bool observing_ = false;
   base::ObserverList<Observer> observers_;
   base::WeakPtrFactory<SidecarInstaller> weak_factory_{this};

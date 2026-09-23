@@ -5,6 +5,7 @@
 
 import * as React from 'react'
 import styled, { createGlobalStyle, keyframes } from 'styled-components'
+import { dur, ease } from '$web-common/falcon_motion'
 import { sendWithPromise } from 'chrome://resources/js/cr.js'
 import { loadTimeData } from '$web-common/loadTimeData'
 import {
@@ -131,7 +132,7 @@ const Search = styled.form`
     color: #f8fafc;
     font-size: 15px;
     outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    transition: border-color ${dur.fast} ${ease.move}, box-shadow ${dur.fast} ${ease.move}, background-color ${dur.fast} ${ease.move};
   }
   input::placeholder { color: rgba(226, 232, 240, 0.5); }
   input:focus {
@@ -181,14 +182,14 @@ const Tile = styled.a`
     width: 48px; height: 48px; padding: 12px; box-sizing: border-box; border-radius: 14px;
     background: rgba(8, 12, 24, 0.55); border: 1px solid rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(14px);
-    transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+    transition: transform ${dur.fast} ${ease.move}, border-color ${dur.fast} ${ease.move}, box-shadow ${dur.fast} ${ease.move};
   }
   &:hover img { transform: translateY(-2px); border-color: rgba(56, 189, 248, 0.55); box-shadow: 0 0 18px rgba(56, 189, 248, 0.2); }
   span { font-size: 11px; max-width: 64px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: 0.8; letter-spacing: 0.01em; }
   .x {
     position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 50%;
     background: rgba(2, 6, 23, 0.7); color: #fca5a5; font-size: 11px; line-height: 18px; text-align: center;
-    opacity: 0; transition: opacity 0.15s;
+    opacity: 0; transition: opacity ${dur.fast} ${ease.move};
   }
   &:hover .x { opacity: 1; }
   .x:hover { background: #7f1d1d; color: #fff; }
@@ -232,7 +233,7 @@ const Corner = styled.div`
   gap: 8px;
   align-items: center;
   opacity: 0.55;
-  transition: opacity 0.2s;
+  transition: opacity ${dur.fast} ${ease.move};
   &:hover { opacity: 1; }
 `
 
@@ -245,7 +246,7 @@ const IconBtn = styled.button`
   color: #e2e8f0;
   font-size: 15px;
   cursor: pointer;
-  transition: transform 0.15s;
+  transition: transform ${dur.fast} ${ease.move};
   &:hover { transform: rotate(20deg); }
 `
 
