@@ -430,20 +430,12 @@ void RegisterProfilePrefsForMigration(
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   brave_shields::BraveShieldsWebContentsObserver::RegisterProfilePrefs(
       registry);
-  // The home page configuration. Registered on both platforms because
-  // Android's settings read it, but only syncable on desktop: Brave's
-  // chromium_src override of the syncable-prefs allowlist is not compiled on
-  // Android, and reading a pref flagged SYNCABLE_PREF without an allowlist
-  // entry aborts on CHECK(metadata) in dual_layer_user_pref_store.cc. The
-  // phone therefore keeps its own copy rather than crashing on open.
-  registry->RegisterStringPref(falcon::prefs::kNtpConfig, std::string(),
-#if BUILDFLAG(IS_ANDROID)
-                               user_prefs::PrefRegistrySyncable::NO_REGISTRATION_FLAGS
-#else
-                               user_prefs::PrefRegistrySyncable::SYNCABLE_PREF
-#endif
-  );
 #if !BUILDFLAG(IS_ANDROID)
+  // The home page configuration, synced between desktops. Desktop-only: the
+  // Android settings read their own local values, so nothing there needs it.
+  registry->RegisterStringPref(
+      falcon::prefs::kNtpConfig, std::string(),
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   falcon::prefs::RegisterProfilePrefs(registry);
   falcon::prefs::RegisterNtpProfilePrefs(registry);
   falcon::prefs::RegisterGesturePrefs(registry);
