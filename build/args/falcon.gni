@@ -59,3 +59,11 @@ updater_dev_endpoint = "https://update.googleapis.com/service/update2/json"
 # official desktop builds, and its only outcome is turning on Brave's crash
 # upload. Reporting itself stays off via the MetricsReportingEnabled policy.
 enable_crash_dialog = false
+
+# Falcon does not ship DirectX Shader Compiler (dxcompiler.dll + dxil.dll,
+# 24.7 MB of the package). Dawn then force-sets UseDXC=false and compiles WGSL
+# with FXC (d3dcompiler_47.dll, already shipped), so WebGPU still works; what
+# goes is the feature set gated on DXC — shader-f16, subgroups,
+# subgroup-size-control, AtomicVec2uMinMax, experimental subgroup matrix — and
+# shaders needing Shader Model > 5.1.
+dawn_use_built_dxc = false
