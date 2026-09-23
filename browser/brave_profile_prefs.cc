@@ -149,6 +149,7 @@
 #include "brave/browser/falcon/ux/tab_archiver.h"
 #include "brave/browser/ui/views/falcon/peek_window.h"
 #include "brave/browser/ui/webui/falcon_newtab_ui.h"
+#include "brave/components/constants/falcon_pref_names.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "brave/components/brave_private_new_tab_ui/common/pref_names.h"
 #include "chrome/browser/ui/webui/bookmarks/bookmark_prefs.h"
@@ -429,6 +430,11 @@ void RegisterProfilePrefsForMigration(
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   brave_shields::BraveShieldsWebContentsObserver::RegisterProfilePrefs(
       registry);
+  // Both platforms: the home page configuration is shared and syncable, and
+  // Android's settings read it, so it must exist there too.
+  registry->RegisterStringPref(
+      falcon::prefs::kNtpConfig, std::string(),
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 #if !BUILDFLAG(IS_ANDROID)
   falcon::prefs::RegisterProfilePrefs(registry);
   falcon::prefs::RegisterNtpProfilePrefs(registry);

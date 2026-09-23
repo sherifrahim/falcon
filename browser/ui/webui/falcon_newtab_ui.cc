@@ -60,15 +60,10 @@
 namespace falcon::prefs {
 
 void RegisterNtpProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
-  // Syncable: the home page is configured once and follows the account. It is
-  // also listed in Brave's syncable prefs allowlist, which is what actually
-  // lets PREFERENCES carry it. Stored as a JSON string so Android can read the
-  // same pref through PrefService, which exposes only scalars.
-  registry->RegisterStringPref(
-      kNtpConfig, std::string(),
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  // Pre-sync installs kept the config as a dict under its own name; still
-  // registered so it can be migrated on first read.
+  // kNtpConfig itself is registered for both platforms in
+  // brave_profile_prefs.cc: Android's settings read it too, and registering it
+  // twice would fail. Pre-sync installs kept the config as a dict under its
+  // own name; still registered here so it can be migrated on first read.
   registry->RegisterDictionaryPref(kNtpState);
 }
 
