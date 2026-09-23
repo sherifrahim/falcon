@@ -15,8 +15,9 @@ class PrefRegistrySyncable;
 }  // namespace user_prefs
 
 namespace falcon::prefs {
-// Profile pref: the whole new-tab configuration as one dict (settings,
-// quick links, background) so the page can round-trip it in one message.
+// Legacy profile pref: the configuration as a dict, from before it became a
+// syncable JSON string (kNtpConfig, //brave/components/constants). Read once
+// to migrate, never written.
 inline constexpr char kNtpState[] = "falcon.ntp.state";
 void RegisterNtpProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 }  // namespace falcon::prefs

@@ -46,6 +46,8 @@ enum {
   kProfileContentSettingsPartitionedExceptionsFingerprintingV2 = 300027,
   kProfileContentSettingsPartitionedExceptionsBraveShields = 300028,
   kProfileContentSettingsPartitionedExceptionsBraveSpeedreader = 300029,
+  // Falcon
+  kFalconNtpState = 300100,
 };
 }  // namespace brave_syncable_prefs_ids
 
@@ -196,6 +198,13 @@ const auto& BraveSyncablePreferences() {
             kProfileContentSettingsPartitionedExceptionsTrackers,
         syncer::PREFERENCES, sync_preferences::PrefSensitivity::kNone,
         sync_preferences::MergeBehavior::kMergeableDict}},
+      // Falcon's home page configuration: background, clock, widgets, links,
+      // weather. One object, so the newest wins outright — a key-merged home
+      // page from two devices would be worse than either device's own.
+      {"falcon.ntp.config",
+       {brave_syncable_prefs_ids::kFalconNtpState, syncer::PREFERENCES,
+        sync_preferences::PrefSensitivity::kNone,
+        sync_preferences::MergeBehavior::kNone}},
   });
   return kBraveSyncablePrefsAllowList;
 }

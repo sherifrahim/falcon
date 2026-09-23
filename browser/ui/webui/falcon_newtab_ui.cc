@@ -27,6 +27,8 @@
 #include "brave/components/falcon_newtab_ui/resources/grit/falcon_newtab_generated_map.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "base/json/json_writer.h"
+#include "brave/components/constants/falcon_pref_names.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
@@ -58,6 +60,15 @@
 namespace falcon::prefs {
 
 void RegisterNtpProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
+  // Syncable: the home page is configured once and follows the account. It is
+  // also listed in Brave's syncable prefs allowlist, which is what actually
+  // lets PREFERENCES carry it. Stored as a JSON string so Android can read the
+  // same pref through PrefService, which exposes only scalars.
+  registry->RegisterStringPref(
+      kNtpConfig, std::string(),
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  // Pre-sync installs kept the config as a dict under its own name; still
+  // registered so it can be migrated on first read.
   registry->RegisterDictionaryPref(kNtpState);
 }
 
@@ -128,12 +139,30 @@ class FalconNewTabMessageHandler : public content::WebUIMessageHandler {
 
   Profile* profile() { return Profile::FromWebUI(web_ui()); }
 
-  // args: [callbackId] -> the stored dict (may be empty)
+  // args: [callbackId] -> the stored config (may be empty)
   void GetState(const base::ListValue& args) {
     CHECK_EQ(1U, args.size());
     AllowJavascript();
-    ResolveJavascriptCallback(args[0],
-                              profile()->GetPrefs()->GetDict(falcon::prefs::kNtpState));
+    PrefService* prefs = profile()->GetPrefs();
+    const std::string json = prefs->GetString(falcon::prefs::kNtpConfig);
+    if (!json.empty()) {
+      std::optional<base::Value> parsed =
+          base::JSONReader::Read(json, base::JSON_PARSE_RFC);
+      if (parsed && parsed->is_dict()) {
+        ResolveJavascriptCallback(args[0], parsed->GetDict());
+        return;
+      }
+    }
+    // Migration: an install from before the config was syncable still has the
+    // dict. Carry it over on first read so nothing is lost.
+    const base::DictValue& legacy = prefs->GetDict(falcon::prefs::kNtpState);
+    if (!legacy.empty()) {
+      std::string migrated;
+      if (base::JSONWriter::Write(legacy, &migrated)) {
+        prefs->SetString(falcon::prefs::kNtpConfig, migrated);
+      }
+    }
+    ResolveJavascriptCallback(args[0], legacy);
   }
 
   // args: [dict] - replaces the stored state (capped so a runaway page cannot
@@ -148,7 +177,11 @@ class FalconNewTabMessageHandler : public content::WebUIMessageHandler {
     if (links && links->size() > 200) {
       return;
     }
-    profile()->GetPrefs()->SetDict(falcon::prefs::kNtpState, d.Clone());
+    std::string json;
+    if (!base::JSONWriter::Write(d, &json)) {
+      return;
+    }
+    profile()->GetPrefs()->SetString(falcon::prefs::kNtpConfig, json);
   }
 
   // args: [callbackId] -> [{title, url}] most visited
