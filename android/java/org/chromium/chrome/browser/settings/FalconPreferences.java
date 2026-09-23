@@ -32,7 +32,6 @@ import org.chromium.chrome.browser.BraveRelaunchUtils;
 import org.chromium.chrome.browser.falcon.FalconPrefs;
 import org.chromium.chrome.browser.settings.BackgroundImagesPreferences;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
-import org.chromium.chrome.browser.falcon.ntp.FalconNtpConfig;
 import org.chromium.chrome.browser.falcon.ntp.FalconWeather;
 import org.chromium.chrome.browser.night_mode.NightModeMetrics;
 import org.chromium.chrome.browser.password_manager.PasswordStoreBridge;
@@ -182,23 +181,15 @@ public class FalconPreferences extends BravePreferenceFragment
         bindText(
                 PREF_YOUR_NAME,
                 R.string.falcon_your_name_summary,
-                FalconNtpConfig.isEmpty() ? FalconPrefs.getUserName() : FalconNtpConfig.name(),
+                FalconPrefs.getUserName(),
                 InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS,
-                name -> {
-                    // Keep the local copy for the pre-sync path, and write the
-                    // shared one so the other devices pick it up.
-                    FalconPrefs.setUserName(name);
-                    FalconNtpConfig.setName(name);
-                });
+                FalconPrefs::setUserName);
         bindText(
                 PREF_WEATHER_CITY,
                 R.string.falcon_weather_city_summary,
-                FalconNtpConfig.isEmpty() ? FalconWeather.getCity() : FalconNtpConfig.weatherCity(),
+                FalconWeather.getCity(),
                 InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS,
-                city -> {
-                    FalconWeather.setCity(city);
-                    FalconNtpConfig.setWeatherCity(city);
-                });
+                FalconWeather::setCity);
 
         bindSync();
     }
