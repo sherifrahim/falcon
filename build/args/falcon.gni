@@ -54,3 +54,8 @@ brave_stats_updater_url = "https://no-thanks.invalid/usage"
 # subscriptions seeded by browser/falcon/shields/adblock_seed.cc.
 updater_prod_endpoint = "https://update.googleapis.com/service/update2/json"
 updater_dev_endpoint = "https://update.googleapis.com/service/update2/json"
+
+# Falcon never asks to send a crash report to Brave: the dialog is on for
+# official desktop builds, and its only outcome is turning on Brave's crash
+# upload. Reporting itself stays off via the MetricsReportingEnabled policy.
+enable_crash_dialog = false

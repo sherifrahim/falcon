@@ -95,6 +95,10 @@ void BraveBrowserPolicyProvider::LoadFalconPolicies(
   set(policy::key::kBraveNewsDisabled, true);
   set(policy::key::kBraveTalkDisabled, true);
   set(policy::key::kBraveP3AEnabled, false);
+  // Chromium's own reporting: crash dumps and UMA both hang off this one. As a
+  // policy it is enforced rather than merely defaulted, so nothing can turn it
+  // back on — the settings toggle shows as managed.
+  set(policy::key::kMetricsReportingEnabled, false);
   set(policy::key::kBraveStatsPingEnabled, false);
   set(policy::key::kBraveWebDiscoveryEnabled, false);
 }
