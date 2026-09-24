@@ -66,6 +66,11 @@ public class BraveSetDefaultBrowserUtils {
             return false;
         }
 
+        // Falcon ships under its own package, which none of the Brave names below
+        // match: without this it would never consider itself the default.
+        if (resolveInfo.activityInfo.packageName.equals(context.getPackageName())) {
+            return true;
+        }
         if (context.getPackageName().equals(BraveConstants.BRAVE_PRODUCTION_PACKAGE_NAME)) {
             return resolveInfo.activityInfo.packageName.equals(
                     BraveConstants.BRAVE_PRODUCTION_PACKAGE_NAME);

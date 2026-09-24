@@ -53,3 +53,10 @@ brave_stats_updater_url = "https://no-thanks.invalid/usage"
 # subscriptions seeded by browser/falcon/shields/adblock_seed.cc.
 updater_prod_endpoint = "https://update.googleapis.com/service/update2/json"
 updater_dev_endpoint = "https://update.googleapis.com/service/update2/json"
+
+# Falcon's own package name. Brave's (com.brave.browser) made Falcon pose as
+# Brave: Google's passkey allowlist rejected it as an impostor, Brave's
+# retention notifications fired as if it were Brave production, and it could
+# never be installed next to the real Brave. Reverse-domain on the GitHub
+# namespace the project lives under.
+chrome_public_manifest_package = "io.github.sherifrahim.falcon"
