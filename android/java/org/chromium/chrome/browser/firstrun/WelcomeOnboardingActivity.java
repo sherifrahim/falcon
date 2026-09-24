@@ -178,8 +178,8 @@ public class WelcomeOnboardingActivity extends FirstRunActivityBase
     }
 
     private void finalStep() {
-        ChromeSharedPreferences.getInstance()
-                .writeBoolean(OnboardingPrefManager.SHOULD_SHOW_SEARCH_WIDGET_PROMO, true);
+        // Falcon: first run does not arm Brave's upsell for its Brave Search
+        // home-screen widget (SHOULD_SHOW_SEARCH_WIDGET_PROMO stays false).
         CustomizeBraveMenu.initDefaultInvisibleItems(getResources());
         OnboardingPrefManager.getInstance().setP3aOnboardingShown(true);
 
