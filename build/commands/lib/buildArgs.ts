@@ -247,7 +247,10 @@ export function getBuildArgs(config: Config) {
       args.chrome_public_manifest_package = 'com.brave.browser_default'
     } else if (config.channel === '') {
       args.android_channel = 'stable'
-      args.chrome_public_manifest_package = 'com.brave.browser'
+      // Falcon ships under its own package. Brave's made it an impostor to the
+      // platform (Google's passkey allowlist is keyed on package + signing
+      // certificate) and switched on Brave-production-only code paths.
+      args.chrome_public_manifest_package = 'io.github.sherifrahim.falcon'
     } else if (config.channel === 'beta') {
       args.chrome_public_manifest_package = 'com.brave.browser_beta'
     } else if (config.channel === 'dev') {
