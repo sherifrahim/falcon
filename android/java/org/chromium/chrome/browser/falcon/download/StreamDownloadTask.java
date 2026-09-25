@@ -44,7 +44,6 @@ final class StreamDownloadTask implements DownloadTask {
     private static final String TAG = "FalconStream";
     private static final int MAX_RETRIES = 5;
     private static final int MAX_KEY_BYTES = 64 * 1024;
-    private static final int MAX_INIT_BYTES = 16 * 1024 * 1024;
 
     /** One piece to fetch. */
     private static final class Part {
@@ -259,7 +258,7 @@ final class StreamDownloadTask implements DownloadTask {
             Thread.currentThread().interrupt();
             pool.shutdownNow();
         }
-        return mCancelRequested || mPauseRequested ? null : failure.get();
+        return (mCancelRequested || mPauseRequested) ? null : failure.get();
     }
 
     private void fetchWithRetry(Part p) throws IOException {

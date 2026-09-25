@@ -93,9 +93,8 @@ void FalconMediaCaptureTabHelper::DidFinishNavigation(
   seen_.clear();
   weak_factory_.InvalidateWeakPtrs();  // cookie lookups for the old page
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_FalconMediaBridge_onPageChanged(
-      env, web_contents()->GetJavaWebContents(),
-      base::android::ConvertUTF8ToJavaString(env, handle->GetURL().spec()));
+  Java_FalconMediaBridge_onPageChanged(env,
+                                       web_contents()->GetJavaWebContents());
 }
 
 void FalconMediaCaptureTabHelper::ResourceLoadComplete(

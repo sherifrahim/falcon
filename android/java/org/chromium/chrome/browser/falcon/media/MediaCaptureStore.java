@@ -47,12 +47,7 @@ public final class MediaCaptureStore {
     }
 
     private static final class Page {
-        final String url;
         final List<CapturedMedia> items = new ArrayList<>();
-
-        Page(String url) {
-            this.url = url;
-        }
     }
 
     private static MediaCaptureStore sInstance;
@@ -97,8 +92,8 @@ public final class MediaCaptureStore {
         notifyChanged(webContents);
     }
 
-    void onPageChanged(WebContents webContents, String pageUrl) {
-        Page old = mPages.put(webContents, new Page(pageUrl));
+    void onPageChanged(WebContents webContents) {
+        Page old = mPages.put(webContents, new Page());
         if (old != null && !old.items.isEmpty()) notifyChanged(webContents);
     }
 
@@ -107,7 +102,7 @@ public final class MediaCaptureStore {
         if (FalconPrefs.isMediaCaptureOffFor(Uri.parse(media.pageUrl).getHost())) return;
         Page page = mPages.get(webContents);
         if (page == null) {
-            page = new Page(media.pageUrl);
+            page = new Page();
             mPages.put(webContents, page);
         }
         String key = media.key();

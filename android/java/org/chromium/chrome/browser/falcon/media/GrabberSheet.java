@@ -148,6 +148,11 @@ final class GrabberSheet implements MediaCaptureStore.Observer {
     private void render() {
         Context ctx = mDialog.getContext();
         List<CapturedMedia> items = MediaCaptureStore.getInstance().visible(mWebContents);
+        // Titles often arrive after the media starts loading: name items after the page as it is now.
+        String title = mWebContents.isDestroyed() ? "" : mWebContents.getTitle();
+        if (!TextUtils.isEmpty(title)) {
+            for (CapturedMedia m : items) m.pageTitle = title;
+        }
         boolean off = FalconPrefs.isMediaCaptureOffFor(mHost);
         mSubtitle.setText(
                 off

@@ -16,8 +16,8 @@ public final class FalconMediaBridge {
     private FalconMediaBridge() {}
 
     @CalledByNative
-    static void onPageChanged(WebContents webContents, String pageUrl) {
-        MediaCaptureStore.getInstance().onPageChanged(webContents, pageUrl);
+    static void onPageChanged(WebContents webContents) {
+        MediaCaptureStore.getInstance().onPageChanged(webContents);
     }
 
     @CalledByNative

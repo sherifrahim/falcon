@@ -240,7 +240,8 @@ public final class DashManifest {
     /** Expands $RepresentationID$, $Number%05d$, $Time$, $Bandwidth$ and $$. */
     static String fill(String template, Representation r, long number, long time) {
         Matcher mm = IDENT.matcher(template);
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
+        int last = 0;
         while (mm.find()) {
             String id = mm.group(1);
             String value;
@@ -252,9 +253,10 @@ public final class DashManifest {
                         ? String.format(Locale.US, "%0" + mm.group(3) + "d", v)
                         : String.valueOf(v);
             }
-            mm.appendReplacement(sb, Matcher.quoteReplacement(value));
+            sb.append(template, last, mm.start()).append(value);
+            last = mm.end();
         }
-        mm.appendTail(sb);
+        sb.append(template, last, template.length());
         return sb.toString().replace("$$", "$");
     }
 
