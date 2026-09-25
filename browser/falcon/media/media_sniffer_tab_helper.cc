@@ -20,6 +20,7 @@
 #include "brave/browser/falcon/download/download_categories.h"
 #include "brave/browser/falcon/download/download_interceptor.h"
 #include "brave/browser/falcon/download/pref_names.h"
+#include "brave/browser/falcon/media/media_classify.h"
 #include "brave/browser/falcon/media/media_service.h"
 #include "brave/browser/falcon/media/video_pill_script.h"
 #include "chrome/browser/profiles/profile.h"
@@ -50,12 +51,6 @@ constexpr std::string_view kExtractorSites[] = {
     "pinterest.com",   "linkedin.com",  "threads.net",     "kick.com",
 };
 
-// Hosts whose media requests are chunked/tokenised and never worth listing.
-constexpr std::string_view kChunkHosts[] = {
-    "googlevideo.com", "fbcdn.net", "tiktokcdn.com", "twimg.com",
-    "cdninstagram.com", "ttvnw.net",
-};
-
 bool HostMatches(const GURL& url, base::span<const std::string_view> list) {
   const std::string domain =
       net::registry_controlled_domains::GetDomainAndRegistry(
@@ -68,18 +63,6 @@ bool HostMatches(const GURL& url, base::span<const std::string_view> list) {
     }
   }
   return false;
-}
-
-std::string Extension(const GURL& url) {
-  const std::string_view path = url.path();
-  const size_t slash = path.find_last_of('/');
-  const std::string_view name =
-      slash == std::string_view::npos ? path : path.substr(slash + 1);
-  const size_t dot = name.find_last_of('.');
-  if (dot == std::string_view::npos) {
-    return std::string();
-  }
-  return base::ToLowerASCII(name.substr(dot + 1));
 }
 
 }  // namespace
@@ -100,36 +83,18 @@ MediaSnifferTabHelper::Kind MediaSnifferTabHelper::Classify(
     const GURL& url,
     const std::string& mime_type,
     bool* media) {
+  switch (ClassifyMedia(url, mime_type)) {
+    case MediaKind::kHls:
+    case MediaKind::kDash:
+      *media = true;
+      return Kind::kPlaylist;
+    case MediaKind::kFile:
+      *media = true;
+      return Kind::kFile;
+    case MediaKind::kNone:
+      break;
+  }
   *media = false;
-  const std::string mime = base::ToLowerASCII(mime_type);
-  const std::string ext = Extension(url);
-  if (mime == "application/vnd.apple.mpegurl" ||
-      mime == "application/x-mpegurl" || mime == "audio/mpegurl" ||
-      mime == "audio/x-mpegurl" || mime == "application/dash+xml" ||
-      ext == "m3u8" || ext == "mpd") {
-    *media = true;
-    return Kind::kPlaylist;
-  }
-  // Segments and fragments of adaptive streams: never useful alone.
-  if (ext == "ts" || ext == "m4s" || ext == "m4f" || ext == "cmfv" ||
-      ext == "cmfa" || ext == "init" || ext == "key") {
-    return Kind::kPage;
-  }
-  static constexpr std::string_view kFileExts[] = {
-      "mp4", "m4v", "webm", "mkv", "mov", "avi", "flv", "wmv", "mpg", "mpeg",
-      "3gp", "ogv", "mp3", "m4a", "aac", "ogg", "oga", "opus", "flac", "wav",
-      "wma",
-  };
-  const bool mime_media = base::StartsWith(mime, "video/") ||
-                          (base::StartsWith(mime, "audio/") &&
-                           mime != "audio/mpegurl");
-  const bool ext_media =
-      std::find(std::begin(kFileExts), std::end(kFileExts), ext) !=
-      std::end(kFileExts);
-  if (mime_media || ext_media) {
-    *media = true;
-    return Kind::kFile;
-  }
   return Kind::kPage;
 }
 
@@ -254,7 +219,7 @@ void MediaSnifferTabHelper::ResourceLoadComplete(
   if (!media) {
     return;
   }
-  if (kind == Kind::kFile && HostMatches(url, kChunkHosts)) {
+  if (kind == Kind::kFile && IsChunkHost(url)) {
     return;
   }
   // Tiny "video" responses are usually probes/ads beacons.

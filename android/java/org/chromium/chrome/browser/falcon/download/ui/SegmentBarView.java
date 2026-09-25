@@ -94,6 +94,24 @@ public class SegmentBarView extends View {
             java.util.Arrays.fill(out, 1f);
             return;
         }
+        if (item.isStream()) {
+            // Streams: each bucket is a run of media segments, lit as they land.
+            boolean[] map = item.streamDoneMap();
+            int parts = item.streamParts;
+            for (int i = 0; i < BARS; i++) {
+                if (map == null || map.length == 0) {
+                    float f = parts > 0 ? item.streamPartsDone / (float) parts : 0f;
+                    out[i] = Math.max(0f, Math.min(1f, f * BARS - i));
+                    continue;
+                }
+                int from = (int) ((long) i * map.length / BARS);
+                int to = (int) ((long) (i + 1) * map.length / BARS);
+                int n = 0;
+                for (int k = from; k < to; k++) if (map[k]) n++;
+                out[i] = to > from ? n / (float) (to - from) : (map[Math.min(from, map.length - 1)] ? 1f : 0f);
+            }
+            return;
+        }
         if (total <= 0) {
             java.util.Arrays.fill(out, 0f);
             return;

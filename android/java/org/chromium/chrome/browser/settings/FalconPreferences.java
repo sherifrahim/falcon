@@ -54,6 +54,7 @@ public class FalconPreferences extends BravePreferenceFragment
     public static final String PREF_DOWNLOADER_CONNECTIONS = "falcon_downloader_connections";
     public static final String PREF_DOWNLOADER_VERIFY = "falcon_downloader_verify";
     public static final String PREF_DOWNLOADER_WIFI_ONLY = "falcon_downloader_wifi_only";
+    public static final String PREF_MEDIA_CAPTURE = "falcon_media_capture";
     public static final String PREF_PITCH_BLACK = "falcon_pitch_black";
     public static final String PREF_THEME = "falcon_theme";
     public static final String PREF_ARCHIVE_TABS = "falcon_archive_tabs";
@@ -173,6 +174,7 @@ public class FalconPreferences extends BravePreferenceFragment
         bindSwitch(PREF_DOWNLOADER_ENABLED, FalconPrefs.isDownloaderEnabled());
         bindSwitch(PREF_DOWNLOADER_VERIFY, FalconPrefs.isDownloaderVerifyEnabled());
         bindSwitch(PREF_DOWNLOADER_WIFI_ONLY, FalconPrefs.isDownloaderWifiOnly());
+        bindSwitch(PREF_MEDIA_CAPTURE, FalconPrefs.isMediaCaptureEnabled());
         bindSwitch(PREF_PITCH_BLACK, FalconPrefs.isPitchBlack());
         bindSwitch(
                 PREF_WALLPAPER_PHOTOS,
@@ -411,6 +413,9 @@ public class FalconPreferences extends BravePreferenceFragment
             return true;
         } else if (PREF_DOWNLOADER_WIFI_ONLY.equals(key)) {
             FalconPrefs.setDownloaderWifiOnly((boolean) newValue);
+            return true;
+        } else if (PREF_MEDIA_CAPTURE.equals(key)) {
+            FalconPrefs.setMediaCaptureEnabled((boolean) newValue);
             return true;
         } else if (PREF_WALLPAPER_PHOTOS.equals(key)) {
             ChromeSharedPreferences.getInstance()

@@ -4,6 +4,8 @@
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
 brave_browser_falcon_media_sources = [
+  "//brave/browser/falcon/media/media_classify.cc",
+  "//brave/browser/falcon/media/media_classify.h",
   "//brave/browser/falcon/media/media_service.cc",
   "//brave/browser/falcon/media/media_service.h",
   "//brave/browser/falcon/media/media_sniffer_tab_helper.cc",

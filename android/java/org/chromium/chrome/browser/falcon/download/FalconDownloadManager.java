@@ -77,7 +77,7 @@ public final class FalconDownloadManager {
 
     private final Context mContext = ContextUtils.getApplicationContext();
     private final Map<String, DownloadItem> mItems = new LinkedHashMap<>();
-    private final Map<String, HttpDownloadTask> mTasks = new HashMap<>();
+    private final Map<String, DownloadTask> mTasks = new HashMap<>();
     private final ObserverList<Observer> mObservers = new ObserverList<>();
     private final ExecutorService mPool = Executors.newCachedThreadPool();
     private final ExecutorService mIo = Executors.newSingleThreadExecutor();
@@ -178,6 +178,40 @@ public final class FalconDownloadManager {
         return item;
     }
 
+    /**
+     * A captured HLS/DASH stream (the media grabber). |spec| names the playlists or manifest and
+     * the chosen tracks; |estimatedBytes| (-1 if unknown) feeds the Wi-Fi-only rule until the
+     * real size is known.
+     */
+    public DownloadItem enqueueStream(
+            String manifestUrl,
+            String referer,
+            String userAgent,
+            String cookies,
+            String fileName,
+            String spec,
+            long estimatedBytes) {
+        ThreadUtils.assertOnUiThread();
+        String name = HttpDownloadTask.sanitize(TextUtils.isEmpty(fileName) ? "video.mp4" : fileName);
+        DownloadItem item =
+                new DownloadItem(
+                        UUID.randomUUID().toString(),
+                        manifestUrl,
+                        referer,
+                        userAgent,
+                        cookies,
+                        name,
+                        "video/mp4",
+                        estimatedBytes,
+                        System.currentTimeMillis());
+        item.streamSpec = spec;
+        mItems.put(item.id, item);
+        Log.i(TAG, "enqueue stream %s", name);
+        schedule();
+        notifyChanged();
+        return item;
+    }
+
     /** A download typed or pasted by the user; |sha256| may be empty. */
     public DownloadItem enqueueManual(String url, String fileName, String sha256) {
         DownloadItem item = enqueue(url, "", "", "", fileName, "", -1);
@@ -192,6 +226,7 @@ public final class FalconDownloadManager {
         if (item == null || mTasks.containsKey(id)) return;
         deletePart(item);
         item.setSegments(new ArrayList<>());
+        item.resetStream();
         item.resumable = false;
         item.etag = "";
         item.error = "";
@@ -204,7 +239,7 @@ public final class FalconDownloadManager {
     public void pause(String id) {
         DownloadItem item = mItems.get(id);
         if (item == null) return;
-        HttpDownloadTask task = mTasks.get(id);
+        DownloadTask task = mTasks.get(id);
         if (task != null) {
             task.pause();
         } else if (item.state == State.QUEUED || item.state == State.WAITING_WIFI) {
@@ -240,7 +275,7 @@ public final class FalconDownloadManager {
     public void cancel(String id) {
         DownloadItem item = mItems.get(id);
         if (item == null) return;
-        HttpDownloadTask task = mTasks.get(id);
+        DownloadTask task = mTasks.get(id);
         if (task != null) {
             task.cancel();
         } else {
@@ -311,9 +346,11 @@ public final class FalconDownloadManager {
     private void start(DownloadItem item) {
         item.state = State.ACTIVE;
         item.error = "";
-        HttpDownloadTask task =
-                new HttpDownloadTask(
-                        item, partFile(item), FalconPrefs.getDownloaderConnections(), mTaskListener);
+        int connections = FalconPrefs.getDownloaderConnections();
+        DownloadTask task =
+                item.isStream()
+                        ? new StreamDownloadTask(item, streamDir(item), connections, mTaskListener)
+                        : new HttpDownloadTask(item, partFile(item), connections, mTaskListener);
         mTasks.put(item.id, task);
         mPool.execute(task);
     }
@@ -490,9 +527,20 @@ public final class FalconDownloadManager {
         return new File(partsDir(), item.partFileName());
     }
 
+    /** Segments, joined tracks and the merged output of a stream download. */
+    private File streamDir(DownloadItem item) {
+        return new File(partsDir(), item.id + ".stream");
+    }
+
     private void deletePart(DownloadItem item) {
         File f = partFile(item);
         if (f.exists()) f.delete();
+        File dir = streamDir(item);
+        File[] files = dir.listFiles();
+        if (files != null) {
+            for (File child : files) child.delete();
+        }
+        if (dir.exists()) dir.delete();
     }
 
     /**

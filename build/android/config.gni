@@ -140,6 +140,7 @@ brave_resources_exclusion_exceptions =
 brave_jni_headers_sources = [
   "//brave/android/java/org/chromium/chrome/browser/BraveFeatureUtil.java",
   "//brave/android/java/org/chromium/chrome/browser/falcon/download/FalconDownloadBridge.java",
+  "//brave/android/java/org/chromium/chrome/browser/falcon/media/FalconMediaBridge.java",
   "//brave/android/java/org/chromium/chrome/browser/BraveLocalState.java",
   "//brave/android/java/org/chromium/chrome/browser/BraveRelaunchUtils.java",
   "//brave/android/java/org/chromium/chrome/browser/BraveRewardsNativeWorker.java",

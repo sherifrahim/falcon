@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * server for size and range support, splits the file into segments, fetches them in parallel,
  * and resumes from whatever the item's segments already hold. Pause/cancel are cooperative.
  */
-final class HttpDownloadTask implements Runnable {
+final class HttpDownloadTask implements DownloadTask {
     private static final String TAG = "FalconDownload";
     private static final int BUFFER_BYTES = 64 * 1024;
     private static final long MIN_SEGMENT_BYTES = 2L * 1024 * 1024;
@@ -85,11 +85,13 @@ final class HttpDownloadTask implements Runnable {
         mListener = listener;
     }
 
-    void pause() {
+    @Override
+    public void pause() {
         mPauseRequested = true;
     }
 
-    void cancel() {
+    @Override
+    public void cancel() {
         mCancelRequested = true;
     }
 

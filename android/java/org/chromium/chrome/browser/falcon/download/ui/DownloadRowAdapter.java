@@ -150,14 +150,22 @@ class DownloadRowAdapter extends RecyclerView.Adapter<DownloadRowAdapter.Holder>
                 if (item.totalBytes > 0) {
                     sb.append(item.progressPercent()).append('%').append(sep);
                     sb.append(DownloadItem.formatBytes(done)).append('/')
+                            .append(item.isStream() ? "~" : "")
                             .append(DownloadItem.formatBytes(item.totalBytes));
                 } else {
                     sb.append(DownloadItem.formatBytes(done));
                 }
                 sb.append(sep).append(formatSpeed(item.speedBps));
                 if (item.etaSeconds >= 0) sb.append(sep).append(formatEta(item.etaSeconds));
-                int segs = item.segments().size();
-                if (segs > 1) sb.append(sep).append(segs).append(" seg");
+                if (item.isStream()) {
+                    if (item.streamParts > 0) {
+                        sb.append(sep).append(item.streamPartsDone).append('/')
+                                .append(item.streamParts).append(" parts");
+                    }
+                } else {
+                    int segs = item.segments().size();
+                    if (segs > 1) sb.append(sep).append(segs).append(" seg");
+                }
                 return sb.toString();
             }
             case State.PAUSED:

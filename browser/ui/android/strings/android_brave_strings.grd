@@ -1866,6 +1866,12 @@ Are you sure you want to do this?
       <message name="IDS_FALCON_DOWNLOADER_WIFI_ONLY_SUMMARY" desc="Wi-Fi only summary">
         Queues files over 100 MB until Wi-Fi is available.
       </message>
+      <message name="IDS_FALCON_MEDIA_CAPTURE" desc="Media grabber toggle in Falcon settings">
+        Capture audio &amp; video
+      </message>
+      <message name="IDS_FALCON_MEDIA_CAPTURE_SUMMARY" desc="Media grabber toggle summary">
+        Lists the videos, audio and streams a page plays so you can download them. Turn it off for one site from the grab button.
+      </message>
       <message name="IDS_FALCON_LOOK_SECTION" desc="Section title">
         Look
       </message>

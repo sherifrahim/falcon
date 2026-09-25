@@ -16,6 +16,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicLong;
 
 /** One download: what to fetch, where it is, and how far each segment got. */
 public final class DownloadItem {
@@ -65,7 +66,7 @@ public final class DownloadItem {
     public final String referer;
     public final String userAgent;
     public final String cookies;
-    public final String mimeType;
+    public volatile String mimeType;
     public final long createdAt;
 
     public volatile String fileName;
@@ -79,6 +80,17 @@ public final class DownloadItem {
     /** content:// URI once exported to the device's Downloads, else "". */
     public volatile String savedUri = "";
     public volatile long finishedAt;
+
+    /**
+     * HLS/DASH download ({@link StreamDownloadTask}): JSON naming the playlists or manifest and
+     * the chosen tracks; "" for a plain HTTP file.
+     */
+    public volatile String streamSpec = "";
+    /** Stream progress: segments in total / fetched, and bytes fetched. */
+    public volatile int streamParts;
+    public volatile int streamPartsDone;
+    public final AtomicLong streamBytes = new AtomicLong();
+    private boolean[] mStreamDoneMap;
 
     /** Live telemetry (not persisted). */
     public volatile long speedBps;
@@ -128,13 +140,61 @@ public final class DownloadItem {
         }
     }
 
+    public boolean isStream() {
+        return !streamSpec.isEmpty();
+    }
+
+    /** A stream run starts: |parts| segments, none known to be fetched yet. */
+    void startStream(int parts) {
+        synchronized (mLock) {
+            mStreamDoneMap = new boolean[parts];
+            streamParts = parts;
+            streamPartsDone = 0;
+        }
+    }
+
+    void markStreamPart(int index) {
+        synchronized (mLock) {
+            if (mStreamDoneMap == null || index < 0 || index >= mStreamDoneMap.length) return;
+            if (mStreamDoneMap[index]) return;
+            mStreamDoneMap[index] = true;
+            int done = streamPartsDone + 1;
+            streamPartsDone = done;
+            // Size is unknown until the end: extrapolate from what has landed.
+            long bytes = streamBytes.get();
+            if (done > 0 && bytes > 0) totalBytes = bytes * streamParts / done;
+        }
+    }
+
+    /** Which segments are fetched (null before a run has listed them). */
+    public boolean[] streamDoneMap() {
+        synchronized (mLock) {
+            return mStreamDoneMap == null ? null : mStreamDoneMap.clone();
+        }
+    }
+
+    void resetStream() {
+        synchronized (mLock) {
+            mStreamDoneMap = null;
+            streamParts = 0;
+            streamPartsDone = 0;
+            streamBytes.set(0);
+        }
+    }
+
     public long doneBytes() {
+        if (isStream()) return streamBytes.get();
         long done = 0;
         for (Segment s : segments()) done += s.done;
         return done;
     }
 
     public int progressPercent() {
+        if (isStream()) {
+            if (state == State.DONE) return 100;
+            int parts = streamParts;
+            return parts <= 0 ? 0 : Math.min(100, streamPartsDone * 100 / parts);
+        }
         long total = totalBytes;
         if (total <= 0) return 0;
         return (int) Math.min(100, doneBytes() * 100 / total);
@@ -173,6 +233,12 @@ public final class DownloadItem {
         o.put("sha256Actual", sha256Actual);
         o.put("savedUri", savedUri);
         o.put("finishedAt", finishedAt);
+        if (isStream()) {
+            o.put("streamSpec", streamSpec);
+            o.put("streamParts", streamParts);
+            o.put("streamPartsDone", streamPartsDone);
+            o.put("streamBytes", streamBytes.get());
+        }
         JSONArray segs = new JSONArray();
         for (Segment s : segments()) {
             JSONObject so = new JSONObject();
@@ -207,6 +273,10 @@ public final class DownloadItem {
         item.sha256Actual = o.optString("sha256Actual", "");
         item.savedUri = o.optString("savedUri", "");
         item.finishedAt = o.optLong("finishedAt", 0);
+        item.streamSpec = o.optString("streamSpec", "");
+        item.streamParts = o.optInt("streamParts", 0);
+        item.streamPartsDone = o.optInt("streamPartsDone", 0);
+        item.streamBytes.set(o.optLong("streamBytes", 0));
         JSONArray segs = o.optJSONArray("segments");
         List<Segment> list = new ArrayList<>();
         if (segs != null) {

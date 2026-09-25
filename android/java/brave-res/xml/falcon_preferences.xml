@@ -37,6 +37,12 @@
         android:title="@string/falcon_downloader_enabled"
         android:summary="@string/falcon_downloader_enabled_summary" />
 
+    <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
+        android:persistent="false"
+        android:key="falcon_media_capture"
+        android:title="@string/falcon_media_capture"
+        android:summary="@string/falcon_media_capture_summary" />
+
     <ListPreference
         android:persistent="false"
         android:key="falcon_downloader_connections"

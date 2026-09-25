@@ -166,14 +166,24 @@ public class DownloadDetailSheet extends BottomSheetDialogFragment
                 mEtaLabel.setText(item.state == State.WAITING_WIFI ? "WI-FI" : "QUEUED");
         }
         mProgress.setProgress(
-                item.totalBytes > 0 ? (int) (item.doneBytes() * 1000 / item.totalBytes) : 0,
+                item.isStream()
+                        ? item.progressPercent() * 10
+                        : item.totalBytes > 0 ? (int) (item.doneBytes() * 1000 / item.totalBytes) : 0,
                 /* animate= */ true);
         mBytes.setText(
                 DownloadItem.formatBytes(item.doneBytes())
                         + (item.totalBytes > 0 ? " of " + DownloadItem.formatBytes(item.totalBytes) : ""));
         int segs = item.segments().size();
-        mSegmentsLabel.setText(
-                segs > 0 ? String.format(Locale.US, "%d segments · MB/s", segs) : "probing…");
+        if (item.isStream()) {
+            mSegmentsLabel.setText(
+                    item.streamParts > 0
+                            ? String.format(Locale.US, "stream · %d of %d parts",
+                                    item.streamPartsDone, item.streamParts)
+                            : "reading the playlist…");
+        } else {
+            mSegmentsLabel.setText(
+                    segs > 0 ? String.format(Locale.US, "%d segments · MB/s", segs) : "probing…");
+        }
         mGrid.setItem(item);
 
         if (!TextUtils.isEmpty(item.error) && item.state == State.FAILED) {

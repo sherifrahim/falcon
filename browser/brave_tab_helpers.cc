@@ -72,6 +72,7 @@
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
+#include "brave/browser/android/falcon_media_capture_tab_helper.h"
 #include "brave/browser/android/youtube_script_injector/youtube_script_injector_tab_helper.h"
 #endif
 
@@ -146,6 +147,7 @@ void AttachTabHelpers(content::WebContents* web_contents) {
 
 #if BUILDFLAG(IS_ANDROID)
   YouTubeScriptInjectorTabHelper::CreateForWebContents(web_contents);
+  falcon::FalconMediaCaptureTabHelper::CreateForWebContents(web_contents);
 #else
   // Add tab helpers here unless they are intended for android too
   brave_shields::BraveShieldsTabHelper::CreateForWebContents(web_contents);

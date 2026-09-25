@@ -345,6 +345,7 @@ public abstract class BraveActivity extends ChromeActivity
     private NewTabPageManager mNewTabPageManager;
     private UsageMonitor mUsageMonitor;
     private NotificationPermissionController mNotificationPermissionController;
+    private org.chromium.chrome.browser.falcon.media.MediaGrabberController mFalconGrabber;
     private MiscAndroidMetricsConnectionErrorHandler mMiscAndroidMetricsConnectionErrorHandler;
     private AppUpdateManager mAppUpdateManager;
     private boolean mWalletBadgeVisible;
@@ -614,6 +615,10 @@ public abstract class BraveActivity extends ChromeActivity
             mAppUpdateManager.unregisterListener(mInstallStateUpdatedListener);
         }
         getYouTubePictureInPictureController().onDestroy();
+        if (mFalconGrabber != null) {
+            mFalconGrabber.destroy();
+            mFalconGrabber = null;
+        }
         super.onDestroyInternal();
         cleanUpWalletNativeServices();
         cleanUpMiscAndroidMetrics();
@@ -1280,6 +1285,9 @@ public abstract class BraveActivity extends ChromeActivity
     @Override
     public void finishNativeInitialization() {
         super.finishNativeInitialization();
+
+        // Falcon: the media grabber's floating button (1DM-style).
+        mFalconGrabber = new org.chromium.chrome.browser.falcon.media.MediaGrabberController(this);
 
         boolean isFirstInstall = PackageUtils.isFirstInstall(this);
 
