@@ -1,0 +1,42 @@
+diff --git a/chrome/browser/webauthn/android/java/src/org/chromium/chrome/browser/webauthn/ChromeAuthenticatorFactory.java b/chrome/browser/webauthn/android/java/src/org/chromium/chrome/browser/webauthn/ChromeAuthenticatorFactory.java
+index a53892e562..de08dc98d6 100644
+--- a/chrome/browser/webauthn/android/java/src/org/chromium/chrome/browser/webauthn/ChromeAuthenticatorFactory.java
++++ b/chrome/browser/webauthn/android/java/src/org/chromium/chrome/browser/webauthn/ChromeAuthenticatorFactory.java
+@@ -4,33 +4,18 @@
+ package org.chromium.chrome.browser.webauthn;
+ 
+ import org.chromium.build.annotations.NullMarked;
+-import org.chromium.chrome.browser.autofill.AndroidAutofillAvailabilityStatus;
+-import org.chromium.chrome.browser.autofill.AutofillClientProviderUtils;
+-import org.chromium.chrome.browser.profiles.Profile;
+-import org.chromium.components.user_prefs.UserPrefs;
+ import org.chromium.components.webauthn.AuthenticatorFactory;
+ import org.chromium.components.webauthn.WebauthnMode;
+ import org.chromium.components.webauthn.WebauthnModeProvider;
+ import org.chromium.content_public.browser.RenderFrameHost;
+-import org.chromium.content_public.browser.WebContentsStatics;
+-
+-import java.util.Optional;
+ 
+ @NullMarked
+ public class ChromeAuthenticatorFactory extends AuthenticatorFactory {
+     public ChromeAuthenticatorFactory(RenderFrameHost renderFrameHost) {
+         super(renderFrameHost, new ChromeAuthenticatorConfirmationFactory());
+-        @AndroidAutofillAvailabilityStatus
+-        int autofillStatus =
+-                Optional.ofNullable(WebContentsStatics.fromRenderFrameHost(renderFrameHost))
+-                        .map(Profile::fromWebContents)
+-                        .map(UserPrefs::get)
+-                        .map(AutofillClientProviderUtils::getAndroidAutofillFrameworkAvailability)
+-                        .orElse(AndroidAutofillAvailabilityStatus.SETTING_TURNED_OFF);
+-        WebauthnModeProvider.getInstance()
+-                .setGlobalWebauthnMode(
+-                        autofillStatus == AndroidAutofillAvailabilityStatus.AVAILABLE
+-                                ? WebauthnMode.CHROME_3PP_ENABLED
+-                                : WebauthnMode.CHROME);
++        // Falcon: Google's privileged browser FIDO2 API rejects any browser not signed with an
++        // allowlisted cert, so always go through Credential Manager, where third-party passkey
++        // providers (Bitwarden, Microsoft Authenticator, ...) can answer.
++        WebauthnModeProvider.getInstance().setGlobalWebauthnMode(WebauthnMode.CHROME_3PP_ENABLED);
+     }
+ }
