@@ -49,6 +49,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_store.h"
 #include "components/webui/chrome_urls/pref_names.h"
 #include "third_party/widevine/cdm/buildflags.h"
 
@@ -180,6 +181,16 @@ void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   brave_shields::RegisterPrefsForAdBlockService(registry);
   falcon::RegisterAdblockSeedPrefs(registry);
+  // Falcon: resolve through Cloudflare's DNS-over-HTTPS by default. The mode
+  // stays "automatic", so a network where DoH is unreachable (captive portal,
+  // DoH blocked) still falls back to the system resolver; everywhere else a
+  // network or carrier DNS that filters domains can't stop a page loading.
+  // Registered earlier by SystemNetworkContextManager (absent in some tests).
+  if (registry->defaults()->GetValue(prefs::kDnsOverHttpsTemplates, nullptr)) {
+    registry->SetDefaultPrefValue(
+        prefs::kDnsOverHttpsTemplates,
+        base::Value("https://chrome.cloudflare-dns.com/dns-query"));
+  }
 #if !BUILDFLAG(IS_ANDROID)
   falcon::prefs::RegisterLocalStatePrefs(registry);
   falcon::prefs::RegisterBitwardenLocalPrefs(registry);
