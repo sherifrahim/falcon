@@ -22,8 +22,10 @@ import org.chromium.chrome.browser.falcon.download.DownloadItem.State;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /** Rows of the Downloads page. */
 class DownloadRowAdapter extends RecyclerView.Adapter<DownloadRowAdapter.Holder> {
@@ -41,9 +43,16 @@ class DownloadRowAdapter extends RecyclerView.Adapter<DownloadRowAdapter.Holder>
         setHasStableIds(true);
     }
 
+    private Map<String, Integer> mDrawnStates = new HashMap<>();
+
     void submit(List<DownloadItem> items) {
         final List<DownloadItem> old = mItems;
         final List<DownloadItem> fresh = new ArrayList<>(items);
+        // Items are live objects shared by both lists, so compare against the state each row
+        // was last drawn with, not the item's (already updated) state.
+        final Map<String, Integer> drawn = mDrawnStates;
+        final Map<String, Integer> now = new HashMap<>();
+        for (DownloadItem i : fresh) now.put(i.id, i.state);
         DiffUtil.DiffResult diff =
                 DiffUtil.calculateDiff(
                         new DiffUtil.Callback() {
@@ -66,10 +75,14 @@ class DownloadRowAdapter extends RecyclerView.Adapter<DownloadRowAdapter.Holder>
                             public boolean areContentsTheSame(int a, int b) {
                                 // Live rows re-bind every tick; that's the point.
                                 DownloadItem x = old.get(a);
-                                return !x.isActive() && x.state == fresh.get(b).state;
+                                Integer before = drawn.get(x.id);
+                                return !x.isActive()
+                                        && before != null
+                                        && before == fresh.get(b).state;
                             }
                         });
         mItems = fresh;
+        mDrawnStates = now;
         diff.dispatchUpdatesTo(this);
     }
 
