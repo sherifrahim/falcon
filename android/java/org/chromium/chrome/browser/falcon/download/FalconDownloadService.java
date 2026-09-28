@@ -201,7 +201,7 @@ public class FalconDownloadService extends Service implements FalconDownloadMana
                                 item.state == State.ACTIVE
                                         ? android.R.drawable.stat_sys_download
                                         : android.R.drawable.stat_sys_download_done)
-                        .setContentTitle(item.fileName)
+                        .setContentTitle(title(item))
                         .setContentText(status)
                         .setOnlyAlertOnce(true)
                         .setOngoing(item.state == State.ACTIVE)
@@ -217,11 +217,16 @@ public class FalconDownloadService extends Service implements FalconDownloadMana
         return b.build();
     }
 
+    /** Private-tab downloads don't show their file name in the notification shade. */
+    private static String title(DownloadItem item) {
+        return item.ephemeral ? "Private download" : item.fileName;
+    }
+
     private Notification buildFinished(DownloadItem item) {
         NotificationCompat.Builder b =
                 new NotificationCompat.Builder(this, CHANNEL_ID)
                         .setSmallIcon(android.R.drawable.stat_sys_download_done)
-                        .setContentTitle(item.fileName)
+                        .setContentTitle(title(item))
                         .setContentText(
                                 "Download complete · " + DownloadItem.formatBytes(item.totalBytes))
                         .setAutoCancel(true)

@@ -1040,7 +1040,6 @@ public class BraveTabbedAppMenuPropertiesDelegate extends TabbedAppMenuPropertie
         // Falcon: the media grabber (1DM-style), with how many items the page has played.
         Tab mediaTab = mActivityTabProvider.get();
         if (mediaTab != null
-                && !mediaTab.isIncognito()
                 && mediaTab.getWebContents() != null
                 && mediaTab.getUrl().getScheme().startsWith("http")
                 && FalconPrefs.isMediaCaptureEnabled()) {

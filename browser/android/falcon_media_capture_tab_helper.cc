@@ -103,12 +103,6 @@ void FalconMediaCaptureTabHelper::ResourceLoadComplete(
     const content::GlobalRequestID& request_id,
     const GURL& original_url,
     const blink::mojom::ResourceLoadInfo& info) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  // Private tabs keep nothing: the downloads list is persisted.
-  if (!profile || profile->IsOffTheRecord()) {
-    return;
-  }
   const GURL& url = info.final_url.is_valid() ? info.final_url : original_url;
   if (!url.SchemeIsHTTPOrHTTPS() || info.net_error != 0) {
     return;
@@ -149,11 +143,6 @@ void FalconMediaCaptureTabHelper::ScanMediaElements(
     content::RenderFrameHost* frame) {
   if (!frame || !frame->IsRenderFrameLive() ||
       !frame->GetLastCommittedURL().SchemeIsHTTPOrHTTPS()) {
-    return;
-  }
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  if (!profile || profile->IsOffTheRecord()) {
     return;
   }
   // Direct http(s) sources only: blob: players are MSE, caught by their
@@ -201,9 +190,11 @@ void FalconMediaCaptureTabHelper::Report(content::RenderFrameHost* frame,
                                          MediaKind kind,
                                          const std::string& mime_type,
                                          int64_t size) {
+  // Private tabs too: cookies come from their own off-the-record storage
+  // partition, and Java keeps private downloads out of the persisted store.
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  if (!profile || profile->IsOffTheRecord()) {
+  if (!profile) {
     return;
   }
   if (kind == MediaKind::kFile && IsChunkHost(url)) {

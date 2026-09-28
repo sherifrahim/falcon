@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.falcon.download.ui.FalconDownloadsActivity;
 import org.chromium.chrome.browser.falcon.media.CapturedMedia.Probe;
 import org.chromium.chrome.browser.falcon.media.CapturedMedia.Variant;
 import org.chromium.chrome.browser.falcon.ui.FalconTheme;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.HashSet;
@@ -267,13 +268,23 @@ public final class GrabberSheet implements MediaCaptureStore.Observer {
     private void start(CapturedMedia m, Variant v) {
         FalconDownloadManager manager = FalconDownloadManager.getInstance();
         String fileName = m.suggestedName(v);
+        // Private tabs: the item stays in memory only (URL and cookies never hit the disk).
+        boolean ephemeral = isPrivate();
         if (v == null || TextUtils.isEmpty(v.spec)) {
-            manager.enqueue(m.url, m.referer, m.userAgent, m.cookies, fileName, m.mimeType, m.size > 0 ? m.size : -1);
+            manager.enqueue(m.url, m.referer, m.userAgent, m.cookies, fileName, m.mimeType,
+                    m.size > 0 ? m.size : -1, ephemeral);
         } else {
-            manager.enqueueStream(m.url, m.referer, m.userAgent, m.cookies, fileName, v.spec, v.estimatedBytes);
+            manager.enqueueStream(m.url, m.referer, m.userAgent, m.cookies, fileName, v.spec,
+                    v.estimatedBytes, ephemeral);
         }
         toast("Downloading " + fileName);
         mDialog.dismiss();
+    }
+
+    private boolean isPrivate() {
+        if (mWebContents.isDestroyed()) return false;
+        Profile profile = Profile.fromWebContents(mWebContents);
+        return profile != null && profile.isOffTheRecord();
     }
 
     private static String displayName(CapturedMedia m) {

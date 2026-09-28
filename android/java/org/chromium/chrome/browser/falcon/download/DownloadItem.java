@@ -80,6 +80,11 @@ public final class DownloadItem {
     /** content:// URI once exported to the device's Downloads, else "". */
     public volatile String savedUri = "";
     public volatile long finishedAt;
+    /**
+     * Started from a private tab: never written to the downloads store (its URL, referer and
+     * cookies stay in memory), so it disappears from the list when the app restarts.
+     */
+    public volatile boolean ephemeral;
 
     /**
      * HLS/DASH download ({@link StreamDownloadTask}): JSON naming the playlists or manifest and

@@ -155,6 +155,11 @@ class DownloadRowAdapter extends RecyclerView.Adapter<DownloadRowAdapter.Holder>
     }
 
     static String statLine(DownloadItem item) {
+        String line = statLineOf(item);
+        return item.ephemeral ? "private · " + line : line;
+    }
+
+    private static String statLineOf(DownloadItem item) {
         String sep = " · ";
         long done = item.doneBytes();
         switch (item.state) {

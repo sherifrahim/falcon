@@ -158,6 +158,19 @@ public final class FalconDownloadManager {
             String fileName,
             String mimeType,
             long totalBytes) {
+        return enqueue(url, referer, userAgent, cookies, fileName, mimeType, totalBytes, false);
+    }
+
+    /** As above; |ephemeral| (private tabs) keeps the item out of the downloads store. */
+    public DownloadItem enqueue(
+            String url,
+            String referer,
+            String userAgent,
+            String cookies,
+            String fileName,
+            String mimeType,
+            long totalBytes,
+            boolean ephemeral) {
         ThreadUtils.assertOnUiThread();
         String name = HttpDownloadTask.sanitize(TextUtils.isEmpty(fileName) ? "download" : fileName);
         DownloadItem item =
@@ -171,6 +184,7 @@ public final class FalconDownloadManager {
                         mimeType,
                         totalBytes,
                         System.currentTimeMillis());
+        item.ephemeral = ephemeral;
         mItems.put(item.id, item);
         Log.i(TAG, "enqueue %s (%s)", name, DownloadItem.formatBytes(totalBytes));
         schedule();
@@ -190,7 +204,8 @@ public final class FalconDownloadManager {
             String cookies,
             String fileName,
             String spec,
-            long estimatedBytes) {
+            long estimatedBytes,
+            boolean ephemeral) {
         ThreadUtils.assertOnUiThread();
         String name = HttpDownloadTask.sanitize(TextUtils.isEmpty(fileName) ? "video.mp4" : fileName);
         DownloadItem item =
@@ -205,6 +220,7 @@ public final class FalconDownloadManager {
                         estimatedBytes,
                         System.currentTimeMillis());
         item.streamSpec = spec;
+        item.ephemeral = ephemeral;
         mItems.put(item.id, item);
         Log.i(TAG, "enqueue stream %s", name);
         schedule();
@@ -680,13 +696,38 @@ public final class FalconDownloadManager {
             Log.w(TAG, "could not load downloads: %s", e.getMessage());
         }
         mLoaded = true;
+        deleteOrphanParts();
+    }
+
+    /**
+     * Part files and stream directories no stored item owns: private downloads interrupted by
+     * the app closing (they are never stored), or items removed while their task was stopping.
+     */
+    private void deleteOrphanParts() {
+        final java.util.Set<String> owned = new java.util.HashSet<>(mItems.keySet());
+        mIo.execute(() -> {
+            File[] entries = partsDir().listFiles();
+            if (entries == null) return;
+            for (File f : entries) {
+                String name = f.getName();
+                int dot = name.indexOf('.');
+                if (dot <= 0 || owned.contains(name.substring(0, dot))) continue;
+                File[] children = f.listFiles();
+                if (children != null) {
+                    for (File c : children) c.delete();
+                }
+                f.delete();
+            }
+        });
     }
 
     private void save() {
         if (!mLoaded) return;
         final JSONArray arr = new JSONArray();
         try {
-            for (DownloadItem item : mItems.values()) arr.put(item.toJson());
+            for (DownloadItem item : mItems.values()) {
+                if (!item.ephemeral) arr.put(item.toJson());
+            }
         } catch (JSONException e) {
             Log.w(TAG, "could not serialise downloads: %s", e.getMessage());
             return;
