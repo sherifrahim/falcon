@@ -10,6 +10,10 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
+#include "base/values.h"
+#include "brave/browser/falcon/media/media_classify.h"
+#include "content/public/browser/global_routing_id.h"
+#include "content/public/browser/media_player_id.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "net/cookies/canonical_cookie.h"
@@ -37,12 +41,27 @@ class FalconMediaCaptureTabHelper
       const content::GlobalRequestID& request_id,
       const GURL& original_url,
       const blink::mojom::ResourceLoadInfo& resource_load_info) override;
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& validated_url) override;
+  void MediaStartedPlaying(const MediaPlayerInfo& video_type,
+                           const content::MediaPlayerId& id) override;
 
  private:
   friend class content::WebContentsUserData<FalconMediaCaptureTabHelper>;
   explicit FalconMediaCaptureTabHelper(content::WebContents* contents);
 
   struct Capture;
+  // Reports one resource (network-observed or read from a media element).
+  void Report(content::RenderFrameHost* frame,
+              const GURL& url,
+              MediaKind kind,
+              const std::string& mime_type,
+              int64_t size);
+  // A <video src=file.mp4> streams in ranges and may never "complete", so the
+  // elements' own sources are read from the frame as well.
+  void ScanMediaElements(content::RenderFrameHost* frame);
+  void OnMediaElements(content::GlobalRenderFrameHostId frame_id,
+                       base::Value result);
   void OnCookies(Capture capture,
                  const net::CookieAccessResultList& cookies,
                  const net::CookieAccessResultList& excluded);

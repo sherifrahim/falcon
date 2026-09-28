@@ -76,7 +76,12 @@ public final class MediaCaptureStore {
         Page page = webContents == null ? null : mPages.get(webContents);
         List<CapturedMedia> out = new ArrayList<>();
         if (page == null) return out;
-        for (CapturedMedia m : page.items) if (!m.hidden) out.add(m);
+        boolean hasStream = false;
+        for (CapturedMedia m : page.items) if (m.isStream()) hasStream = true;
+        for (CapturedMedia m : page.items) {
+            // With a playlist on the page, numbered pieces are its segments, not files.
+            if (!m.hidden && !(hasStream && m.looksLikeSegment())) out.add(m);
+        }
         Collections.reverse(out);
         return out;
     }
@@ -157,7 +162,7 @@ public final class MediaCaptureStore {
         if (page == null || !page.items.contains(media)) return;
         // A master lists its variant playlists: fold those that were captured separately.
         if (!media.childKeys.isEmpty()) {
-            Set<String> children = new HashSet<>(media.childKeys);
+            Set<String> children = media.childKeys;
             for (CapturedMedia m : page.items) {
                 if (m != media && children.contains(m.key())) m.hidden = true;
             }
@@ -182,13 +187,14 @@ public final class MediaCaptureStore {
         HlsPlaylist pl = HlsPlaylist.parse(text.body, text.finalUrl);
         List<Variant> variants = new ArrayList<>();
         if (!pl.isMaster) {
+            m.childKeys = segmentKeys(pl, new HashSet<>());
             if (!describeMedia(m, pl)) return;
             variants.add(new Variant("Original", 0, 0, false, hlsSpec(m.url, ""), -1));
             m.variants = variants;
             m.probe = Probe.READY;
             return;
         }
-        List<String> children = new ArrayList<>();
+        Set<String> children = new HashSet<>();
         for (HlsPlaylist.Variant v : pl.variants) children.add(CapturedMedia.key(v.url));
         for (HlsPlaylist.Rendition r : pl.renditions) {
             if (!r.url.isEmpty()) children.add(CapturedMedia.key(r.url));
@@ -209,7 +215,9 @@ public final class MediaCaptureStore {
                         : Long.compare(b.bandwidth, a.bandwidth));
         if (!sorted.isEmpty()) {
             StreamHttp.Text media = StreamHttp.getText(sorted.get(0).url, h);
-            if (!describeMedia(m, HlsPlaylist.parse(media.body, media.finalUrl))) return;
+            HlsPlaylist best = HlsPlaylist.parse(media.body, media.finalUrl);
+            m.childKeys = segmentKeys(best, new HashSet<>(children));
+            if (!describeMedia(m, best)) return;
         }
 
         Set<String> labels = new HashSet<>();
@@ -255,6 +263,12 @@ public final class MediaCaptureStore {
         StreamHttp.Text text = StreamHttp.getText(m.url, headers(m));
         DashManifest mpd = DashManifest.parse(text.body, text.finalUrl);
         m.durationSeconds = mpd.durationSeconds;
+        Set<String> segments = new HashSet<>();
+        for (DashManifest.Representation r : mpd.representations) {
+            if (r.init != null) segments.add(CapturedMedia.key(r.init.url));
+            for (DashManifest.Seg s : r.segments) segments.add(CapturedMedia.key(s.url));
+        }
+        m.childKeys = segments;
         if (mpd.dynamic) {
             m.probe = Probe.UNSUPPORTED;
             m.note = "live stream";
@@ -304,6 +318,14 @@ public final class MediaCaptureStore {
         }
         m.variants = variants;
         m.probe = Probe.READY;
+    }
+
+    private static Set<String> segmentKeys(HlsPlaylist pl, Set<String> into) {
+        for (HlsPlaylist.Segment s : pl.segments) {
+            into.add(CapturedMedia.key(s.url));
+            if (s.map != null) into.add(CapturedMedia.key(s.map.url));
+        }
+        return into;
     }
 
     private static String qualityLabel(int height, long bandwidth) {

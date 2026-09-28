@@ -13,8 +13,11 @@ import androidx.annotation.IntDef;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * One audio/video resource a page loaded: a plain file, an HLS playlist or a DASH manifest. Once
@@ -85,8 +88,11 @@ public final class CapturedMedia {
     public volatile double durationSeconds = -1;
     /** A variant/rendition playlist of a master that is also listed: shown under the master. */
     public volatile boolean hidden;
-    /** For a master playlist: host+path of the child playlists it references. */
-    public volatile List<String> childKeys = new ArrayList<>();
+    /**
+     * For a playlist/manifest: host+path of what it references (variant playlists, segments),
+     * so those captured separately fold under it.
+     */
+    public volatile Set<String> childKeys = new HashSet<>();
     public volatile List<Variant> variants = new ArrayList<>();
 
     public CapturedMedia(
@@ -130,6 +136,16 @@ public final class CapturedMedia {
         return ext.equals("mp3") || ext.equals("m4a") || ext.equals("aac") || ext.equals("ogg")
                 || ext.equals("oga") || ext.equals("opus") || ext.equals("flac")
                 || ext.equals("wav") || ext.equals("wma");
+    }
+
+    // "..._14.m4v", "seg-203.mp4": a numbered piece of an adaptive stream.
+    private static final Pattern SEGMENT_NAME =
+            Pattern.compile("(?i).*[_.-]\\d+\\.(m4v|m4a|mp4|m4s|webm|mp3|aac|ts)$");
+
+    /** A file whose name looks like one segment of a stream. */
+    public boolean looksLikeSegment() {
+        String last = Uri.parse(url).getLastPathSegment();
+        return kind == Kind.FILE && last != null && SEGMENT_NAME.matcher(last).matches();
     }
 
     public boolean isDownloadable() {

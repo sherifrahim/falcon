@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "brave/browser/falcon/media/media_classify.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_isolated_world_ids.h"
 #include "components/embedder_support/user_agent_utils.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -126,8 +127,86 @@ void FalconMediaCaptureTabHelper::ResourceLoadComplete(
   }
   const int64_t bytes =
       static_cast<int64_t>(info.total_received_bytes.InBytes());
-  if (kind == MediaKind::kFile &&
-      (IsChunkHost(url) || (bytes > 0 && bytes < kMinFileBytes))) {
+  if (kind == MediaKind::kFile && bytes > 0 && bytes < kMinFileBytes) {
+    return;
+  }
+  Report(render_frame_host, url, kind, info.mime_type, bytes);
+}
+
+void FalconMediaCaptureTabHelper::DidFinishLoad(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& validated_url) {
+  ScanMediaElements(render_frame_host);
+}
+
+void FalconMediaCaptureTabHelper::MediaStartedPlaying(
+    const MediaPlayerInfo& video_type,
+    const content::MediaPlayerId& id) {
+  ScanMediaElements(content::RenderFrameHost::FromID(id.frame_routing_id));
+}
+
+void FalconMediaCaptureTabHelper::ScanMediaElements(
+    content::RenderFrameHost* frame) {
+  if (!frame || !frame->IsRenderFrameLive() ||
+      !frame->GetLastCommittedURL().SchemeIsHTTPOrHTTPS()) {
+    return;
+  }
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  if (!profile || profile->IsOffTheRecord()) {
+    return;
+  }
+  // Direct http(s) sources only: blob: players are MSE, caught by their
+  // playlist/manifest requests instead.
+  static constexpr char16_t kScript[] =
+      u"(() => Array.from(document.querySelectorAll('video,audio'))"
+      u".map(m => [m.currentSrc || m.src ||"
+      u" ((m.querySelector('source') || {}).src || ''), m.tagName])"
+      u".filter(x => /^https?:/i.test(x[0])).slice(0, 20))()";
+  frame->ExecuteJavaScriptInIsolatedWorld(
+      kScript,
+      base::BindOnce(&FalconMediaCaptureTabHelper::OnMediaElements,
+                     weak_factory_.GetWeakPtr(), frame->GetGlobalId()),
+      ISOLATED_WORLD_ID_BRAVE_INTERNAL);
+}
+
+void FalconMediaCaptureTabHelper::OnMediaElements(
+    content::GlobalRenderFrameHostId frame_id,
+    base::Value result) {
+  content::RenderFrameHost* frame =
+      content::RenderFrameHost::FromID(frame_id);
+  if (!frame || !result.is_list()) {
+    return;
+  }
+  for (const base::Value& entry : result.GetList()) {
+    const base::ListValue* pair = entry.GetIfList();
+    if (!pair || pair->size() != 2 || !(*pair)[0].is_string()) {
+      continue;
+    }
+    const GURL url((*pair)[0].GetString());
+    if (!url.SchemeIsHTTPOrHTTPS()) {
+      continue;
+    }
+    MediaKind kind = ClassifyMedia(url, std::string());
+    if (kind == MediaKind::kNone) {
+      // An element's source is media whatever its URL looks like.
+      kind = MediaKind::kFile;
+    }
+    Report(frame, url, kind, std::string(), 0);
+  }
+}
+
+void FalconMediaCaptureTabHelper::Report(content::RenderFrameHost* frame,
+                                         const GURL& url,
+                                         MediaKind kind,
+                                         const std::string& mime_type,
+                                         int64_t size) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  if (!profile || profile->IsOffTheRecord()) {
+    return;
+  }
+  if (kind == MediaKind::kFile && IsChunkHost(url)) {
     return;
   }
   if (seen_.size() >= kMaxCapturesPerPage ||
@@ -138,14 +217,13 @@ void FalconMediaCaptureTabHelper::ResourceLoadComplete(
   Capture capture;
   capture.kind = kind;
   capture.url = url;
-  capture.mime_type = info.mime_type;
-  capture.size = bytes;
+  capture.mime_type = mime_type;
+  capture.size = size;
   capture.page_url = web_contents()->GetLastCommittedURL();
   capture.page_title = web_contents()->GetTitle();
   // Embedded players check the referer of their own frame, not the page's.
-  const GURL frame_url = render_frame_host
-                             ? render_frame_host->GetLastCommittedURL()
-                             : capture.page_url;
+  const GURL frame_url =
+      frame ? frame->GetLastCommittedURL() : capture.page_url;
   if (frame_url.SchemeIsHTTPOrHTTPS()) {
     capture.referer = frame_url.spec();
   }
