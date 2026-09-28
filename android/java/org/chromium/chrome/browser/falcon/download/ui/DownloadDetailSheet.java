@@ -161,6 +161,10 @@ public class DownloadDetailSheet extends BottomSheetDialogFragment
                 mEta.setText("!");
                 mEtaLabel.setText("FAILED");
                 break;
+            case State.CANCELLED:
+                mEta.setText("×");
+                mEtaLabel.setText("CANCELLED");
+                break;
             default:
                 mEta.setText(String.format(Locale.US, "%d%%", pct));
                 mEtaLabel.setText(item.state == State.WAITING_WIFI ? "WI-FI" : "QUEUED");
