@@ -50,6 +50,8 @@ import org.chromium.chrome.browser.layouts.LayoutStateProvider;
 import org.chromium.chrome.browser.multiwindow.BraveMultiWindowUtils;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
+import org.chromium.chrome.browser.falcon.FalconPrefs;
+import org.chromium.chrome.browser.falcon.media.MediaCaptureStore;
 import org.chromium.chrome.browser.open_in_app.OpenInAppMenuItemProvider;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.readaloud.ReadAloudController;
@@ -1035,6 +1037,23 @@ public class BraveTabbedAppMenuPropertiesDelegate extends TabbedAppMenuPropertie
             }
         }
 
+        // Falcon: the media grabber (1DM-style), with how many items the page has played.
+        Tab mediaTab = mActivityTabProvider.get();
+        if (mediaTab != null
+                && !mediaTab.isIncognito()
+                && mediaTab.getWebContents() != null
+                && mediaTab.getUrl().getScheme().startsWith("http")
+                && FalconPrefs.isMediaCaptureEnabled()) {
+            MVCListAdapter.ListItem media = buildFalconMediaItem();
+            int count = MediaCaptureStore.getInstance().count(mediaTab.getWebContents());
+            if (count > 0) {
+                media.model.set(
+                        AppMenuItemProperties.TITLE,
+                        mContext.getString(R.string.falcon_media_menu) + " · " + count);
+            }
+            addMenuItemAfter(modelList, media, Arrays.asList(R.id.downloads_menu_id));
+        }
+
         // Add Brave specific items (Wallet is handled by policy-controlled mechanism).
         if (ChromeFeatureList.isEnabled(BraveFeatureList.BRAVE_PLAYLIST)
                 && ChromeSharedPreferences.getInstance()
@@ -1219,6 +1238,18 @@ public class BraveTabbedAppMenuPropertiesDelegate extends TabbedAppMenuPropertie
                         R.id.brave_leo_id,
                         R.string.menu_brave_leo,
                         shouldShowIconBeforeItem() ? R.drawable.ic_product_brave_leo : 0,
+                        isMenuIconAtStart()));
+    }
+
+    private MVCListAdapter.ListItem buildFalconMediaItem() {
+        return new MVCListAdapter.ListItem(
+                AppMenuHandler.AppMenuItemType.STANDARD,
+                AppMenuItemUtils.buildModelForStandardMenuItem(
+                        mContext,
+                        mAppMenuItemTheme,
+                        R.id.falcon_media_grabber_id,
+                        R.string.falcon_media_menu,
+                        shouldShowIconBeforeItem() ? R.drawable.ic_arrow_circle_down : 0,
                         isMenuIconAtStart()));
     }
 

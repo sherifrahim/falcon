@@ -42,7 +42,7 @@ import java.util.Set;
  * stream with several qualities opens in place to show them; one tap downloads. The per-site
  * switch at the top stops capturing on this site.
  */
-final class GrabberSheet implements MediaCaptureStore.Observer {
+public final class GrabberSheet implements MediaCaptureStore.Observer {
     private final Activity mActivity;
     private final WebContents mWebContents;
     private final String mHost;
@@ -52,7 +52,7 @@ final class GrabberSheet implements MediaCaptureStore.Observer {
     private final Set<CapturedMedia> mExpanded = new HashSet<>();
     private final float mDp;
 
-    static void show(Activity activity, WebContents webContents, String pageUrl) {
+    public static void show(Activity activity, WebContents webContents, String pageUrl) {
         new GrabberSheet(activity, webContents, pageUrl).mDialog.show();
     }
 

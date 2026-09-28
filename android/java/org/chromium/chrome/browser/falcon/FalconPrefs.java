@@ -186,8 +186,6 @@ public final class FalconPrefs {
 
     private static final String MEDIA_CAPTURE = "falcon_media_capture";
     private static final String MEDIA_CAPTURE_OFF_SITES = "falcon_media_capture_off_sites";
-    private static final String GRABBER_BUTTON_Y = "falcon_grabber_button_y";
-    private static final String GRABBER_BUTTON_LEFT = "falcon_grabber_button_left";
 
     /** Media grabber: list the audio/video pages load (Settings › Falcon › Capture audio & video). */
     public static boolean isMediaCaptureEnabled() {
@@ -211,19 +209,5 @@ public final class FalconPrefs {
         } else {
             prefs().addToStringSet(MEDIA_CAPTURE_OFF_SITES, host);
         }
-    }
-
-    /** Where the floating grab button was dragged to: fraction of the height, and which edge. */
-    public static float getGrabberButtonY() {
-        return prefs().readFloat(GRABBER_BUTTON_Y, 0.62f);
-    }
-
-    public static boolean isGrabberButtonLeft() {
-        return prefs().readBoolean(GRABBER_BUTTON_LEFT, false);
-    }
-
-    public static void setGrabberButtonPosition(float y, boolean left) {
-        prefs().writeFloat(GRABBER_BUTTON_Y, y);
-        prefs().writeBoolean(GRABBER_BUTTON_LEFT, left);
     }
 }

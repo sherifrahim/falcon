@@ -50,7 +50,6 @@ brave_java_sources = [
   "../../brave/android/java/org/chromium/chrome/browser/falcon/media/FalconMediaBridge.java",
   "../../brave/android/java/org/chromium/chrome/browser/falcon/media/GrabberSheet.java",
   "../../brave/android/java/org/chromium/chrome/browser/falcon/media/MediaCaptureStore.java",
-  "../../brave/android/java/org/chromium/chrome/browser/falcon/media/MediaGrabberController.java",
   "../../brave/android/java/org/chromium/chrome/browser/falcon/download/ui/AddDownloadSheet.java",
   "../../brave/android/java/org/chromium/chrome/browser/falcon/download/ui/DownloadDetailSheet.java",
   "../../brave/android/java/org/chromium/chrome/browser/falcon/download/ui/DownloadRowAdapter.java",
