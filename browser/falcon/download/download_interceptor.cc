@@ -257,7 +257,8 @@ bool MaybeInterceptDownload(Profile* profile,
   const bool is_torrent =
       base::StartsWith(mime_type, "application/x-bittorrent") ||
       base::EndsWith(base::ToLowerASCII(filename), ".torrent");
-  // Small files: Chromium's downloader is fine and keeps the download bubble.
+  // Files under the user's minimum size stay with Chromium (0 by default: every
+  // web download goes to the engine). falcon://downloader lists those too.
   const int64_t min_bytes =
       profile->GetPrefs()->GetInt64(prefs::kDownloadMinInterceptBytes);
   if (!is_torrent && content_length >= 0 && content_length < min_bytes) {

@@ -85,8 +85,9 @@ void DownloadNotifier::OnDownloadFinished(
   data.context_message = u" ";  // hide origin line
 
   const base::FilePath path =
-      finished.success ? base::FilePath::FromUTF8Unsafe(finished.path)
-                       : base::FilePath();
+      finished.success
+          ? base::FilePath::FromUTF8Unsafe(finished.path).NormalizePathSeparators()
+          : base::FilePath();
   auto delegate =
       base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
           base::BindRepeating(&OnNotificationClick, profile->GetWeakPtr(),

@@ -11,6 +11,7 @@
 #include <string>
 #include <string_view>
 #include <utility>
+#include <vector>
 
 #include "base/check.h"
 #include "base/check_op.h"
@@ -34,6 +35,9 @@
 #include "brave/browser/falcon/download/download_tracker.h"
 #include "brave/browser/falcon/download/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/download/public/common/download_interrupt_reasons.h"
+#include "components/download/public/common/download_item.h"
+#include "content/public/browser/download_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "brave/browser/ui/webui/brave_webui_source.h"
 #include "brave/components/falcon_downloader_ui/resources/grit/falcon_downloader_generated_map.h"
@@ -105,6 +109,15 @@ class FalconDownloaderMessageHandler : public content::WebUIMessageHandler {
         "falcon_downloader.refreshUrl",
         base::BindRepeating(&FalconDownloaderMessageHandler::RefreshUrl,
                             base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "falcon_downloader.getBrowserDownloads",
+        base::BindRepeating(&FalconDownloaderMessageHandler::GetBrowserDownloads,
+                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "falcon_downloader.browserDownloadAction",
+        base::BindRepeating(
+            &FalconDownloaderMessageHandler::BrowserDownloadAction,
+            base::Unretained(this)));
     web_ui()->RegisterMessageCallback(
         "falcon_downloader.getHistory",
         base::BindRepeating(&FalconDownloaderMessageHandler::GetHistory,
@@ -306,7 +319,8 @@ class FalconDownloaderMessageHandler : public content::WebUIMessageHandler {
     CHECK_EQ(3U, args.size());
     const std::string gid = args[0].GetString();
     const base::FilePath path =
-        base::FilePath::FromUTF8Unsafe(args[1].GetString());
+        base::FilePath::FromUTF8Unsafe(args[1].GetString())
+            .NormalizePathSeparators();
     const base::FilePath new_name =
         base::FilePath::FromUTF8Unsafe(args[2].GetString());
     if (path.empty() || path.ReferencesParent() || new_name.empty() ||
@@ -357,7 +371,8 @@ class FalconDownloaderMessageHandler : public content::WebUIMessageHandler {
   void OpenInSandbox(const base::ListValue& args) {
     CHECK_EQ(1U, args.size());
     const base::FilePath path =
-        base::FilePath::FromUTF8Unsafe(args[0].GetString());
+        base::FilePath::FromUTF8Unsafe(args[0].GetString())
+            .NormalizePathSeparators();
     if (path.empty() || path.ReferencesParent()) {
       return;
     }
@@ -508,7 +523,8 @@ class FalconDownloaderMessageHandler : public content::WebUIMessageHandler {
   void DeleteFile(const base::ListValue& args) {
     CHECK_EQ(1U, args.size());
     const base::FilePath path =
-        base::FilePath::FromUTF8Unsafe(args[0].GetString());
+        base::FilePath::FromUTF8Unsafe(args[0].GetString())
+            .NormalizePathSeparators();
     if (path.empty() || path.ReferencesParent()) {
       return;
     }
@@ -531,10 +547,132 @@ class FalconDownloaderMessageHandler : public content::WebUIMessageHandler {
 
   Profile* profile() { return Profile::FromWebUI(web_ui()); }
 
-  // args: [path]
+  // Downloads Chromium handled itself (under the minimum size, private
+  // windows, blob:/data: links, excluded hosts or types). Chromium's own
+  // download button and bubble are hidden while the engine is on, so this page
+  // is where they show up. Private windows' downloads are included while those
+  // windows exist; they are not persisted anywhere by Falcon.
+  std::vector<Profile*> DownloadProfiles() {
+    Profile* original = profile()->GetOriginalProfile();
+    std::vector<Profile*> out = {original};
+    for (Profile* otr : original->GetAllOffTheRecordProfiles()) {
+      out.push_back(otr);
+    }
+    return out;
+  }
+
+  download::DownloadItem* FindBrowserDownload(const std::string& guid) {
+    for (Profile* p : DownloadProfiles()) {
+      content::DownloadManager* manager = p->GetDownloadManager();
+      if (!manager) {
+        continue;
+      }
+      if (download::DownloadItem* item = manager->GetDownloadByGuid(guid)) {
+        return item;
+      }
+    }
+    return nullptr;
+  }
+
+  static base::DictValue BrowserDownloadToDict(download::DownloadItem* item,
+                                               bool off_the_record) {
+    base::DictValue d;
+    d.Set("id", item->GetGuid());
+    d.Set("name", item->GetFileNameToReportUser().AsUTF8Unsafe());
+    d.Set("path", item->GetTargetFilePath().AsUTF8Unsafe());
+    d.Set("url", item->GetURL().spec());
+    std::string state;
+    switch (item->GetState()) {
+      case download::DownloadItem::IN_PROGRESS:
+        state = item->IsPaused() ? "paused" : "active";
+        break;
+      case download::DownloadItem::COMPLETE:
+        state = "complete";
+        break;
+      case download::DownloadItem::CANCELLED:
+        state = "cancelled";
+        break;
+      case download::DownloadItem::INTERRUPTED:
+      default:
+        state = "error";
+        break;
+    }
+    d.Set("state", state);
+    d.Set("total", static_cast<double>(item->GetTotalBytes()));
+    d.Set("received", static_cast<double>(item->GetReceivedBytes()));
+    d.Set("speed", static_cast<double>(item->CurrentSpeed()));
+    d.Set("dangerous", item->IsDangerous() || item->IsInsecure());
+    d.Set("canResume", item->CanResume());
+    d.Set("fileRemoved", item->GetFileExternallyRemoved());
+    d.Set("started", item->GetStartTime().InMillisecondsFSinceUnixEpoch());
+    d.Set("private", off_the_record);
+    if (item->GetState() == download::DownloadItem::INTERRUPTED) {
+      d.Set("error",
+            download::DownloadInterruptReasonToString(item->GetLastReason()));
+    }
+    return d;
+  }
+
+  // args: [callbackId]
+  void GetBrowserDownloads(const base::ListValue& args) {
+    CHECK_EQ(1U, args.size());
+    AllowJavascript();
+    base::ListValue list;
+    for (Profile* p : DownloadProfiles()) {
+      content::DownloadManager* manager = p->GetDownloadManager();
+      if (!manager) {
+        continue;
+      }
+      content::DownloadManager::DownloadVector items;
+      manager->GetAllDownloads(&items);
+      for (download::DownloadItem* item : items) {
+        if (item->IsTransient() || item->IsTemporary()) {
+          continue;
+        }
+        list.Append(BrowserDownloadToDict(item, p->IsOffTheRecord()));
+      }
+    }
+    ResolveJavascriptCallback(args[0], list);
+  }
+
+  // args: [guid, action]
+  void BrowserDownloadAction(const base::ListValue& args) {
+    CHECK_EQ(2U, args.size());
+    download::DownloadItem* item = FindBrowserDownload(args[0].GetString());
+    if (!item) {
+      return;
+    }
+    const std::string& action = args[1].GetString();
+    if (action == "pause") {
+      item->Pause();
+    } else if (action == "resume") {
+      item->Resume(/*user_resume=*/true);
+    } else if (action == "cancel") {
+      item->Cancel(/*user_cancel=*/true);
+    } else if (action == "remove") {
+      // Drops the entry (and a dangerous file that was never kept); a
+      // finished file stays on disk.
+      item->Remove();
+    } else if (action == "keep") {
+      if (item->IsInsecure()) {
+        item->ValidateInsecureDownload();
+      } else if (item->IsDangerous()) {
+        item->ValidateDangerousDownload();
+      }
+    } else if (action == "open") {
+      item->OpenDownload();
+    } else if (action == "folder") {
+      item->ShowDownloadInShell();
+    }
+  }
+
+  // args: [path]. aria2 reports "C:/dir/file"; the Windows shell calls behind
+  // ShowItemInFolder/OpenItem silently fail on forward slashes.
   void OpenFolder(const base::ListValue& args) {
     CHECK_EQ(1U, args.size());
-    const base::FilePath path = base::FilePath::FromUTF8Unsafe(args[0].GetString());
+    const base::FilePath path =
+        base::FilePath::FromUTF8Unsafe(args[0].GetString())
+            .NormalizePathSeparators();
     if (!path.empty()) {
       platform_util::ShowItemInFolder(profile(), path);
     }
@@ -543,7 +681,9 @@ class FalconDownloaderMessageHandler : public content::WebUIMessageHandler {
   // args: [path]
   void OpenFile(const base::ListValue& args) {
     CHECK_EQ(1U, args.size());
-    const base::FilePath path = base::FilePath::FromUTF8Unsafe(args[0].GetString());
+    const base::FilePath path =
+        base::FilePath::FromUTF8Unsafe(args[0].GetString())
+            .NormalizePathSeparators();
     if (!path.empty()) {
       platform_util::OpenItem(profile(), path, platform_util::OPEN_FILE,
                               platform_util::OpenOperationCallback());

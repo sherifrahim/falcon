@@ -18,7 +18,7 @@ namespace falcon::prefs {
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(kDownloadEngineEnabled, true);
-  registry->RegisterInt64Pref(kDownloadMinInterceptBytes, 1024 * 1024);
+  registry->RegisterInt64Pref(kDownloadMinInterceptBytes, 0);
   registry->RegisterBooleanPref(kDownloadCategoriesEnabled, true);
   registry->RegisterBooleanPref(kDownloadMagnetEnabled, true);
   registry->RegisterBooleanPref(kDownloadNotificationsEnabled, true);

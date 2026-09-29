@@ -214,7 +214,8 @@ void DownloadSecurity::StartScan(const DownloadTracker::Finished& finished) {
         {base::MayBlock(), base::WithBaseSyncPrimitives(),
          base::TaskPriority::USER_VISIBLE},
         base::BindOnce(&RunLocalScan,
-                       base::FilePath::FromUTF8Unsafe(finished.paths[i]),
+                       base::FilePath::FromUTF8Unsafe(finished.paths[i])
+                           .NormalizePathSeparators(),
                        source),
         base::BindOnce(&DownloadSecurity::OnLocalScan,
                        weak_factory_.GetWeakPtr(), finished.gid, i));
@@ -346,8 +347,9 @@ void DownloadSecurity::QuarantineFlagged(const std::string& gid, size_t index) {
   }
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&MoveToQuarantine, base::FilePath::FromUTF8Unsafe(
-                                            it->second.files[index].path)),
+      base::BindOnce(&MoveToQuarantine,
+                     base::FilePath::FromUTF8Unsafe(it->second.files[index].path)
+                         .NormalizePathSeparators()),
       base::BindOnce(&DownloadSecurity::OnQuarantined,
                      weak_factory_.GetWeakPtr(), gid, index));
 }
@@ -402,7 +404,9 @@ void DownloadSecurity::MaybeOpen(const Result& result) {
         f.path.empty()) {
       continue;
     }
-    platform_util::OpenItem(profile, base::FilePath::FromUTF8Unsafe(f.path),
+    platform_util::OpenItem(profile,
+                            base::FilePath::FromUTF8Unsafe(f.path)
+                                .NormalizePathSeparators(),
                             platform_util::OPEN_FILE,
                             platform_util::OpenOperationCallback());
     // One launch per download is plenty (torrents may hold many files).

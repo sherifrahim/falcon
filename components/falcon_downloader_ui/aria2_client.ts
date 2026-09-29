@@ -44,6 +44,64 @@ export interface Aria2Download {
   // longer knows the gid).
   fromHistory?: boolean
   finishedAt?: number
+  // Set on entries synthesised from downloads Chromium handled itself
+  // (getBrowserDownloads); actions go through browserDownloadAction.
+  fromBrowser?: boolean
+  browserId?: string
+  isPrivate?: boolean
+  dangerous?: boolean
+  canResume?: boolean
+  fileRemoved?: boolean
+  cancelled?: boolean
+}
+
+// One download Chromium handled itself, as sent by getBrowserDownloads.
+export interface BrowserDownload {
+  id: string
+  name: string
+  path: string
+  url: string
+  state: 'active' | 'paused' | 'complete' | 'cancelled' | 'error'
+  total: number
+  received: number
+  speed: number
+  dangerous: boolean
+  canResume: boolean
+  fileRemoved: boolean
+  started: number
+  private: boolean
+  error?: string
+}
+
+export function browserToDownload(b: BrowserDownload): Aria2Download {
+  const total = String(Math.max(0, Math.round(b.total || 0)))
+  const done = String(Math.max(0, Math.round(b.received || 0)))
+  const path = b.path || b.name
+  return {
+    gid: `browser:${b.id}`,
+    status: b.state === 'cancelled' ? 'removed' : b.state,
+    totalLength: total,
+    completedLength: done,
+    uploadLength: '0',
+    downloadSpeed: String(Math.max(0, Math.round(b.speed || 0))),
+    uploadSpeed: '0',
+    connections: '1',
+    errorCode: b.state === 'error' ? '1' : '0',
+    errorMessage: b.error,
+    dir: path ? path.replace(/[\\/][^\\/]*$/, '') : '',
+    files: [{
+      index: '1', path, length: total, completedLength: done,
+      selected: 'true', uris: b.url ? [{ uri: b.url, status: 'used' }] : [],
+    }],
+    finishedAt: Math.round((b.started || 0) / 1000),
+    fromBrowser: true,
+    browserId: b.id,
+    isPrivate: b.private,
+    dangerous: b.dangerous,
+    canResume: b.canResume,
+    fileRemoved: b.fileRemoved,
+    cancelled: b.state === 'cancelled',
+  }
 }
 
 // One row of falcon.history.entries (local state), as sent by getHistory.

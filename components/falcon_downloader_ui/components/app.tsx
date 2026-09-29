@@ -9,13 +9,13 @@ import { loadTimeData } from '$web-common/loadTimeData'
 import { sendWithPromise } from 'chrome://resources/js/cr.js'
 import {
   Aria2Client, Aria2Download, Aria2GlobalStat, HistoryEntry, expandBatch,
-  historyToDownload, isDownloadable,
+  historyToDownload, isDownloadable, BrowserDownload, browserToDownload,
 } from '../aria2_client'
 import {
   Button, Chip, ErrorText, Filter, Input, Meta, STATUS_ORDER, Select, SortKey,
   Stat, fmtBytes, fmtSpeed, matchesFilter, nameOf,
 } from './common'
-import { DownloadRow, ScanResult } from './download_row'
+import { BrowserDownloadRow, DownloadRow, ScanResult } from './download_row'
 import { Grabber } from './grabber'
 import { MediaJob, MediaPicker, MediaRow, SniffedList, SniffedTab } from './media_panel'
 import { SettingsDrawer } from './settings_drawer'
@@ -198,6 +198,9 @@ export function App() {
   const [drag, setDrag] = React.useState(false)
   const [scans, setScans] = React.useState<Record<string, ScanResult>>({})
   const [history, setHistory] = React.useState<HistoryEntry[]>([])
+  // Downloads Chromium handled itself; listed here because Chromium's own
+  // download button and bubble are hidden while the engine is on.
+  const [browserDl, setBrowserDl] = React.useState<BrowserDownload[]>([])
   const [stats, setStats] = React.useState<{ totalBytes: number; totalFiles: number } | null>(null)
   const [optionsOpen, setOptionsOpen] = React.useState(false)
   const [opts, setOpts] = React.useState<AddOptions>(EMPTY_OPTIONS)
@@ -246,6 +249,12 @@ export function App() {
     sendWithPromise('falcon_downloader.getSniffedMedia').then((tabs: SniffedTab[]) => setSniffed(tabs ?? [])).catch(() => {})
   }, [])
 
+  const loadBrowser = React.useCallback(() => {
+    sendWithPromise('falcon_downloader.getBrowserDownloads')
+      .then((list: BrowserDownload[]) => setBrowserDl(list ?? []))
+      .catch(() => {})
+  }, [])
+
   const loadHistory = React.useCallback(() => {
     sendWithPromise('falcon_downloader.getHistory')
       .then((r: { entries: HistoryEntry[]; stats: { totalBytes: number; totalFiles: number } }) => {
@@ -264,7 +273,8 @@ export function App() {
     client.connect()
     loadHistory()
     loadMedia()
-    const timer = window.setInterval(() => { refresh(); loadMedia() }, 1000)
+    loadBrowser()
+    const timer = window.setInterval(() => { refresh(); loadMedia(); loadBrowser() }, 1000)
     const scanTimer = window.setInterval(() => {
       sendWithPromise('falcon_downloader.getScanResults').then(setScans).catch(() => {})
       loadHistory()
@@ -281,7 +291,7 @@ export function App() {
       window.removeEventListener('hashchange', onHash)
       client.close()
     }
-  }, [client, refresh, loadHistory, loadMedia])
+  }, [client, refresh, loadHistory, loadMedia, loadBrowser])
 
   const poke = () => chrome.send('falcon_downloader.poke')
 
@@ -364,6 +374,7 @@ export function App() {
   const merged: Aria2Download[] = [
     ...downloads,
     ...history.filter((h) => !known.has(h.gid)).map(historyToDownload),
+    ...browserDl.map(browserToDownload),
   ]
   const queue = downloads.filter((d) => d.status === 'waiting').map((d) => d.gid)
   const visible = merged
@@ -371,7 +382,7 @@ export function App() {
     .filter((d) => !q || nameOf(d).toLowerCase().includes(q))
   const cmp: Record<SortKey, (a: Aria2Download, b: Aria2Download) => number> = {
     added: (a, b) =>
-      a.fromHistory && b.fromHistory
+      (a.fromHistory || a.fromBrowser) && (b.fromHistory || b.fromBrowser)
         ? (b.finishedAt ?? 0) - (a.finishedAt ?? 0)
         : (order.current.get(b.gid) ?? -1) - (order.current.get(a.gid) ?? -1),
     name: (a, b) => nameOf(a).localeCompare(nameOf(b)),
@@ -387,7 +398,8 @@ export function App() {
     .filter((j) => !q || (j.title || j.url).toLowerCase().includes(q))
     .sort((a, b) => b.started - a.started)
   const counts = {
-    active: downloads.filter((d) => matchesFilter(d, 'active')).length + mediaJobs.filter(mediaLive).length,
+    active: downloads.filter((d) => matchesFilter(d, 'active')).length + mediaJobs.filter(mediaLive).length
+      + merged.filter((d) => d.fromBrowser && matchesFilter(d, 'active')).length,
     done: merged.filter((d) => d.status === 'complete').length + mediaJobs.filter((j) => j.status === 'done').length,
     failed: merged.filter((d) => d.status === 'error').length + mediaJobs.filter((j) => j.status === 'error').length,
   }
@@ -586,7 +598,9 @@ export function App() {
           {visibleMedia.map((j) => (
             <MediaRow key={`m${j.id}`} job={j} onChange={() => window.setTimeout(loadMedia, 200)} />
           ))}
-          {visible.map((d) => (
+          {visible.map((d) => d.fromBrowser ? (
+            <BrowserDownloadRow key={d.gid} d={d} refresh={loadBrowser} />
+          ) : (
             <DownloadRow
               key={d.gid} d={d} client={client}
               open={openGid === d.gid}

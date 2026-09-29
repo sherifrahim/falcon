@@ -49,6 +49,64 @@ function Ring({ pct, status }: { pct: number; status: Aria2Status }) {
   )
 }
 
+// A download Chromium handled itself (small file, private window, blob: link):
+// the same card, driven through browserDownloadAction instead of aria2.
+export function BrowserDownloadRow({ d, refresh }: { d: Aria2Download; refresh: () => void }) {
+  const total = +d.totalLength
+  const done = +d.completedLength
+  const speed = +d.downloadSpeed
+  const pct = total > 0 ? (done / total) * 100 : 0
+  const act = (action: string) => {
+    chrome.send('falcon_downloader.browserDownloadAction', [d.browserId, action])
+    window.setTimeout(refresh, 300)
+  }
+  const status = d.status
+  const label = d.dangerous && status !== 'complete'
+    ? 'Needs your OK'
+    : d.cancelled ? 'Cancelled' : d.fileRemoved ? 'File deleted' : STATUS_LABEL[status]
+  const path = d.files?.[0]?.path ?? ''
+  return (
+    <Row $open={false}>
+      <Ring pct={pct} status={status} />
+      <div style={{ minWidth: 0 }}>
+        <Name title={path || nameOf(d)}>{nameOf(d)}</Name>
+        <Meta>
+          <span>{label}{d.isPrivate ? ' · private window' : ''} · browser</span>
+          <span className="mono">
+            {fmtBytes(done)}
+            {total > 0 ? ` / ${fmtBytes(total)}` : ''}
+          </span>
+          {status === 'active' && <span className="mono">↓ {fmtSpeed(speed)}</span>}
+          {status === 'error' && d.errorMessage && <ErrorText>{d.errorMessage}</ErrorText>}
+        </Meta>
+      </div>
+      <Actions>
+        {d.dangerous && status !== 'complete' && (
+          <Button $small $primary onClick={() => act('keep')} title="Chromium flagged this file; keep it anyway">Keep</Button>
+        )}
+        {status === 'active' && !d.dangerous && <Button $small onClick={() => act('pause')}>Pause</Button>}
+        {(status === 'paused' || (status === 'error' && d.canResume)) && (
+          <Button $small $primary onClick={() => act('resume')}>Resume</Button>
+        )}
+        {status === 'complete' && !d.fileRemoved && (
+          <>
+            <Button $small onClick={() => act('open')}>Open</Button>
+            <Button $small onClick={() => act('folder')}>Folder</Button>
+          </>
+        )}
+        {(status === 'active' || status === 'paused') ? (
+          <Button $small $danger onClick={() => act('cancel')}>Cancel</Button>
+        ) : (
+          <Button $small onClick={() => act('remove')} title={d.dangerous ? 'Discard the file' : 'Remove from the list (the file stays)'}>
+            {d.dangerous && status !== 'complete' ? 'Discard' : 'Remove'}
+          </Button>
+        )}
+      </Actions>
+      {(status === 'active' || status === 'paused') && <Bar $pct={pct} $status={status} />}
+    </Row>
+  )
+}
+
 const Name = styled.div`
   font-size: 14px;
   font-weight: 600;
