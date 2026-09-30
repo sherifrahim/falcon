@@ -1,258 +1,84 @@
-![Brave Browser](./docs/images/brave.svg)
-
-# Brave Core
-
-Brave Core is a set of changes, APIs, and scripts used for customizing Chromium
-to make the Brave browser. Please also check
-https://github.com/brave/brave-browser which only holds the issues, releases and
-the wiki.
-
-## Overview
-
-This repository holds the build tools needed to build the Brave desktop browser
-for all platforms. In particular, it fetches and syncs code from the projects
-defined in `package.json` and `src/brave/DEPS`:
-
-- [Chromium](https://chromium.googlesource.com/chromium/src.git)
-  - Fetches code via `depot_tools`.
-  - Sets the branch for Chromium (ex: 65.0.3325.181).
-- [brave-core](https://github.com/brave/brave-core)
-  - Mounted at `src/brave`.
-  - Maintains patches for 3rd party Chromium code.
-- [adblock-rust](https://github.com/brave/adblock-rust)
-  - Implements Brave's adblock engine.
-  - Linked through
-    [brave/adblock-rust-ffi](https://github.com/brave/brave-core/tree/master/components/adblock_rust_ffi).
-
-## Resources
-
-- [Documentation and guides](https://github.com/brave/brave-core/blob/master/docs/README.md)
-- [Issues](https://github.com/brave/brave-browser/issues)
-- [Releases](https://github.com/brave/brave-browser/releases)
-- [Wiki](https://github.com/brave/brave-browser/wiki)
-
-## Downloads
-
-You can [visit our website](https://brave.com/download) to get the latest stable
-release.
-
-## Contributing
-
-Please see the [contributing guidelines](./CONTRIBUTING.md).
-
-Our [Wiki](https://github.com/brave/brave-browser/wiki) also has some useful
-technical information, especially about setting the development environment.
-
-## Security Policy
-
-Please see the [security policy](./SECURITY.md).
-
-## Community
-
-[Join the Q&A community](https://community.brave.app/) if you'd like to get more
-involved with Brave. You can
-[ask for help](https://community.brave.app/c/support-and-troubleshooting),
-[discuss features you'd like to see](https://community.brave.app/c/brave-feature-requests),
-and a lot more. We'd love to have your help so that we can continue improving
-Brave.
-
-You can also ask questions and interact in the
-[`community-guest`](https://bravesoftware.slack.com) channel on Brave Software's
-Slack.
-
-Help us translate Brave to your language by submitting translations at
-https://explore.transifex.com/brave/brave_en/.
-
-Follow [@brave](https://x.com/brave) on X for important news and announcements.
-
-## Install prerequisites
-
-Follow the instructions for your platform:
-
-- [Android](https://github.com/brave/brave-browser/wiki/Android-Development-Environment)
-- [Linux](https://github.com/brave/brave-browser/wiki/Linux-Development-Environment)
-- [iOS](https://github.com/brave/brave-browser/wiki/iOS-Development-Environment)
-- [macOS](https://github.com/brave/brave-browser/wiki/macOS-Development-Environment)
-- [Windows](https://github.com/brave/brave-browser/wiki/Windows-Development-Environment)
-
-## Clone and initialize
-
-Once you have the prerequisites installed, you can get the code and initialize
-the build environment.
-
-**Clone the repo.** `brave-core` must be checked out into `./src/brave` within a
-pre-existing project folder:
-
-```bash
-git clone git@github.com:brave/brave-core.git path-to-your-project-folder/src/brave
-cd path-to-your-project-folder/src/brave
-```
-
-**Initialize the build environment.** This step will download the Chromium
-source, which has a large history (10's of gigabytes of data). This might take a
-really long time to finish depending on internet speed.
-
-```bash
-# Most builds:
-pnpm run init
-
-# Android builds (replace `arm` with whichever CPU type you want to build for):
-pnpm run init --target_os=android --target_arch=arm
-
-# iOS builds:
-pnpm run init --target_os=ios
-```
-
-Additional config needed to build are documented at
-https://github.com/brave/brave-browser/wiki/Build-configuration
-
-Internal developers can find more information at
-https://github.com/brave/internal/wiki/Build-configuration
-
-## Build Brave
-
-The default build type is component.
-
-```
-# start the component build compile
-pnpm run build
-```
-
-To do a release build:
-
-```
-# start the release compile
-pnpm run build Release
-```
-
-brave-core based android builds should use
-`pnpm run build --target_os=android --target_arch=arm`
-
-brave-core based iOS builds should use the Xcode project found in
-`ios/brave-ios/App`. You can open this project directly or run
-`pnpm run ios_bootstrap --open_xcodeproj` to have it opened in Xcode. See the
-[iOS Developer Environment](https://github.com/brave/brave-browser/wiki/iOS-Development-Environment#Building)
-for more information on iOS builds.
-
-### Build Configurations
-
-Running a release build with `pnpm run build Release` can be very slow and use a
-lot of RAM, especially on Linux with the Gold LLVM plugin.
-
-To run a statically linked build (takes longer to build, but starts faster):
-
-```bash
-pnpm run build Static
-```
-
-To run a debug build (Component build with is_debug=true):
-
-```bash
-pnpm run build Debug
-```
-
-NOTE: the build will take a while to complete. Depending on your processor and
-memory, it could potentially take a few hours.
-
-## Run Brave
-
-To start the build:
-
-`pnpm start [Release|Component|Static|Debug]`
-
-## Update Brave
-
-`pnpm run sync [--force] [--init] [--create] [brave_core_ref]`
-
-**This will attempt to stash your local changes in brave-core, but it's safer to
-commit local changes before running this**
-
-`pnpm run sync` will (depending on the below flags):
-
-1. 📥 Update sub-projects (chromium, brave-core) to latest commit of a git ref
-   (e.g. tag or branch)
-2. 🤕 Apply patches
-3. 🔄 Update gclient DEPS dependencies
-4. ⏩ Run hooks
-
-| flag                           | Description                                                                                                                                                                                                                                                                                                                                                                |
-| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `[no flags]`                   | updates chromium if needed and re-applies patches. If the chromium version did not change, it will only re-apply patches that have changed. Will update child dependencies **only if any project needed updating during this script run**. <br> **Use this if you want the script to manage keeping you up to date instead of pulling or switching branches manually. **   |
-| `--force`                      | updates both _Chromium_ and _brave-core_ to the latest remote commit for the current brave-core branch and the _Chromium_ ref specified in brave-core/package.json (e.g. `master` or `74.0.0.103`). Will re-apply all patches. Will force update all child dependencies. <br> **Use this if you're having trouble and want to force the branches back to a known state. ** |
-| `--init`                       | force update both _Chromium_ and _brave-core_ to the versions specified in brave-core/package.json and force updates all dependent repos - same as `pnpm run init`                                                                                                                                                                                                         |
-| `--sync_chromium (true/false)` | Will force or skip the chromium version update when applicable. Useful if you want to avoid a minor update when not ready for the larger build time a chromium update may result in. A warning will be output about the current code state expecting a different chromium version. Your build may fail as a result.                                                        |
-| `-D, --delete_unused_deps`     | Will delete from the working copy any dependencies that have been removed since the last sync. Mimics `gclient sync -D`.                                                                                                                                                                                                                                                   |
-
-Run `pnpm run sync brave_core_ref` to checkout the specified _brave-core_ ref
-and update all dependent repos including chromium if needed.
-
-## Scenarios
-
-#### Create a new branch:
-
-```bash
-> cd src/brave
-src/brave> git checkout -b branch_name
-```
-
-#### Checkout an existing branch or tag:
-
-```bash
-src/brave> git fetch origin
-src/brave> git checkout [-b] branch_name
-src/brave> pnpm run sync
-...Updating 2 patches...
-...Updating child dependencies...
-...Running hooks...
-```
-
-#### Update the current branch to the latest remote:
-
-```bash
-src/brave> git pull
-src/brave> pnpm run sync
-...Updating 2 patches...
-...Updating child dependencies...
-...Running hooks...
-```
-
-#### Reset to latest brave-core master (via `init`, will always result in a longer build and will remove any pending changes in your brave-core working directory):
-
-```bash
-src/brave> git checkout master
-src/brave> git pull
-src/brave> pnpm run sync --init
-```
-
-#### When you know that DEPS didn't change, but .patch files did (quickest attempt to perform a mini-sync before a build):
-
-```bash
-src/brave> git checkout featureB
-src/brave> git pull
-src/brave> pnpm run apply_patches
-...Applying 2 patches...
-```
-
-## Enabling third-party APIs
-
-1. **Google Safe Browsing**: Get an API key with SafeBrowsing API enabled from
-   https://console.developers.google.com/. Update the `GOOGLE_API_KEY`
-   environment variable with your key as per
-   https://www.chromium.org/developers/how-tos/api-keys to enable Google
-   SafeBrowsing.
-
-## Development
-
-- [Security rules from Chromium](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/security/rules.md)
-- [IPC review guidelines](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/security/ipc-reviews.md)
-  (in particular
-  [this reference](https://docs.google.com/document/d/1Kw4aTuISF7csHnjOpDJGc7JYIjlvOAKRprCTBVWw_E4/edit#heading=h.84bpc1e9z1bg))
-- [Brave's internal security guidelines](https://github.com/brave/internal/wiki/Pull-request-security-audit-checklist)
-  (for employees only)
-- [Rust usage](https://github.com/brave/brave-core/blob/master/docs/rust.md)
-
-## Troubleshooting
-
-See
-[Troubleshooting](https://github.com/brave/brave-browser/wiki/Troubleshooting)
-for solutions to common problems.
+# Falcon
+
+Falcon is a personal browser for **Windows and Android**, built on
+[Brave](https://github.com/brave/brave-core) and Chromium. It keeps Brave's
+Shields and privacy work, drops Brave's services, and adds a real download
+manager, a media grabber and a quieter, Arc-inspired interface.
+
+It is an independent hobby fork. It is not affiliated with or endorsed by Brave
+Software.
+
+**[Download the latest release](https://github.com/sherifrahim/falcon/releases/latest)**
+— Windows installer, Windows portable zip and Android APK, with SHA-256 sums.
+
+## What's different from Brave
+
+### Everywhere
+
+- **No Brave services.** Rewards, Wallet, VPN, Leo, News, Talk and ads are
+  compiled out or switched off by policy. Shields (ad and tracker blocking)
+  stays, with its filter lists fetched from their public sources.
+- **Nothing reported home.** Usage and crash reporting are off, and the crash
+  upload address is empty in the binary, so there is no "send a crash report"
+  prompt.
+- **Encrypted DNS by default.** Names resolve through Cloudflare's
+  DNS-over-HTTPS; on networks where that's unreachable Falcon falls back to the
+  system resolver.
+- **Self-hosted sync.** Falcon syncs through a
+  [go-sync](https://github.com/brave/go-sync) server you run yourself. No sync
+  address is compiled in; set yours in the settings and restart.
+
+### Windows
+
+- **Download manager** (`falcon://downloader`) on an aria2 engine: parallel
+  connections, pause and resume, a queue and scheduler, torrents, automatic
+  sorting into folders by type, a history, and a scan of finished files with
+  optional quarantine or opening in Windows Sandbox. It is the only download
+  UI: Chromium's own download button stays hidden, and anything Chromium still
+  downloads itself is listed there too.
+- **Media grabber** for the video and audio a page plays, with quality choice,
+  backed by yt-dlp and ffmpeg.
+- **New tab page** with a clock, greeting, search, quick links, weather, a
+  focus timer and wallpapers.
+- **Shell:** vertical tabs and an Arc-style dock, a floating toolbar, a command
+  deck on Ctrl+Space, link previews (Peek), mouse gestures, per-site style and
+  script boosts, saved sessions and automatic archiving of idle tabs.
+- **Passwords:** import from Brave or Google, or use Bitwarden as the store.
+
+### Android
+
+- **Arc-style bottom bar** with the address bar at your thumb, and a pitch-black
+  option for OLED screens.
+- **Download manager** with multi-connection downloads, pause and resume, a
+  Wi-Fi-only option, SHA-256 checks and live speed.
+- **Media grabber** (like 1DM+): ⋮ › *Media on this page* lists the files, HLS
+  and DASH streams a page played, with their qualities. Streams download in
+  parallel, AES-128 segments are decrypted, and the pieces are joined into one
+  MP4 without re-encoding. It works in private tabs, where nothing about the
+  download is written to disk.
+- **Passkeys** through Android's Credential Manager, so Bitwarden or Microsoft
+  Authenticator can hold them. (Passkeys stored in Google Password Manager only
+  work in browsers Google allowlists.)
+
+## Installing
+
+- **Windows:** run `FalconSetup-<version>-x64.exe`. It installs per user to
+  `%LOCALAPPDATA%\Falcon\Falcon`, next to any Brave install. The installer isn't
+  code-signed, so SmartScreen asks once. The portable zip runs from
+  `Chrome-bin\brave.exe`.
+- **Android (arm64):** install `Falcon-<version>-android-arm64.apk`. It's signed
+  with Falcon's own key and installs as `io.github.sherifrahim.falcon`, so it
+  sits alongside Brave and updates in place from one release to the next.
+
+## Building
+
+Falcon builds the way brave-core does: follow Brave's
+[build documentation](https://github.com/brave/brave-browser/wiki) to set up
+the toolchain and a Chromium checkout, with this repository's `falcon` branch
+mounted at `src/brave`. Falcon's own build arguments live in
+`build/args/falcon.gni` (desktop) and `build/args/falcon_android.gni`.
+
+## License
+
+Mozilla Public License 2.0, like brave-core; see [LICENSE](LICENSE). Chromium
+and the other bundled projects keep their own licenses.
