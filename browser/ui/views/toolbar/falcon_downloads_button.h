@@ -6,6 +6,7 @@
 #ifndef BRAVE_BROWSER_UI_VIEWS_TOOLBAR_FALCON_DOWNLOADS_BUTTON_H_
 #define BRAVE_BROWSER_UI_VIEWS_TOOLBAR_FALCON_DOWNLOADS_BUTTON_H_
 
+#include "ui/gfx/animation/throb_animation.h"
 #include <memory>
 
 #include "base/callback_list.h"
@@ -49,6 +50,7 @@ class FalconDownloadsButton : public ToolbarButton,
 
   // ToolbarButton:
   void PaintButtonContents(gfx::Canvas* canvas) override;
+  void AnimationProgressed(const gfx::Animation* animation) override;
 
  private:
   void ButtonPressed();
@@ -57,11 +59,14 @@ class FalconDownloadsButton : public ToolbarButton,
   void ObserveActiveTab();
   int MediaCount() const;
   void OnBubbleClosing(views::Widget::ClosedReason reason);
+  // Breathes while anything downloads; still when nothing does.
+  void UpdateBreathing();
 
   raw_ptr<BrowserWindowInterface> browser_;
   falcon::DownloadTracker::Snapshot snapshot_;
   bool has_new_completed_ = false;  // dot until the user opens the page
   int media_count_ = 0;
+  gfx::ThrobAnimation breath_{this};
   base::ScopedObservation<falcon::DownloadTracker,
                           falcon::DownloadTracker::Observer>
       observation_{this};

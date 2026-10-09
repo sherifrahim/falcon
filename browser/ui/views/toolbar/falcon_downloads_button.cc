@@ -42,6 +42,8 @@ constexpr SkColor kRingTrack = SkColorSetA(SK_ColorGRAY, 0x50);
 constexpr SkColor kRingProgress = SkColorSetRGB(0x1D, 0x9B, 0xFF);
 constexpr SkColor kDoneDot = SkColorSetRGB(0x22, 0xC5, 0x5E);
 constexpr SkColor kMediaBadge = SkColorSetRGB(0xF4, 0x3F, 0x5E);
+// One slow breath: ~2.8 s in and out, Falcon's calm-motion pace.
+constexpr base::TimeDelta kBreathHalfCycle = base::Milliseconds(1400);
 
 }  // namespace
 
@@ -50,6 +52,7 @@ FalconDownloadsButton::FalconDownloadsButton(BrowserWindowInterface* browser)
                                         base::Unretained(this))),
       browser_(browser) {
   SetVectorIcon(kDownloadToolbarButtonChromeRefreshOldIcon);
+  breath_.SetThrobDuration(kBreathHalfCycle);
   UpdateTooltip();
   observation_.Observe(falcon::Aria2Service::Get()->tracker());
   active_tab_subscription_ = browser_->RegisterActiveTabDidChange(
@@ -103,7 +106,27 @@ void FalconDownloadsButton::OnDownloadsChanged(
     const falcon::DownloadTracker::Snapshot& snapshot) {
   snapshot_ = snapshot;
   UpdateTooltip();
+  UpdateBreathing();
   SchedulePaint();
+}
+
+void FalconDownloadsButton::UpdateBreathing() {
+  const bool breathe =
+      snapshot_.active > 0 && gfx::Animation::ShouldRenderRichAnimation();
+  if (breathe && !breath_.is_animating()) {
+    breath_.StartThrobbing(/*cycles_til_stop=*/-1);
+  } else if (!breathe && breath_.is_animating()) {
+    breath_.Stop();
+  }
+}
+
+void FalconDownloadsButton::AnimationProgressed(
+    const gfx::Animation* animation) {
+  if (animation == &breath_) {
+    SchedulePaint();
+    return;
+  }
+  ToolbarButton::AnimationProgressed(animation);
 }
 
 void FalconDownloadsButton::OnDownloadFinished(
@@ -161,11 +184,30 @@ void FalconDownloadsButton::ButtonPressed() {
 }
 
 void FalconDownloadsButton::PaintButtonContents(gfx::Canvas* canvas) {
-  ToolbarButton::PaintButtonContents(canvas);
-
   constexpr int kRingRadius = 9;
   const int cx = width() / 2;
   const int cy = height() / 2;
+
+  // Halo behind the icon: breathes in the accent while downloading, then holds
+  // a faint green glow after a finish until the button is clicked.
+  if (snapshot_.active > 0 || has_new_completed_) {
+    SkAlpha alpha;
+    SkColor color;
+    if (snapshot_.active > 0) {
+      const double t = breath_.is_animating() ? breath_.GetCurrentValue() : 0.5;
+      alpha = static_cast<SkAlpha>(0x14 + t * (0x46 - 0x14));
+      color = kRingProgress;
+    } else {
+      alpha = 0x30;
+      color = kDoneDot;
+    }
+    cc::PaintFlags halo;
+    halo.setAntiAlias(true);
+    halo.setColor(SkColorSetA(color, alpha));
+    canvas->DrawCircle(gfx::PointF(cx, cy), kRingRadius + 4.f, halo);
+  }
+
+  ToolbarButton::PaintButtonContents(canvas);
 
   if (media_count_ > 0) {
     // Count badge, bottom-right, like a notification pip.

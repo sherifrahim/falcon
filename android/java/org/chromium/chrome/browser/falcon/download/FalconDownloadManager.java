@@ -6,10 +6,12 @@
 package org.chromium.chrome.browser.falcon.download;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -21,12 +23,19 @@ import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 
+import androidx.appcompat.content.res.AppCompatResources;
+
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.falcon.FalconPrefs;
 import org.chromium.chrome.browser.falcon.download.DownloadItem.State;
+import org.chromium.chrome.browser.falcon.download.ui.FalconDownloadsActivity;
+import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -189,6 +198,7 @@ public final class FalconDownloadManager {
         Log.i(TAG, "enqueue %s (%s)", name, DownloadItem.formatBytes(totalBytes));
         schedule();
         notifyChanged();
+        announce(item);
         return item;
     }
 
@@ -225,6 +235,7 @@ public final class FalconDownloadManager {
         Log.i(TAG, "enqueue stream %s", name);
         schedule();
         notifyChanged();
+        announce(item);
         return item;
     }
 
@@ -234,6 +245,33 @@ public final class FalconDownloadManager {
         item.sha256Expected = sha256 == null ? "" : sha256;
         save();
         return item;
+    }
+
+    /**
+     * "Downloading <name>" snackbar at the bottom of the browser, sliding up with a View action
+     * that opens Falcon Downloads. Skipped when the focused screen has no snackbar (e.g. the
+     * Downloads page itself, where the new row is already in view).
+     */
+    private void announce(DownloadItem item) {
+        Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
+        if (!(activity instanceof SnackbarManager.SnackbarManageable)) return;
+        SnackbarManager manager = ((SnackbarManager.SnackbarManageable) activity).getSnackbarManager();
+        if (manager == null) return;
+        Snackbar snackbar =
+                Snackbar.make(
+                        "Downloading " + item.fileName,
+                        new SnackbarManager.SnackbarController() {
+                            @Override
+                            public void onAction(Object actionData) {
+                                FalconDownloadsActivity.launch(activity);
+                            }
+                        },
+                        Snackbar.TYPE_NOTIFICATION,
+                        Snackbar.UMA_UNKNOWN);
+        snackbar.setAction("View", null);
+        Drawable icon = AppCompatResources.getDrawable(activity, R.drawable.falcon_ic_download);
+        if (icon != null) snackbar.setProfileImage(icon);
+        manager.showSnackbar(snackbar);
     }
 
     /** Starts a cancelled or failed download again from the beginning. */
