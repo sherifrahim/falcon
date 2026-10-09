@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/embedder_support/user_agent_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -99,6 +100,12 @@ bool MaybeInterceptDownloadAndroid(Profile* profile,
     return false;
   }
 
+  // Chromium passes no user agent for downloads a page didn't start; the
+  // fetchers then announce themselves ("Dalvik", "aria2"), which hosts that
+  // block bots refuse. Send the browser's own.
+  const std::string ua =
+      user_agent.empty() ? embedder_support::GetUserAgent() : user_agent;
+
   // The referer Chrome itself would send (strict-origin-when-cross-origin):
   // none for typed/external navigations or an https -> http downgrade, the
   // page for same-origin links, only its origin cross-site. Sending whatever
@@ -116,14 +123,14 @@ bool MaybeInterceptDownloadAndroid(Profile* profile,
   auto* cookie_manager = profile->GetDefaultStoragePartition()
                              ->GetCookieManagerForBrowserProcess();
   if (!cookie_manager) {
-    OnCookies(url, referer, user_agent, filename, mime_type, content_length,
+    OnCookies(url, referer, ua, filename, mime_type, content_length,
               {}, {});
     return true;
   }
   cookie_manager->GetCookieList(
       url, net::CookieOptions::MakeAllInclusive(),
       net::CookiePartitionKeyCollection::ContainsAll(),
-      base::BindOnce(&OnCookies, url, referer, user_agent, filename, mime_type,
+      base::BindOnce(&OnCookies, url, referer, ua, filename, mime_type,
                      content_length));
   VLOG(1) << "Falcon: intercepting download " << url.spec();
   return true;
