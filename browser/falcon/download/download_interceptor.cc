@@ -40,6 +40,7 @@
 #include "net/http/http_content_disposition.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace falcon {
 
@@ -275,11 +276,18 @@ bool MaybeInterceptDownload(Profile* profile,
     return false;
   }
 
+  // The referer Chrome itself would send (strict-origin-when-cross-origin):
+  // none for typed/external navigations or an https -> http downgrade, the
+  // page for same-origin links, only its origin cross-site. Sending whatever
+  // the tab last showed got downloads refused as hotlinks (HTTP 403).
   std::string referer;
-  if (web_contents) {
+  if (web_contents && is_content_initiated) {
     const GURL& page = web_contents->GetLastCommittedURL();
-    if (page.SchemeIsHTTPOrHTTPS()) {
-      referer = page.spec();
+    if (page.SchemeIsHTTPOrHTTPS() &&
+        !(page.SchemeIsCryptographic() && !url.SchemeIsCryptographic())) {
+      referer = url::Origin::Create(page).IsSameOriginWith(url)
+                    ? page.GetWithoutRef().spec()
+                    : page.DeprecatedGetOriginAsURL().spec();
     }
   }
 
