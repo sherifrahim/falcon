@@ -43,12 +43,12 @@ export interface NtpState {
 }
 
 export const GRADIENTS: Array<{ name: string; css: string }> = [
-  { name: 'Aurora', css: 'linear-gradient(135deg, var(--f-bg-0, #0b1220) 0%, #1e3a8a 45%, #0ea5e9 100%)' },
-  { name: 'Dusk', css: 'linear-gradient(140deg, var(--f-bg-1, #0f172a) 0%, #7c2d12 55%, #f59e0b 100%)' },
+  { name: 'Space', css: 'radial-gradient(60% 55% at 42% 58%, rgba(69, 42, 62, 0.95), transparent 70%), radial-gradient(70% 60% at 100% 0%, rgba(49, 36, 53, 0.85), transparent 70%), linear-gradient(160deg, #252434 0%, #1f1c2e 100%)' },
+  { name: 'Dusk', css: 'linear-gradient(140deg, var(--f-bg-1, #1f1c2e) 0%, #7c2d12 55%, #f59e0b 100%)' },
   { name: 'Forest', css: 'linear-gradient(135deg, #052e16 0%, #14532d 50%, #0f766e 100%)' },
   { name: 'Grape', css: 'linear-gradient(135deg, #1e1b4b 0%, #4c1d95 50%, #db2777 100%)' },
-  { name: 'Slate', css: 'linear-gradient(160deg, var(--f-bg-0, #0b1220) 0%, var(--f-bg-3, #1e293b) 100%)' },
-  { name: 'Mesh', css: 'radial-gradient(at 20% 20%, #1d4ed8 0px, transparent 50%), radial-gradient(at 80% 10%, #7c3aed 0px, transparent 50%), radial-gradient(at 70% 80%, #0ea5e9 0px, transparent 50%), radial-gradient(at 10% 90%, #db2777 0px, transparent 50%), var(--f-bg-0, #0b1220)' },
+  { name: 'Slate', css: 'linear-gradient(160deg, var(--f-bg-0, #1a1829) 0%, var(--f-bg-3, rgba(255, 255, 255, 0.05)) 100%)' },
+  { name: 'Mesh', css: 'radial-gradient(at 20% 20%, #1d4ed8 0px, transparent 50%), radial-gradient(at 80% 10%, #7c3aed 0px, transparent 50%), radial-gradient(at 70% 80%, #6f7df5 0px, transparent 50%), radial-gradient(at 10% 90%, #db2777 0px, transparent 50%), var(--f-bg-0, #1a1829)' },
   { name: 'Ocean', css: 'linear-gradient(135deg, #082f49 0%, #0e7490 60%, #22d3ee 100%)' },
   { name: 'Ember', css: 'linear-gradient(135deg, #1c1917 0%, #7f1d1d 55%, #f97316 100%)' },
 ]
@@ -67,7 +67,7 @@ export const DEFAULT_STATE: NtpState = {
   showFocus: false,
   showSounds: false,
   links: [],
-  bg: { mode: 'gradient', gradient: 0, color: '#0b1220', imageUrl: '', videoUrl: '', blur: 0, dim: 20, drift: true },
+  bg: { mode: 'gradient', gradient: 0, color: '#1a1829', imageUrl: '', videoUrl: '', blur: 0, dim: 20, drift: true },
   weather: { enabled: false, city: '', latitude: 0, longitude: 0, unit: 'c' },
 }
 

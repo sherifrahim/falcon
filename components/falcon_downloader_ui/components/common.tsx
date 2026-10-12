@@ -115,7 +115,7 @@ export const Button = styled.button<{ $primary?: boolean; $danger?: boolean; $sm
   padding: ${(p) => (p.$small ? '5px 10px' : '9px 14px')};
   border-radius: 10px;
   border: 1px solid transparent;
-  background: ${(p) => (p.$primary ? '#0ea5e9' : p.$danger ? '#7f1d1d' : 'var(--leo-color-container-background, var(--f-bg-3, #1e293b))')};
+  background: ${(p) => (p.$primary ? '#6f7df5' : p.$danger ? '#7f1d1d' : 'var(--leo-color-container-background, var(--f-bg-3, rgba(255, 255, 255, 0.05)))')};
   color: ${(p) => (p.$primary ? '#fff' : 'inherit')};
   font-size: ${(p) => (p.$small ? '12px' : '13px')};
   font-weight: 600;
@@ -128,19 +128,21 @@ export const Button = styled.button<{ $primary?: boolean; $danger?: boolean; $sm
 export const Input = styled.input`
   padding: 10px 12px;
   border-radius: 10px;
-  border: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
-  background: var(--leo-color-container-background, var(--f-bg-3, #1e293b));
+  border: 1px solid var(--leo-color-divider-subtle, var(--f-border, rgba(255, 255, 255, 0.08)));
+  background: var(--leo-color-container-background, var(--f-bg-3, rgba(255, 255, 255, 0.05)));
+  backdrop-filter: blur(20px) saturate(160%);
   color: inherit;
   font-size: 14px;
   outline: none;
-  &:focus { border-color: #38bdf8; }
+  &:focus { border-color: #8e9bff; }
 `
 
 export const Select = styled.select`
   padding: 6px 10px;
   border-radius: 10px;
-  border: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
-  background: var(--leo-color-container-background, var(--f-bg-3, #1e293b));
+  border: 1px solid var(--leo-color-divider-subtle, var(--f-border, rgba(255, 255, 255, 0.08)));
+  background: var(--leo-color-container-background, var(--f-bg-3, rgba(255, 255, 255, 0.05)));
+  backdrop-filter: blur(20px) saturate(160%);
   color: inherit;
   font-size: 12px;
 `
@@ -148,8 +150,8 @@ export const Select = styled.select`
 export const Chip = styled.button<{ $active: boolean }>`
   padding: 6px 12px;
   border-radius: 999px;
-  border: 1px solid ${(p) => (p.$active ? '#38bdf8' : 'var(--leo-color-divider-subtle, var(--f-border, #334155))')};
-  background: ${(p) => (p.$active ? 'rgba(56,189,248,0.15)' : 'transparent')};
+  border: 1px solid ${(p) => (p.$active ? '#8e9bff' : 'var(--leo-color-divider-subtle, var(--f-border, rgba(255, 255, 255, 0.08)))')};
+  background: ${(p) => (p.$active ? 'rgba(142, 155, 255,0.15)' : 'transparent')};
   color: inherit;
   font-size: 12px;
   cursor: pointer;
@@ -175,8 +177,9 @@ export const ErrorText = styled.span`
 `
 
 export const Card = styled.div`
-  background: var(--leo-color-container-background, var(--f-bg-3, #1e293b));
-  border: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
+  background: var(--leo-color-container-background, var(--f-bg-3, rgba(255, 255, 255, 0.05)));
+  backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid var(--leo-color-divider-subtle, var(--f-border, rgba(255, 255, 255, 0.08)));
   border-radius: 14px;
   padding: 12px 14px;
 `
@@ -187,10 +190,10 @@ export const Toggle = styled.label`
   justify-content: space-between;
   gap: 16px;
   padding: 10px 0;
-  border-bottom: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
+  border-bottom: 1px solid var(--leo-color-divider-subtle, var(--f-border, rgba(255, 255, 255, 0.08)));
   font-size: 13px;
   cursor: pointer;
   .sub { display: block; font-size: 12px; opacity: 0.65; margin-top: 2px; }
-  input[type='checkbox'] { width: 18px; height: 18px; accent-color: #0ea5e9; }
+  input[type='checkbox'] { width: 18px; height: 18px; accent-color: #6f7df5; }
   input[type='number'] { width: 90px; }
 `

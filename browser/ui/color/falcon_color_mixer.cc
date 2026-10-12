@@ -17,19 +17,21 @@
 
 namespace {
 
-// Tailwind slate/sky, the same tokens the Falcon WebUI pages use.
-constexpr SkColor kSlate950 = SkColorSetRGB(0x0B, 0x12, 0x20);
-constexpr SkColor kSlate900 = SkColorSetRGB(0x0F, 0x17, 0x2A);
-constexpr SkColor kSlate850 = SkColorSetRGB(0x14, 0x1E, 0x33);
-constexpr SkColor kSlate800 = SkColorSetRGB(0x1E, 0x29, 0x3B);
-constexpr SkColor kSlate700 = SkColorSetRGB(0x33, 0x41, 0x55);
-constexpr SkColor kSlate300 = SkColorSetRGB(0xCB, 0xD5, 0xE1);
-constexpr SkColor kSlate400 = SkColorSetRGB(0x94, 0xA3, 0xB8);
-constexpr SkColor kSlate100 = SkColorSetRGB(0xF1, 0xF5, 0xF9);
-constexpr SkColor kSlate50 = SkColorSetRGB(0xF8, 0xFA, 0xFC);
-constexpr SkColor kSlate200 = SkColorSetRGB(0xE2, 0xE8, 0xF0);
-constexpr SkColor kSky400 = SkColorSetRGB(0x38, 0xBD, 0xF8);
-constexpr SkColor kSky500 = SkColorSetRGB(0x0E, 0xA5, 0xE9);
+// Arc's default dark, measured from Arc for Windows (and shared with the Falcon
+// WebUI pages): indigo-ink frame and toolbar as one surface, periwinkle accent.
+// The old slate names are kept so the mixers below read unchanged.
+constexpr SkColor kSlate950 = SkColorSetRGB(0x1A, 0x18, 0x29);  // frame
+constexpr SkColor kSlate900 = SkColorSetRGB(0x1F, 0x1C, 0x2E);  // toolbar/page
+constexpr SkColor kSlate850 = SkColorSetRGB(0x24, 0x22, 0x3A);
+constexpr SkColor kSlate800 = SkColorSetRGB(0x27, 0x29, 0x38);  // fields
+constexpr SkColor kSlate700 = SkColorSetRGB(0x2E, 0x2B, 0x43);  // borders
+constexpr SkColor kSlate300 = SkColorSetRGB(0xD6, 0xD3, 0xE4);
+constexpr SkColor kSlate400 = SkColorSetRGB(0x9A, 0x96, 0xAE);
+constexpr SkColor kSlate100 = SkColorSetRGB(0xF3, 0xF1, 0xFA);
+constexpr SkColor kSlate50 = SkColorSetRGB(0xF8, 0xF7, 0xFC);
+constexpr SkColor kSlate200 = SkColorSetRGB(0xE9, 0xE7, 0xF3);  // light frame
+constexpr SkColor kSky400 = SkColorSetRGB(0x8E, 0x9B, 0xFF);    // accent
+constexpr SkColor kSky500 = SkColorSetRGB(0x6F, 0x7D, 0xF5);    // accent strong
 
 void AddDark(ui::ColorMixer& mixer) {
   mixer[ui::kColorFrameActive] = {kSlate950};

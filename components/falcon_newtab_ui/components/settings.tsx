@@ -16,8 +16,8 @@ const Panel = styled.div`
   width: min(380px, 100%);
   padding: 20px 20px 40px;
   overflow-y: auto;
-  background: rgba(15, 23, 42, 0.92);
-  backdrop-filter: blur(20px);
+  background: rgba(31, 28, 46, 0.68);
+  backdrop-filter: blur(28px) saturate(180%);
   border-left: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: -12px 0 40px rgba(0, 0, 0, 0.45);
   z-index: 20;
@@ -40,10 +40,10 @@ const Row = styled.label`
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
   font-size: 13px;
   cursor: pointer;
-  input[type='checkbox'] { width: 18px; height: 18px; accent-color: #0ea5e9; }
-  input[type='text'], input[type='color'] { padding: 7px 10px; border-radius: 8px; border: 1px solid var(--f-border, #334155); background: var(--f-bg-3, #1e293b); color: inherit; font-size: 13px; width: 170px; outline: none; }
-  input[type='text']:focus { border-color: #38bdf8; }
-  input[type='range'] { width: 150px; accent-color: #0ea5e9; }
+  input[type='checkbox'] { width: 18px; height: 18px; accent-color: #6f7df5; }
+  input[type='text'], input[type='color'] { padding: 7px 10px; border-radius: 8px; border: 1px solid var(--f-border, rgba(255, 255, 255, 0.08)); background: var(--f-bg-3, rgba(255, 255, 255, 0.05)); color: inherit; font-size: 13px; width: 170px; outline: none; }
+  input[type='text']:focus { border-color: #8e9bff; }
+  input[type='range'] { width: 150px; accent-color: #6f7df5; }
   .sub { display: block; font-size: 11px; opacity: 0.6; margin-top: 2px; }
 `
 
@@ -57,7 +57,7 @@ const Swatches = styled.div`
 const Swatch = styled.button<{ $css: string; $on: boolean }>`
   height: 48px;
   border-radius: 10px;
-  border: 2px solid ${(p) => (p.$on ? '#38bdf8' : 'transparent')};
+  border: 2px solid ${(p) => (p.$on ? '#8e9bff' : 'transparent')};
   background: ${(p) => p.$css};
   background-size: 200% 200%;
   cursor: pointer;
@@ -72,16 +72,16 @@ const Modes = styled.div`
   flex-wrap: wrap;
   margin: 6px 0;
   button {
-    padding: 6px 12px; border-radius: 999px; border: 1px solid var(--f-border, #334155); background: transparent; color: inherit; font-size: 12px; cursor: pointer;
+    padding: 6px 12px; border-radius: 999px; border: 1px solid var(--f-border, rgba(255, 255, 255, 0.08)); background: transparent; color: inherit; font-size: 12px; cursor: pointer;
   }
-  button.on { border-color: #38bdf8; background: rgba(56,189,248,0.15); }
+  button.on { border-color: #8e9bff; background: rgba(142, 155, 255,0.15); }
 `
 
 const Btn = styled.button`
   padding: 7px 12px;
   border-radius: 10px;
   border: 1px solid transparent;
-  background: var(--f-bg-3, #1e293b);
+  background: var(--f-bg-3, rgba(255, 255, 255, 0.05));
   color: inherit;
   font-size: 12px;
   font-weight: 600;

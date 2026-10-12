@@ -87,10 +87,10 @@ const Nav = styled.nav`
   }
   a i { transition: background-color ${dur.fast} ${ease.move}, box-shadow ${dur.base} ${ease.out}; }
   ${reduced} { a, a i { transition-duration: 1ms; } }
-  a:hover { opacity: 1; background: var(--f-bg-3, #1e293b); }
-  a.on { opacity: 1; background: rgba(56, 189, 248, 0.12); border-color: rgba(56, 189, 248, 0.3); color: #e0f2fe; }
+  a:hover { opacity: 1; background: var(--f-bg-3, rgba(255, 255, 255, 0.05)); }
+  a.on { opacity: 1; background: rgba(142, 155, 255, 0.12); border-color: rgba(142, 155, 255, 0.3); color: #f0f1ff; }
   a i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 0.5; }
-  a.on i { background: #38bdf8; opacity: 1; box-shadow: 0 0 8px #38bdf8; }
+  a.on i { background: #8e9bff; opacity: 1; box-shadow: 0 0 8px #8e9bff; }
   @media (max-width: 860px) { position: static; flex-direction: row; flex-wrap: wrap; }
 `
 
@@ -104,8 +104,9 @@ const Page = styled.div`
 
 const Card = styled.div`
   ${enters}
-  background: var(--leo-color-container-background, var(--f-bg-3, #1e293b));
-  border: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
+  background: var(--leo-color-container-background, var(--f-bg-3, rgba(255, 255, 255, 0.05)));
+  backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid var(--leo-color-divider-subtle, var(--f-border, rgba(255, 255, 255, 0.08)));
   border-radius: 14px;
   padding: 4px 16px;
 `
@@ -122,25 +123,25 @@ const Row = styled.label`
   flex-wrap: wrap;
   gap: 10px 16px;
   padding: 12px 0;
-  border-bottom: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
+  border-bottom: 1px solid var(--leo-color-divider-subtle, var(--f-border, rgba(255, 255, 255, 0.08)));
   font-size: 14px;
   cursor: pointer;
   &:last-child { border-bottom: none; }
   .sub { display: block; font-size: 12px; opacity: 0.65; margin-top: 2px; }
-  input[type='checkbox'] { width: 18px; height: 18px; accent-color: #0ea5e9; ${presses} }
+  input[type='checkbox'] { width: 18px; height: 18px; accent-color: #6f7df5; ${presses} }
   select { ${shifts('background-color, border-color')} ${focusRing} }
-  select { padding: 6px 10px; border-radius: 10px; border: 1px solid var(--f-border, #334155); background: var(--f-bg-1, #0f172a); color: inherit; font-size: 13px; }
+  select { padding: 6px 10px; border-radius: 10px; border: 1px solid var(--f-border, rgba(255, 255, 255, 0.08)); background: var(--f-bg-1, #1f1c2e); color: inherit; font-size: 13px; }
 `
 
 const Seg = styled.div`
   display: inline-flex;
-  border: 1px solid var(--f-border, #334155);
+  border: 1px solid var(--f-border, rgba(255, 255, 255, 0.08));
   border-radius: 999px;
   overflow: hidden;
   button { padding: 6px 14px; border: none; background: transparent; color: inherit; cursor: pointer; font-size: 13px;
     ${shifts('background-color, color')} ${focusRing} }
   button:hover { background: rgba(255, 255, 255, 0.06); }
-  button.on { background: rgba(56, 189, 248, 0.2); color: #e0f2fe; }
+  button.on { background: rgba(142, 155, 255, 0.2); color: #f0f1ff; }
   button { white-space: nowrap; }
 `
 
@@ -148,7 +149,7 @@ const Btn = styled.button<{ $primary?: boolean }>`
   padding: 8px 14px;
   border-radius: 10px;
   border: 1px solid transparent;
-  background: ${(p) => (p.$primary ? '#0ea5e9' : 'var(--f-bg-1, #0f172a)')};
+  background: ${(p) => (p.$primary ? '#6f7df5' : 'var(--f-bg-1, #1f1c2e)')};
   color: ${(p) => (p.$primary ? '#fff' : 'inherit')};
   font-size: 13px;
   font-weight: 600;
@@ -165,7 +166,7 @@ const Editor = styled.div`
   gap: 8px;
   input[type='text'], textarea {
     width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 10px;
-    border: 1px solid var(--f-border, #334155); background: var(--f-bg-1, #0f172a); color: inherit; font-size: 13px;
+    border: 1px solid var(--f-border, rgba(255, 255, 255, 0.08)); background: var(--f-bg-1, #1f1c2e); color: inherit; font-size: 13px;
   }
   textarea { min-height: 90px; font-family: Consolas, "Cascadia Mono", monospace; font-size: 12px; resize: vertical; }
   .row { display: flex; gap: 8px; align-items: center; }
@@ -189,11 +190,12 @@ const Links = styled.div`
   gap: 10px;
   a {
     display: block; padding: 14px 16px; border-radius: 14px; color: inherit; text-decoration: none;
-    background: var(--leo-color-container-background, var(--f-bg-3, #1e293b)); border: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
+    background: var(--leo-color-container-background, var(--f-bg-3, rgba(255, 255, 255, 0.05)));
+    backdrop-filter: blur(20px) saturate(160%); border: 1px solid var(--leo-color-divider-subtle, var(--f-border, rgba(255, 255, 255, 0.08)));
   }
   a { transition: border-color ${dur.fast} ${ease.move}, transform ${dur.fast} ${ease.move},
       box-shadow ${dur.base} ${ease.out}; }
-  a:hover { border-color: #38bdf8; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28); }
+  a:hover { border-color: #8e9bff; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28); }
   ${reduced} { a { transition-duration: 1ms; } a:hover { transform: none; } }
   a b { display: block; font-size: 14px; margin-bottom: 2px; }
   a span { font-size: 12px; opacity: 0.65; }
@@ -230,7 +232,7 @@ function UpdateCheck({ version, repo }: { version: string; repo: string }) {
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
       {state.kind === 'update' && (
-        <span style={{ color: '#7dd3fc' }}>
+        <span style={{ color: '#c3caff' }}>
           Falcon {(state.tag || '').replace(/^v/, '')} is available ·{' '}
           <a href={state.url || state.page} target="_blank" rel="noopener">Download</a>
           {state.page && state.url && <> · <a href={state.page} target="_blank" rel="noopener">notes</a></>}
@@ -246,9 +248,9 @@ function UpdateCheck({ version, repo }: { version: string; repo: string }) {
 // 3 · Bitwarden: the official CLI runs as a sidecar (`bw serve`); logins from
 // the vault appear in autofill next to local ones.
 const Field = styled.input`
-  height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--f-border, #334155);
-  background: var(--f-bg-2, #0f172a); color: inherit; font: inherit; font-size: 13px; min-width: 0;
-  &:focus { outline: none; border-color: #38bdf8; }
+  height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--f-border, rgba(255, 255, 255, 0.08));
+  background: var(--f-bg-2, #1f1c2e); color: inherit; font: inherit; font-size: 13px; min-width: 0;
+  &:focus { outline: none; border-color: #8e9bff; }
 `
 type BwStatus = { configured: boolean; serving: boolean; state: string; email: string; server: string; lastSync: string; error: string }
 type Sidecar = { name: string; version: string; size: number; bundled: boolean; installed: boolean; installing: boolean; progress: number; error: string }
@@ -314,7 +316,7 @@ function Sync() {
     } catch (e: any) { setMsg(String(e?.message || e)) }
     setBusy(false)
   }
-  const dot = !si ? '#64748b' : si.active ? '#22c55e' : si.inChain ? '#f59e0b' : '#64748b'
+  const dot = !si ? '#716d7f' : si.active ? '#22c55e' : si.inChain ? '#f59e0b' : '#716d7f'
   const label = !si ? '…' : si.active ? 'Syncing' : si.inChain ? 'Starting…' : 'Not in a sync chain'
   const last = si?.lastSynced ? new Date(si.lastSynced).toLocaleString() : 'never'
   const types = (si?.activeTypes || []).join(', ')
@@ -366,7 +368,7 @@ function Bitwarden({ s, update }: { s: State; update: (patch: Partial<State>) =>
   }
   const configured = !!st?.configured
   const unlocked = st?.state === 'unlocked'
-  const dot = !configured ? '#64748b' : unlocked ? '#22c55e' : st?.serving ? '#f59e0b' : '#64748b'
+  const dot = !configured ? '#716d7f' : unlocked ? '#22c55e' : st?.serving ? '#f59e0b' : '#716d7f'
   const label = !configured ? 'Not connected' : unlocked ? 'Unlocked' : st?.serving ? (st.state === 'locked' ? 'Locked' : st.state) : 'Starting sidecar…'
   return (
     <Card>
@@ -539,7 +541,7 @@ export function App() {
     <Shell>
       <Nav>
         <div className="brand">
-          <svg viewBox="0 0 24 24" fill="#38bdf8"><path d="M19.04 15.17 L18.36 15.80 L17.80 15.47 L17.46 14.39 Q17.13 12.66 15.27 12.29 Q12.20 11.57 8.03 11.28 L7.42 12.25 Q11.38 14.45 14.75 15.26 Q16.57 15.78 17.69 15.28 Z M14.47 12.23 Q12.73 8.61 12.41 2.29 L10.87 3.66 L9.96 2.25 L9.25 4.17 L7.75 3.09 Q10.09 7.53 12.55 11.51 Z M10.86 13.98 Q6.60 15.70 1.68 16.26 L2.42 14.83 L3.24 15.40 Q6.68 14.25 9.82 13.02 Z M8.03 11.28 L3.51 8.75 L3.88 10.33 L2.47 11.24 L3.83 11.63 L7.42 12.25 Z"/></svg>
+          <svg viewBox="0 0 24 24" fill="#8e9bff"><path d="M19.04 15.17 L18.36 15.80 L17.80 15.47 L17.46 14.39 Q17.13 12.66 15.27 12.29 Q12.20 11.57 8.03 11.28 L7.42 12.25 Q11.38 14.45 14.75 15.26 Q16.57 15.78 17.69 15.28 Z M14.47 12.23 Q12.73 8.61 12.41 2.29 L10.87 3.66 L9.96 2.25 L9.25 4.17 L7.75 3.09 Q10.09 7.53 12.55 11.51 Z M10.86 13.98 Q6.60 15.70 1.68 16.26 L2.42 14.83 L3.24 15.40 Q6.68 14.25 9.82 13.02 Z M8.03 11.28 L3.51 8.75 L3.88 10.33 L2.47 11.24 L3.83 11.63 L7.42 12.25 Z"/></svg>
           <div>Falcon<small>control panel</small></div>
         </div>
         {sections.map(([id, label]) => (
@@ -548,7 +550,7 @@ export function App() {
       </Nav>
     <Page>
       <h1>Falcon <span className="sub">falcon://falcon</span></h1>
-      <p className="hint">Everything Falcon adds on top of the browser, in one place. Brave/Chromium settings stay at <a href="chrome://settings" style={{ color: '#38bdf8' }}>settings</a>.</p>
+      <p className="hint">Everything Falcon adds on top of the browser, in one place. Brave/Chromium settings stay at <a href="chrome://settings" style={{ color: '#8e9bff' }}>settings</a>.</p>
 
       <Links>
         <a href="chrome://downloader"><b>Downloads</b><span>Engine, media, torrents, security</span></a>
@@ -561,7 +563,7 @@ export function App() {
       <PreviewCard>
       <Card>
         <Row as="div">
-          <span>Colour scheme<span className="sub">Slate/sky palette · Black is a pitch-black (OLED) dark variant</span></span>
+          <span>Colour scheme<span className="sub">Arc palette: indigo ink with a plum glow · Black is a pitch-black (OLED) dark variant</span></span>
           <Seg>
             <button className={s.colorScheme === 2 && !s.blackTheme ? 'on' : ''} onClick={() => update({ colorScheme: 2, blackTheme: false })}>Dark</button>
             <button className={s.colorScheme === 2 && s.blackTheme ? 'on' : ''} onClick={() => update({ colorScheme: 2, blackTheme: true })}>Black</button>
@@ -676,7 +678,7 @@ export function App() {
           <Card>
             <Row as="div">
               <input type="text" placeholder="session name, e.g. Work" value={sessionName} onChange={(e) => setSessionName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && saveSession()}
-                style={{ flex: 1, padding: '8px 10px', borderRadius: 10, border: '1px solid var(--f-border, #334155)', background: 'var(--f-bg-1, #0f172a)', color: 'inherit', fontSize: 13 }} />
+                style={{ flex: 1, padding: '8px 10px', borderRadius: 10, border: '1px solid var(--f-border, rgba(255, 255, 255, 0.08))', background: 'var(--f-bg-1, #1f1c2e)', color: 'inherit', fontSize: 13 }} />
               <Btn $primary onClick={saveSession} disabled={!sessionName.trim()}>Save current session</Btn>
             </Row>
             {(sessions ?? []).map((ss) => (

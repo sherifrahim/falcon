@@ -39,7 +39,7 @@
 namespace {
 
 constexpr SkColor kRingTrack = SkColorSetA(SK_ColorGRAY, 0x50);
-constexpr SkColor kRingProgress = SkColorSetRGB(0x1D, 0x9B, 0xFF);
+constexpr SkColor kRingProgress = SkColorSetRGB(0x8E, 0x9B, 0xFF);
 constexpr SkColor kDoneDot = SkColorSetRGB(0x22, 0xC5, 0x5E);
 constexpr SkColor kMediaBadge = SkColorSetRGB(0xF4, 0x3F, 0x5E);
 // One slow breath: ~2.8 s in and out, Falcon's calm-motion pace.

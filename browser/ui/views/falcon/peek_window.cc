@@ -61,10 +61,10 @@ void RegisterPeekPrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 namespace {
 
-constexpr SkColor kSky400 = SkColorSetRGB(0x38, 0xBD, 0xF8);
-constexpr SkColor kSlate800 = SkColorSetRGB(0x1E, 0x29, 0x3B);
-constexpr SkColor kSlate100 = SkColorSetRGB(0xF1, 0xF5, 0xF9);
-constexpr SkColor kSlate950 = SkColorSetRGB(0x0B, 0x12, 0x20);
+constexpr SkColor kSky400 = SkColorSetRGB(0x8E, 0x9B, 0xFF);
+constexpr SkColor kSlate800 = SkColorSetRGB(0x27, 0x29, 0x38);
+constexpr SkColor kSlate100 = SkColorSetRGB(0xF3, 0xF1, 0xFA);
+constexpr SkColor kSlate950 = SkColorSetRGB(0x1A, 0x18, 0x29);
 
 std::unique_ptr<views::LabelButton> MakeHeaderButton(
     views::Button::PressedCallback callback,

@@ -10,9 +10,10 @@ export const Box = styled.div`
   inset: 0;
   overflow: hidden;
   background:
-    radial-gradient(900px 520px at 50% -10%, rgba(56, 189, 248, 0.16), transparent 70%),
-    linear-gradient(180deg, #0b1220 0%, #070b16 100%);
-  color: #e2e8f0;
+    radial-gradient(60% 55% at 42% 62%, rgba(69, 42, 62, 0.95), transparent 70%),
+    radial-gradient(70% 60% at 100% 0%, rgba(49, 36, 53, 0.85), transparent 70%),
+    linear-gradient(160deg, #252434 0%, #1a1829 100%);
+  color: #f1effa;
 
   .glow {
     position: absolute;
@@ -21,7 +22,7 @@ export const Box = styled.div`
     width: 1100px;
     height: 620px;
     transform: translateX(-50%);
-    background: radial-gradient(closest-side, rgba(56, 189, 248, 0.10), transparent);
+    background: radial-gradient(closest-side, rgba(142, 155, 255, 0.10), transparent);
     filter: blur(30px);
     pointer-events: none;
   }
@@ -34,7 +35,7 @@ export const Box = styled.div`
       position: absolute;
       display: block;
       border-radius: 50%;
-      background: #e2e8f0;
+      background: #f1effa;
     }
   }
 

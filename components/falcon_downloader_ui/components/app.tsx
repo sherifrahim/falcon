@@ -41,7 +41,7 @@ const Page = styled.div<{ $drag: boolean }>`
   margin: 0 auto;
   padding: ${PANEL ? '12px 10px 24px' : '28px 24px 48px'};
   min-height: 100%;
-  outline: ${(p) => (p.$drag ? '2px dashed #38bdf8' : 'none')};
+  outline: ${(p) => (p.$drag ? '2px dashed #8e9bff' : 'none')};
   outline-offset: -12px;
 `
 
@@ -83,8 +83,9 @@ const Batch = styled.textarea`
   margin-bottom: 8px;
   padding: 10px 12px;
   border-radius: 10px;
-  border: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
-  background: var(--leo-color-container-background, var(--f-bg-3, #1e293b));
+  border: 1px solid var(--leo-color-divider-subtle, var(--f-border, rgba(255, 255, 255, 0.08)));
+  background: var(--leo-color-container-background, var(--f-bg-3, rgba(255, 255, 255, 0.05)));
+  backdrop-filter: blur(20px) saturate(160%);
   color: inherit;
   font-family: ui-monospace, Consolas, monospace;
   font-size: 12px;
@@ -98,7 +99,7 @@ const Options = styled.div`
   margin-bottom: 10px;
   padding: 12px 14px;
   border-radius: 12px;
-  border: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
+  border: 1px solid var(--leo-color-divider-subtle, var(--f-border, rgba(255, 255, 255, 0.08)));
   label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; opacity: 0.85; }
   label.row { flex-direction: row; align-items: center; gap: 8px; }
   input[type='text'], input[type='password'], input[type='number'], select { padding: 6px 10px; font-size: 13px; }
@@ -151,7 +152,7 @@ const AddLinks = styled.div`
     padding: 2px 0; border: none; background: none; color: inherit; font: inherit;
     font-size: 12px; opacity: 0.6; cursor: pointer;
   }
-  button:hover:not(:disabled), button[aria-expanded='true'] { opacity: 1; color: #38bdf8; }
+  button:hover:not(:disabled), button[aria-expanded='true'] { opacity: 1; color: #8e9bff; }
   button:disabled { opacity: 0.3; cursor: default; }
 `
 
@@ -162,15 +163,17 @@ const Scrim = styled.div`
   display: grid;
   place-items: center;
   padding: 16px;
-  background: rgba(2, 6, 23, 0.55);
+  background: rgba(14, 12, 22, 0.45);
+  backdrop-filter: blur(6px);
 `
 
 const DialogBox = styled.div`
   width: min(440px, 100%);
   border-radius: 14px;
   padding: 18px 20px;
-  border: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
-  background: var(--leo-color-page-background, var(--f-bg-2, #0f172a));
+  border: 1px solid var(--leo-color-divider-subtle, var(--f-border, rgba(255, 255, 255, 0.08)));
+  background: var(--leo-color-page-background, var(--f-bg-2, rgba(31, 28, 46, 0.68)));
+  backdrop-filter: blur(28px) saturate(180%);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
   h2 { margin: 0 0 6px; font-size: 16px; }
   p { margin: 0 0 14px; font-size: 13px; opacity: 0.75; word-break: break-word; }
@@ -668,7 +671,7 @@ export function App() {
 
       <Toolbar>
         <input type="checkbox" id="select-all" aria-label="Select all shown"
-          style={{ width: 16, height: 16, margin: '0 6px 0 15px', accentColor: '#0ea5e9' }}
+          style={{ width: 16, height: 16, margin: '0 6px 0 15px', accentColor: '#6f7df5' }}
           checked={allPicked} disabled={visible.length === 0}
           ref={(el) => { if (el) el.indeterminate = picked.length > 0 && !allPicked }}
           onChange={() => setSelected(allPicked ? new Set() : new Set(visible.map((d) => d.gid)))} />

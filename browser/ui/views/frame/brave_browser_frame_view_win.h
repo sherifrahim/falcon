@@ -48,6 +48,8 @@ class BraveBrowserFrameViewWin : public BrowserFrameViewWin,
   // Falcon: Mac-style window style hides the Windows caption buttons.
   bool IsMacShell() const;
   void OnShellModeChanged();
+  // Cockpit: the window controls float as a pill matching the capsule.
+  void UpdateCaptionPill();
 
   std::unique_ptr<BraveWindowFrameGraphic> frame_graphic_;
 

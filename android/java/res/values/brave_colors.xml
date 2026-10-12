@@ -12,13 +12,13 @@
     <color name="baseline_primary_100" tools:ignore="UnusedResources">@color/primitive_primary_100</color>
     <color name="baseline_primary_95" tools:ignore="UnusedResources">@color/primitive_primary_95</color>
     <color name="baseline_primary_90" tools:ignore="UnusedResources">#BFE6FA</color>
-    <color name="baseline_primary_80" tools:ignore="UnusedResources">#38BDF8</color>
+    <color name="baseline_primary_80" tools:ignore="UnusedResources">#8e9bff</color>
     <color name="baseline_primary_70" tools:ignore="UnusedResources">@color/primitive_primary_70</color>
     <color name="baseline_primary_60" tools:ignore="UnusedResources">@color/primitive_primary_60</color>
     <color name="baseline_primary_50" tools:ignore="UnusedResources">@color/primitive_primary_50</color>
-    <color name="baseline_primary_40" tools:ignore="UnusedResources">#0284C7</color>
+    <color name="baseline_primary_40" tools:ignore="UnusedResources">#5a67e0</color>
     <color name="baseline_primary_30" tools:ignore="UnusedResources">#0E3A52</color>
-    <color name="baseline_primary_20" tools:ignore="UnusedResources">#04111C</color>
+    <color name="baseline_primary_20" tools:ignore="UnusedResources">#12142b</color>
     <color name="baseline_primary_10" tools:ignore="UnusedResources">@color/primitive_primary_10</color>
     <!-- baseline_neutral -->
     <color name="baseline_neutral_100" tools:ignore="UnusedResources">@color/primitive_neutral_100</color>
@@ -32,7 +32,7 @@
     <color name="baseline_neutral_40" tools:ignore="UnusedResources">@color/primitive_neutral_40</color>
     <color name="baseline_neutral_30" tools:ignore="UnusedResources">@color/primitive_neutral_30</color>
     <color name="baseline_neutral_20" tools:ignore="UnusedResources">#0F1626</color>
-    <color name="baseline_neutral_10" tools:ignore="UnusedResources">#05070C</color>
+    <color name="baseline_neutral_10" tools:ignore="UnusedResources">#141223</color>
     <color name="baseline_neutral_0" tools:ignore="UnusedResources">@color/primitive_neutral_0</color>
     <!-- baseline_neutral_variant -->
     <color name="baseline_neutral_variant_90" tools:ignore="UnusedResources">#E3E8F0</color>
@@ -61,7 +61,7 @@
 
     <!-- Theme colors -->
     <color name="brave_white">@android:color/white</color>
-    <color name="brave_link">#0284C7</color>
+    <color name="brave_link">#5a67e0</color>
     <color name="menu_icon_color">#212529</color>
     <color name="url_text_primary">#1b1b1f</color>
 
@@ -70,8 +70,8 @@
     <color name="modern_blue_300">#FF7654</color>
     <color name="dialog_bg_color_dark_baseline">@color/toolbar_background_primary_dark</color>
     <color name="default_text_color_on_accent1_dark">@color/primitive_neutral_0</color>
-    <color name="gm3_baseline_surface_tint_light">#0284C7</color>
-    <color name="gm3_baseline_surface_tint_dark">#F7F9FC</color>
+    <color name="gm3_baseline_surface_tint_light">#5a67e0</color>
+    <color name="gm3_baseline_surface_tint_dark">#f8f7fc</color>
     <!-- Chromium's value is blue-tinted (#F8FAFD); point it at the Nala equivalent so surfaces
          using ?attr/colorSurfaceContainerLow stay on the design system when dynamic colors are
          off, and follow the wallpaper when they are on. -->
@@ -94,7 +94,7 @@
     <color name="brave_wallet_dn_panel_bg">#EDEEF1</color>
 
     <color name="text_on_primary">#FFFFFF</color>
-    <color name="icon_interactive">#0284C7</color>
+    <color name="icon_interactive">#5a67e0</color>
     <color name="system_feedback_error">#B3002A</color>
 
     <!-- Text colors -->

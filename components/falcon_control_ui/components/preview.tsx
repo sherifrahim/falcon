@@ -50,9 +50,9 @@ const Rail = styled.div<{ $w: number; $bg: string; $top: number }>`
 
 const Tab = styled.div<{ $on: boolean; $fg: string; $wide: boolean }>`
   height: 12px; border-radius: 4px;
-  background: ${(p) => (p.$on ? 'rgba(56,189,248,0.35)' : 'rgba(255,255,255,0.08)')};
+  background: ${(p) => (p.$on ? 'rgba(142, 155, 255,0.35)' : 'rgba(255,255,255,0.08)')};
   display: flex; align-items: center; gap: 4px; padding: 0 4px; color: ${(p) => p.$fg};
-  &::before { content: ''; width: 6px; height: 6px; border-radius: 2px; background: ${(p) => (p.$on ? '#38bdf8' : 'rgba(255,255,255,0.35)')}; flex: none; }
+  &::before { content: ''; width: 6px; height: 6px; border-radius: 2px; background: ${(p) => (p.$on ? '#8e9bff' : 'rgba(255,255,255,0.35)')}; flex: none; }
   span { display: ${(p) => (p.$wide ? 'block' : 'none')}; font-size: 7px; white-space: nowrap; overflow: hidden; }
 `
 
@@ -68,16 +68,16 @@ const Content = styled.div<{ $left: number; $top: number; $right: number; $round
 const Capsule = styled.div`
   position: absolute; left: 50%; top: 6px; transform: translateX(-50%);
   width: 62%; height: 16px; border-radius: 999px;
-  background: rgba(11, 18, 32, 0.92); border: 1px solid rgba(56,189,248,0.35);
+  background: rgba(26, 24, 41, 0.92); border: 1px solid rgba(142, 155, 255,0.35);
   box-shadow: 0 6px 16px rgba(0,0,0,0.45);
   display: flex; align-items: center; gap: 4px; padding: 0 8px; box-sizing: border-box;
   .url { flex: 1; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.12); }
-  .ring { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid #38bdf8; border-right-color: rgba(56,189,248,0.25); }
+  .ring { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid #8e9bff; border-right-color: rgba(142, 155, 255,0.25); }
 `
 
 const Edge = styled.div`
   position: absolute; right: 1px; top: 40%; bottom: 20%; width: 2px; border-radius: 2px;
-  background: #38bdf8; box-shadow: 0 0 6px #38bdf8;
+  background: #8e9bff; box-shadow: 0 0 6px #8e9bff;
 `
 
 const SideRail = styled.div<{ $bg: string; $top: number }>`
@@ -88,11 +88,11 @@ const SideRail = styled.div<{ $bg: string; $top: number }>`
 
 export function ShellPreview(p: PreviewProps) {
   const dark = !p.light
-  const bg0 = p.black ? '#000' : dark ? '#0b1220' : '#e2e8f0'
-  const bg1 = p.black ? '#050505' : dark ? '#0f172a' : '#f8fafc'
-  const border = p.black ? '#1f1f1f' : dark ? '#334155' : '#cbd5e1'
-  const fg = dark ? '#e2e8f0' : '#0f172a'
-  const page = dark ? (p.black ? '#0a0a0a' : '#111827') : '#ffffff'
+  const bg0 = p.black ? '#000' : dark ? '#1a1829' : '#f1effa'
+  const bg1 = p.black ? '#050505' : dark ? '#1f1c2e' : '#f8f7fc'
+  const border = p.black ? '#1f1f1f' : dark ? '#2e2b43' : '#d6d3e4'
+  const fg = dark ? '#f1effa' : '#1f1c2e'
+  const page = dark ? (p.black ? '#0a0a0a' : '#1f1c2e') : '#ffffff'
 
   const classic = p.shellMode === 0
   const mac = p.shellMode === 1
@@ -106,11 +106,11 @@ export function ShellPreview(p: PreviewProps) {
       {classic && (
         <>
           <Bar $h={12} $bg={bg0} $top={0}><span style={{ color: fg, opacity: 0.7, fontSize: 7 }}>Falcon</span><span style={{ flex: 1 }} /><Dot $c="rgba(255,255,255,0.35)" /><Dot $c="rgba(255,255,255,0.35)" /><Dot $c="rgba(255,255,255,0.35)" /></Bar>
-          <Bar $h={14} $bg={bg1} $top={12}><Dot $c="rgba(255,255,255,0.35)" /><Dot $c="rgba(255,255,255,0.35)" /><div style={{ flex: 1, height: 7, borderRadius: 4, background: 'rgba(255,255,255,0.1)' }} /><Dot $c="#38bdf8" /></Bar>
+          <Bar $h={14} $bg={bg1} $top={12}><Dot $c="rgba(255,255,255,0.35)" /><Dot $c="rgba(255,255,255,0.35)" /><div style={{ flex: 1, height: 7, borderRadius: 4, background: 'rgba(255,255,255,0.1)' }} /><Dot $c="#8e9bff" /></Bar>
         </>
       )}
       {mac && (
-        <Bar $h={10} $bg={bg1} $top={0}><span style={{ flex: 1 }} /><Dot $c="#38bdf8" /><span style={{ color: fg, opacity: 0.75, fontSize: 6 }}>Falcon · falcon.app</span><span style={{ flex: 1 }} /><Dot $c="rgba(255,255,255,0.3)" /><Dot $c="rgba(255,255,255,0.3)" /></Bar>
+        <Bar $h={10} $bg={bg1} $top={0}><span style={{ flex: 1 }} /><Dot $c="#8e9bff" /><span style={{ color: fg, opacity: 0.75, fontSize: 6 }}>Falcon · falcon.app</span><span style={{ flex: 1 }} /><Dot $c="rgba(255,255,255,0.3)" /><Dot $c="rgba(255,255,255,0.3)" /></Bar>
       )}
       {p.verticalTabs && (
         <Rail $w={railW} $bg={bg0} $top={topH}>

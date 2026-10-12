@@ -41,20 +41,20 @@ const List = styled.div`
 `
 
 const ChainBox = styled.div<{ $open: boolean }>`
-  border: 1px solid var(--f-border, #334155); border-radius: 12px; overflow: hidden;
-  background: var(--f-bg-2, #0f172a);
+  border: 1px solid var(--f-border, rgba(255, 255, 255, 0.08)); border-radius: 12px; overflow: hidden;
+  background: var(--f-bg-2, #1f1c2e);
   .head { display: flex; align-items: center; gap: 10px; padding: 10px 12px; cursor: pointer; }
   .head b { flex: 1; font-size: 13.5px; }
   .head .n { font-size: 12px; opacity: 0.6; font-variant-numeric: tabular-nums; }
-  .body { display: ${(p) => (p.$open ? 'grid' : 'none')}; gap: 8px; padding: 0 12px 12px; border-top: 1px solid var(--f-border, #334155); padding-top: 10px; }
+  .body { display: ${(p) => (p.$open ? 'grid' : 'none')}; gap: 8px; padding: 0 12px 12px; border-top: 1px solid var(--f-border, rgba(255, 255, 255, 0.08)); padding-top: 10px; }
   .step { display: grid; grid-template-columns: 24px 190px minmax(0, 1fr) auto auto auto; gap: 6px; align-items: center; }
   .step .i { font-size: 11px; opacity: 0.5; text-align: right; font-variant-numeric: tabular-nums; }
   select, input[type='text'] {
-    padding: 6px 9px; border-radius: 9px; border: 1px solid var(--f-border, #334155);
-    background: var(--f-bg-1, #0f172a); color: inherit; font: inherit; font-size: 12.5px; min-width: 0; width: 100%; box-sizing: border-box;
+    padding: 6px 9px; border-radius: 9px; border: 1px solid var(--f-border, rgba(255, 255, 255, 0.08));
+    background: var(--f-bg-1, #1f1c2e); color: inherit; font: inherit; font-size: 12.5px; min-width: 0; width: 100%; box-sizing: border-box;
   }
-  .mini { padding: 4px 8px; border-radius: 8px; border: 1px solid var(--f-border, #334155); background: transparent; color: inherit; cursor: pointer; font-size: 12px; }
-  .mini:hover { background: var(--f-bg-3, #1e293b); }
+  .mini { padding: 4px 8px; border-radius: 8px; border: 1px solid var(--f-border, rgba(255, 255, 255, 0.08)); background: transparent; color: inherit; cursor: pointer; font-size: 12px; }
+  .mini:hover { background: var(--f-bg-3, rgba(255, 255, 255, 0.05)); }
   .mini:disabled { opacity: 0.35; cursor: default; }
   .foot { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding-top: 4px; }
   .hint { font-size: 11.5px; opacity: 0.55; }
@@ -62,7 +62,7 @@ const ChainBox = styled.div<{ $open: boolean }>`
 
 const Btn = styled.button<{ $primary?: boolean }>`
   padding: 8px 14px; border-radius: 10px; border: 1px solid transparent;
-  background: ${(p) => (p.$primary ? '#0ea5e9' : 'var(--f-bg-1, #0f172a)')};
+  background: ${(p) => (p.$primary ? '#6f7df5' : 'var(--f-bg-1, #1f1c2e)')};
   color: ${(p) => (p.$primary ? '#fff' : 'inherit')};
   font-size: 13px; font-weight: 600; cursor: pointer;
   &:hover { filter: brightness(1.15); }

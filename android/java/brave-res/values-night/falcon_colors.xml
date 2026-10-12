@@ -9,8 +9,8 @@
     <color name="falcon_ink">#FFFFFFFF</color>
     <color name="falcon_ink_2">#A3FFFFFF</color>
     <color name="falcon_ink_3">#66FFFFFF</color>
-    <color name="falcon_accent">#FF38BDF8</color>
-    <color name="falcon_accent_ink">#FF04111C</color>
+    <color name="falcon_accent">#FF8E9BFF</color>
+    <color name="falcon_accent_ink">#FF12142B</color>
     <color name="falcon_ok">#FF22C55E</color>
     <color name="falcon_warn">#FFF59E0B</color>
     <color name="falcon_hair">#1FFFFFFF</color>
@@ -19,19 +19,19 @@
     <color name="falcon_fill">#0FFFFFFF</color>
     <color name="falcon_field">#14FFFFFF</color>
     <color name="falcon_handle">#59FFFFFF</color>
-    <color name="falcon_glass">#AD080C16</color>
-    <color name="falcon_glass_solid">#FF0D1322</color>
+    <color name="falcon_glass">#AD17152A</color>
+    <color name="falcon_glass_solid">#FF1F1C2E</color>
     <color name="falcon_button_primary">#FFFFFFFF</color>
-    <color name="falcon_button_primary_ink">#FF04111C</color>
-    <color name="falcon_selection">#2438BDF8</color>
-    <color name="falcon_selection_line">#8C38BDF8</color>
-    <color name="falcon_bg">#FF05070C</color>
-    <color name="falcon_bg_2">#FF070A12</color>
-    <!-- the Downloads space: indigo field fading into ink -->
-    <color name="falcon_space_downloads">#FF2B3A8F</color>
-    <color name="falcon_space_downloads_2">#FF0B1030</color>
+    <color name="falcon_button_primary_ink">#FF12142B</color>
+    <color name="falcon_selection">#248E9BFF</color>
+    <color name="falcon_selection_line">#8C8E9BFF</color>
+    <color name="falcon_bg">#FF141223</color>
+    <color name="falcon_bg_2">#FF1A1829</color>
+    <!-- the Downloads space: deep teal field fading into graphite -->
+    <color name="falcon_space_downloads">#FF3A2F5C</color>
+    <color name="falcon_space_downloads_2">#FF1A1530</color>
     <color name="falcon_segment_idle">#1FFFFFFF</color>
-    <color name="falcon_segment_done">#FF38BDF8</color>
+    <color name="falcon_segment_done">#FF8E9BFF</color>
     <color name="falcon_segment_done_dim">#66FFFFFF</color>
     <bool name="falcon_light_bars">false</bool>
 </resources>

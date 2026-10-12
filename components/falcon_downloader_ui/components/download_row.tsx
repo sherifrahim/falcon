@@ -14,8 +14,9 @@ import {
 } from './common'
 
 const Row = styled.div<{ $open: boolean }>`
-  background: var(--leo-color-container-background, var(--f-bg-3, #1e293b));
-  border: 1px solid ${(p) => (p.$open ? '#38bdf8' : 'var(--leo-color-divider-subtle, var(--f-border, #334155))')};
+  background: var(--leo-color-container-background, var(--f-bg-3, rgba(255, 255, 255, 0.05)));
+  backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid ${(p) => (p.$open ? '#8e9bff' : 'var(--leo-color-divider-subtle, var(--f-border, rgba(255, 255, 255, 0.08)))')};
   border-radius: 14px;
   padding: 12px 14px;
   display: grid;
@@ -28,7 +29,7 @@ const Row = styled.div<{ $open: boolean }>`
 // Row selection checkbox (bulk pause / resume / remove).
 const Check = styled.input`
   grid-row: 1; align-self: center; margin: 0; width: 16px; height: 16px;
-  accent-color: #0ea5e9; cursor: pointer;
+  accent-color: #6f7df5; cursor: pointer;
 `
 
 // Selection + remove wiring shared by both row kinds.
@@ -47,7 +48,7 @@ const RingBox = styled.svg`
 
 function Ring({ pct, status }: { pct: number; status: Aria2Status }) {
   const r = 14, c = 2 * Math.PI * r
-  const color = status === 'error' ? '#f87171' : status === 'complete' ? '#22c55e' : status === 'paused' ? '#94a3b8' : '#38bdf8'
+  const color = status === 'error' ? '#f87171' : status === 'complete' ? '#22c55e' : status === 'paused' ? '#9a96ae' : '#8e9bff'
   const frac = status === 'complete' ? 1 : Math.max(0, Math.min(1, pct / 100))
   const label = status === 'complete' ? '✓' : status === 'error' ? '!' : `${Math.round(pct)}`
   return (
@@ -56,7 +57,7 @@ function Ring({ pct, status }: { pct: number; status: Aria2Status }) {
       <circle className="track" cx="17" cy="17" r={r} fill="none" strokeWidth="2.5" />
       <circle className="arc" cx="17" cy="17" r={r} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round"
         strokeDasharray={c} strokeDashoffset={c * (1 - frac)} transform="rotate(-90 17 17)"
-        style={{ filter: status === 'active' ? 'drop-shadow(0 0 3px rgba(56,189,248,0.6))' : 'none' }} />
+        style={{ filter: status === 'active' ? 'drop-shadow(0 0 3px rgba(142, 155, 255,0.6))' : 'none' }} />
       <text x="17" y="17" textAnchor="middle" dominantBaseline="central">{label}</text>
     </RingBox>
   )
@@ -134,7 +135,7 @@ const Bar = styled.div<{ $pct: number; $status: Aria2Status }>`
   grid-column: 1 / -1;
   height: 3px;
   border-radius: 999px;
-  background: rgba(148, 163, 184, 0.16);
+  background: rgba(154, 150, 174, 0.16);
   overflow: hidden;
   &::after {
     content: '';
@@ -142,7 +143,7 @@ const Bar = styled.div<{ $pct: number; $status: Aria2Status }>`
     height: 100%;
     width: ${(p) => Math.max(0, Math.min(100, p.$pct))}%;
     background: ${(p) =>
-      p.$status === 'error' ? '#ef4444' : p.$status === 'complete' ? '#22c55e' : p.$status === 'paused' ? '#94a3b8' : '#38bdf8'};
+      p.$status === 'error' ? '#ef4444' : p.$status === 'complete' ? '#22c55e' : p.$status === 'paused' ? '#9a96ae' : '#8e9bff'};
     transition: width 0.4s;
   }
 `
@@ -157,7 +158,7 @@ const Actions = styled.div`
 
 const Details = styled.div`
   grid-column: 1 / -1;
-  border-top: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
+  border-top: 1px solid var(--leo-color-divider-subtle, var(--f-border, rgba(255, 255, 255, 0.08)));
   padding-top: 10px;
   display: grid;
   grid-template-columns: 110px 1fr;
@@ -171,7 +172,7 @@ const FileList = styled.div`
   grid-column: 1 / -1;
   max-height: 260px;
   overflow: auto;
-  border: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
+  border: 1px solid var(--leo-color-divider-subtle, var(--f-border, rgba(255, 255, 255, 0.08)));
   border-radius: 10px;
   padding: 6px 10px;
   label { display: flex; gap: 8px; align-items: center; padding: 3px 0; font-size: 12px; }
@@ -183,8 +184,8 @@ const Segments = styled.div`
   display: flex;
   gap: 2px;
   height: 4px;
-  span { flex: 1; border-radius: 2px; background: rgba(148,163,184,0.2); }
-  span.on { background: #38bdf8; }
+  span { flex: 1; border-radius: 2px; background: rgba(154, 150, 174,0.2); }
+  span.on { background: #8e9bff; }
 `
 
 export interface ScanFile {
@@ -214,11 +215,11 @@ function scanBadge(scan?: ScanResult): { text: string; color: string } | null {
     const worst = f.reduce((a, b) => (b.vtMalicious > a.vtMalicious ? b : a))
     return { text: `VirusTotal: ${worst.vtMalicious}/${worst.vtTotal} flagged`, color: '#ef4444' }
   }
-  if (f.some((x) => x.av === 'pending' || x.vt === 'pending')) return { text: 'Scanning…', color: '#94a3b8' }
+  if (f.some((x) => x.av === 'pending' || x.vt === 'pending')) return { text: 'Scanning…', color: '#9a96ae' }
   if (f.every((x) => x.vt === 'clean')) return { text: `Clean · VirusTotal 0/${f[0]?.vtTotal ?? 0}`, color: '#22c55e' }
-  if (f.some((x) => x.vt === 'unknown')) return { text: 'Defender OK · not on VirusTotal', color: '#38bdf8' }
-  if (f.some((x) => x.vt === 'nokey')) return { text: 'Defender OK', color: '#38bdf8' }
-  if (f.some((x) => x.av === 'clean')) return { text: 'Defender OK', color: '#38bdf8' }
+  if (f.some((x) => x.vt === 'unknown')) return { text: 'Defender OK · not on VirusTotal', color: '#8e9bff' }
+  if (f.some((x) => x.vt === 'nokey')) return { text: 'Defender OK', color: '#8e9bff' }
+  if (f.some((x) => x.av === 'clean')) return { text: 'Defender OK', color: '#8e9bff' }
   return null
 }
 
@@ -256,8 +257,8 @@ function Sparkline({ data }: { data: number[] }) {
   const pts = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - (v / max) * (h - 2) - 1}`).join(' ')
   return (
     <svg width={w} height={h} style={{ display: 'block' }}>
-      <polyline points={pts} fill="none" stroke="#38bdf8" strokeWidth={1.5} />
-      <polyline points={`0,${h} ${pts} ${w},${h}`} fill="rgba(56,189,248,0.15)" stroke="none" />
+      <polyline points={pts} fill="none" stroke="#8e9bff" strokeWidth={1.5} />
+      <polyline points={`0,${h} ${pts} ${w},${h}`} fill="rgba(142, 155, 255,0.15)" stroke="none" />
     </svg>
   )
 }
@@ -502,7 +503,7 @@ export function DownloadRow({ d, scan, client, open, onToggle, refresh, setError
               <Button $small onClick={() => navigator.clipboard.writeText(scan.files[0].sha256)}>Copy</Button>{' '}
               <Button $small onClick={() => chrome.send('falcon_downloader.rescan', [d.gid])}>Rescan</Button>{' '}
               {scan.files[0].vt !== 'nokey' && (
-                <a href={`https://www.virustotal.com/gui/file/${scan.files[0].sha256}`} target="_blank" rel="noopener" style={{ color: '#38bdf8' }}>VirusTotal ↗</a>
+                <a href={`https://www.virustotal.com/gui/file/${scan.files[0].sha256}`} target="_blank" rel="noopener" style={{ color: '#8e9bff' }}>VirusTotal ↗</a>
               )}
             </span></>
           )}

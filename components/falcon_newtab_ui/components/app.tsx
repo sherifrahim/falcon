@@ -16,7 +16,7 @@ import { SettingsPanel } from './settings'
 import { FocusSounds, FocusTimer, Weather, resolveShortcut } from './widgets'
 
 const Global = createGlobalStyle`
-  ::selection { background: rgba(56,189,248,0.35); }
+  ::selection { background: rgba(142, 155, 255,0.35); }
   a { color: inherit; text-decoration: none; }
 `
 
@@ -49,7 +49,7 @@ const Video = styled.video<{ $blur: number }>`
   height: 100%;
   object-fit: cover;
   filter: ${(p) => (p.$blur > 0 ? `blur(${p.$blur}px)` : 'none')};
-  background: var(--f-bg-0, #0b1220);
+  background: var(--f-bg-0, #1a1829);
 `
 
 const Dim = styled.div<{ $dim: number }>`
@@ -62,9 +62,9 @@ const Dim = styled.div<{ $dim: number }>`
 const Hint = styled.div`
   position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 6; white-space: nowrap; max-width: 92vw; overflow: hidden;
   display: flex; align-items: center; gap: 12px; padding: 8px 12px 8px 14px;
-  border-radius: 999px; font-size: 12px; color: #e2e8f0;
-  background: rgba(11, 18, 32, 0.72); border: 1px solid rgba(56, 189, 248, 0.35);
-  backdrop-filter: blur(10px); box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  border-radius: 999px; font-size: 12px; color: #f1effa;
+  background: rgba(26, 24, 41, 0.72); border: 1px solid rgba(142, 155, 255, 0.35);
+  backdrop-filter: blur(28px) saturate(180%); box-shadow: 0 8px 24px rgba(0,0,0,0.35);
   kbd { font: inherit; padding: 1px 5px; border-radius: 5px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); }
   button { border: none; background: transparent; color: inherit; cursor: pointer; font-size: 13px; opacity: 0.7; }
   button:hover { opacity: 1; }
@@ -127,23 +127,23 @@ const Search = styled.form`
     padding: 13px 48px 13px 46px;
     border-radius: 999px;
     border: 1px solid rgba(255, 255, 255, 0.16);
-    background: rgba(8, 12, 24, 0.42);
-    backdrop-filter: blur(16px);
-    color: #f8fafc;
+    background: rgba(23, 21, 36, 0.42);
+    backdrop-filter: blur(28px) saturate(180%);
+    color: #f8f7fc;
     font-size: 15px;
     outline: none;
     transition: border-color ${dur.fast} ${ease.move}, box-shadow ${dur.fast} ${ease.move}, background-color ${dur.fast} ${ease.move};
   }
-  input::placeholder { color: rgba(226, 232, 240, 0.5); }
+  input::placeholder { color: rgba(241, 239, 250, 0.5); }
   input:focus {
-    border-color: rgba(56, 189, 248, 0.75);
-    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.14), 0 0 24px rgba(56, 189, 248, 0.18);
-    background: rgba(8, 12, 24, 0.6);
+    border-color: rgba(142, 155, 255, 0.75);
+    box-shadow: 0 0 0 3px rgba(142, 155, 255, 0.14), 0 0 24px rgba(142, 155, 255, 0.18);
+    background: rgba(23, 21, 36, 0.6);
   }
   &::before {
     content: ''; position: absolute; left: 18px; top: 50%; width: 14px; height: 14px; transform: translateY(-58%);
-    border: 1.5px solid rgba(226, 232, 240, 0.7); border-radius: 50%; box-sizing: border-box;
-    box-shadow: 5px 5px 0 -3px rgba(226, 232, 240, 0.7);
+    border: 1.5px solid rgba(241, 239, 250, 0.7); border-radius: 50%; box-sizing: border-box;
+    box-shadow: 5px 5px 0 -3px rgba(241, 239, 250, 0.7);
   }
   button {
     position: absolute;
@@ -154,11 +154,11 @@ const Search = styled.form`
     border-radius: 50%;
     border: none;
     background: transparent;
-    color: rgba(226, 232, 240, 0.75);
+    color: rgba(241, 239, 250, 0.75);
     cursor: pointer;
     font-size: 16px;
   }
-  button:hover { color: #38bdf8; }
+  button:hover { color: #8e9bff; }
 `
 
 const Links = styled.div<{ $cols: number }>`
@@ -170,7 +170,7 @@ const Links = styled.div<{ $cols: number }>`
 
 const Tile = styled.a`
   position: relative;
-  color: #f1f5f9;
+  color: #f3f1fa;
   text-decoration: none;
   display: flex;
   flex-direction: column;
@@ -180,15 +180,15 @@ const Tile = styled.a`
   cursor: pointer;
   img {
     width: 48px; height: 48px; padding: 12px; box-sizing: border-box; border-radius: 14px;
-    background: rgba(8, 12, 24, 0.55); border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(14px);
+    background: rgba(23, 21, 36, 0.55); border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(28px) saturate(180%);
     transition: transform ${dur.fast} ${ease.move}, border-color ${dur.fast} ${ease.move}, box-shadow ${dur.fast} ${ease.move};
   }
-  &:hover img { transform: translateY(-2px); border-color: rgba(56, 189, 248, 0.55); box-shadow: 0 0 18px rgba(56, 189, 248, 0.2); }
+  &:hover img { transform: translateY(-2px); border-color: rgba(142, 155, 255, 0.55); box-shadow: 0 0 18px rgba(142, 155, 255, 0.2); }
   span { font-size: 11px; max-width: 64px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: 0.8; letter-spacing: 0.01em; }
   .x {
     position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 50%;
-    background: rgba(2, 6, 23, 0.7); color: #fca5a5; font-size: 11px; line-height: 18px; text-align: center;
+    background: rgba(14, 12, 22, 0.7); color: #fca5a5; font-size: 11px; line-height: 18px; text-align: center;
     opacity: 0; transition: opacity ${dur.fast} ${ease.move};
   }
   &:hover .x { opacity: 1; }
@@ -204,11 +204,11 @@ const AddTile = styled.button`
   padding: 0;
   background: transparent;
   border: none;
-  color: rgba(226, 232, 240, 0.8);
+  color: rgba(241, 239, 250, 0.8);
   cursor: pointer;
   font-size: 20px;
-  &::before { content: '+'; display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; border: 1px dashed rgba(255, 255, 255, 0.28); background: rgba(8, 12, 24, 0.35); }
-  &:hover::before { border-color: rgba(56, 189, 248, 0.6); }
+  &::before { content: '+'; display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; border: 1px dashed rgba(255, 255, 255, 0.28); background: rgba(23, 21, 36, 0.35); }
+  &:hover::before { border-color: rgba(142, 155, 255, 0.6); }
   small { font-size: 11px; opacity: 0.8; }
 `
 
@@ -241,9 +241,9 @@ const IconBtn = styled.button`
   width: 34px; height: 34px;
   border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(8, 12, 24, 0.5);
-  backdrop-filter: blur(14px);
-  color: #e2e8f0;
+  background: rgba(23, 21, 36, 0.5);
+  backdrop-filter: blur(28px) saturate(180%);
+  color: #f1effa;
   font-size: 15px;
   cursor: pointer;
   transition: transform ${dur.fast} ${ease.move};
@@ -251,7 +251,7 @@ const IconBtn = styled.button`
 `
 
 const Credit = styled.a`
-  color: #e2e8f0;
+  color: #f1effa;
   text-decoration: none;
   font-size: 11px;
   opacity: 0.55;
@@ -267,27 +267,27 @@ const Dialog = styled.div`
   inset: 0;
   display: grid;
   place-items: center;
-  background: rgba(2, 6, 23, 0.55);
+  background: rgba(14, 12, 22, 0.55);
   z-index: 30;
   form {
     width: min(420px, 92vw);
     padding: 22px;
     border-radius: 18px;
-    background: rgba(15, 23, 42, 0.92);
+    background: rgba(31, 28, 46, 0.68);
     border: 1px solid rgba(255, 255, 255, 0.1);
     display: grid;
     gap: 10px;
   }
   h3 { margin: 0 0 4px; font-size: 16px; font-weight: 600; }
   input {
-    padding: 10px 12px; border-radius: 10px; border: 1px solid var(--f-border, #334155); background: var(--f-bg-3, #1e293b); color: inherit; font-size: 14px; outline: none;
+    padding: 10px 12px; border-radius: 10px; border: 1px solid var(--f-border, rgba(255, 255, 255, 0.08)); background: var(--f-bg-3, rgba(255, 255, 255, 0.05)); color: inherit; font-size: 14px; outline: none;
   }
-  input:focus { border-color: #38bdf8; }
+  input:focus { border-color: #8e9bff; }
   .row { display: flex; gap: 8px; justify-content: flex-end; }
   button {
-    padding: 8px 14px; border-radius: 10px; border: 1px solid transparent; background: var(--f-bg-3, #1e293b); color: inherit; cursor: pointer; font-weight: 600;
+    padding: 8px 14px; border-radius: 10px; border: 1px solid transparent; background: var(--f-bg-3, rgba(255, 255, 255, 0.05)); color: inherit; cursor: pointer; font-weight: 600;
   }
-  button.primary { background: #0ea5e9; color: #fff; }
+  button.primary { background: #6f7df5; color: #fff; }
 `
 
 function useClock(showSeconds: boolean) {
@@ -363,11 +363,11 @@ export function App() {
   const bg = state.bg
   let css = GRADIENTS[bg.gradient % GRADIENTS.length].css
   let isImage = false
-  if (bg.mode === 'solid') css = bg.color || 'var(--f-bg-0, #0b1220)'
-  else if (bg.mode === 'image' && bg.imageUrl) { css = `url("${bg.imageUrl.replace(/"/g, '')}") center / cover no-repeat var(--f-bg-0, #0b1220)`; isImage = true }
-  else if (bg.mode === 'bing' && bing) { css = `url("${bing.url}") center / cover no-repeat var(--f-bg-0, #0b1220)`; isImage = true }
+  if (bg.mode === 'solid') css = bg.color || 'var(--f-bg-0, #1a1829)'
+  else if (bg.mode === 'image' && bg.imageUrl) { css = `url("${bg.imageUrl.replace(/"/g, '')}") center / cover no-repeat var(--f-bg-0, #1a1829)`; isImage = true }
+  else if (bg.mode === 'bing' && bing) { css = `url("${bing.url}") center / cover no-repeat var(--f-bg-0, #1a1829)`; isImage = true }
   const isVideo = bg.mode === 'video' && !!bg.videoUrl
-  if (isVideo) css = 'var(--f-bg-0, #0b1220)'
+  if (isVideo) css = 'var(--f-bg-0, #1a1829)'
 
   // Clock/date ---------------------------------------------------------------
   const h = now.getHours()
@@ -458,7 +458,7 @@ export function App() {
                     onDragLeave={() => setDragOver(null)}
                     onDrop={(e) => { e.preventDefault(); if (dragFrom !== null) moveLink(dragFrom, i); setDragFrom(null); setDragOver(null) }}
                     onDragEnd={() => { setDragFrom(null); setDragOver(null) }}
-                    style={dragOver === i && dragFrom !== null && dragFrom !== i ? { borderColor: '#38bdf8', transform: 'scale(1.06)' } : undefined}
+                    style={dragOver === i && dragFrom !== null && dragFrom !== i ? { borderColor: '#8e9bff', transform: 'scale(1.06)' } : undefined}
                     title={`${l.url}\nRight-click to edit · drag to reorder`}>
                     <img src={faviconUrl(l.url)} alt="" />
                     <span>{l.title || l.url}</span>

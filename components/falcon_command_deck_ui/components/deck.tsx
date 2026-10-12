@@ -28,9 +28,9 @@ const Root = styled.div`
   width: 760px;
   box-sizing: border-box;
   border-radius: 16px;
-  background: rgba(11, 18, 32, 0.96);
+  background: rgba(26, 24, 41, 0.96);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(56, 189, 248, 0.08);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(142, 155, 255, 0.08);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -43,15 +43,15 @@ const InputRow = styled.div`
   gap: 12px;
   padding: 14px 18px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  .glyph { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid rgba(226,232,240,0.7); box-sizing: border-box; position: relative; flex: none; }
-  .glyph::after { content: ''; position: absolute; right: -6px; bottom: -5px; width: 7px; height: 1.5px; background: rgba(226,232,240,0.7); transform: rotate(45deg); }
-  .prompt { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #38bdf8; white-space: nowrap; }
+  .glyph { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid rgba(241, 239, 250,0.7); box-sizing: border-box; position: relative; flex: none; }
+  .glyph::after { content: ''; position: absolute; right: -6px; bottom: -5px; width: 7px; height: 1.5px; background: rgba(241, 239, 250,0.7); transform: rotate(45deg); }
+  .prompt { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #8e9bff; white-space: nowrap; }
   input {
-    flex: 1; min-width: 0; border: none; outline: none; background: transparent; color: #f8fafc;
-    font: inherit; font-size: 18px; caret-color: #38bdf8;
+    flex: 1; min-width: 0; border: none; outline: none; background: transparent; color: #f8f7fc;
+    font: inherit; font-size: 18px; caret-color: #8e9bff;
   }
-  input::placeholder { color: rgba(226, 232, 240, 0.45); }
-  .close { border: none; background: transparent; color: rgba(226,232,240,0.6); cursor: pointer; font-size: 16px;
+  input::placeholder { color: rgba(241, 239, 250, 0.45); }
+  .close { border: none; background: transparent; color: rgba(241, 239, 250,0.6); cursor: pointer; font-size: 16px;
     border-radius: 8px; ${presses} }
   .close:hover { color: #fff; }
 `
@@ -75,14 +75,14 @@ const Row = styled.div<{ $on: boolean }>`
   padding: 9px 12px;
   border-radius: 10px;
   cursor: pointer;
-  background: ${(p) => (p.$on ? 'rgba(56, 189, 248, 0.14)' : 'transparent')};
-  border: 1px solid ${(p) => (p.$on ? 'rgba(56, 189, 248, 0.35)' : 'transparent')};
+  background: ${(p) => (p.$on ? 'rgba(142, 155, 255, 0.14)' : 'transparent')};
+  border: 1px solid ${(p) => (p.$on ? 'rgba(142, 155, 255, 0.35)' : 'transparent')};
   .ico { width: 26px; height: 26px; border-radius: 8px; background: rgba(255,255,255,0.06); display: grid; place-items: center; font-size: 12px; opacity: 0.85; flex: none;
     transition: background-color ${dur.fast} ${ease.move}, opacity ${dur.fast} ${ease.move}; }
   &:hover .ico { background: rgba(255,255,255,0.1); opacity: 1; }
   ${reduced} { .ico { transition-duration: 1ms; } }
   .t { flex: 1; min-width: 0; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .t mark { background: transparent; color: #7dd3fc; font-weight: 600; }
+  .t mark { background: transparent; color: #c3caff; font-weight: 600; }
   .k { font-family: "Cascadia Mono", Consolas, "JetBrains Mono", monospace; font-size: 11px; opacity: 0.65; white-space: nowrap; }
   kbd { font: inherit; padding: 1px 6px; border-radius: 5px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.14); }
 `

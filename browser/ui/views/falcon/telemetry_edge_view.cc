@@ -25,7 +25,7 @@ namespace falcon {
 
 namespace {
 
-constexpr SkColor kSky = SkColorSetRGB(0x38, 0xBD, 0xF8);
+constexpr SkColor kSky = SkColorSetRGB(0x8E, 0x9B, 0xFF);
 constexpr int kTopMargin = 48;
 constexpr int kBottomMargin = 48;
 

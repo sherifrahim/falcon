@@ -44,15 +44,15 @@ const Choice = styled.button<{ $on: boolean }>`
   gap: 8px;
   padding: 10px 10px 12px;
   border-radius: 14px;
-  border: 1px solid ${(p) => (p.$on ? 'rgba(56, 189, 248, 0.7)' : 'var(--hair)')};
-  background: ${(p) => (p.$on ? 'rgba(56, 189, 248, 0.08)' : 'rgba(255, 255, 255, 0.04)')};
-  box-shadow: ${(p) => (p.$on ? '0 0 0 1px rgba(56, 189, 248, 0.35)' : 'none')};
+  border: 1px solid ${(p) => (p.$on ? 'rgba(142, 155, 255, 0.7)' : 'var(--hair)')};
+  background: ${(p) => (p.$on ? 'rgba(142, 155, 255, 0.08)' : 'rgba(255, 255, 255, 0.04)')};
+  box-shadow: ${(p) => (p.$on ? '0 0 0 1px rgba(142, 155, 255, 0.35)' : 'none')};
   color: var(--ink);
   font: inherit;
   text-align: start;
   cursor: pointer;
   transition: border-color 150ms ease, background 150ms ease;
-  &:hover { border-color: rgba(56, 189, 248, 0.45); }
+  &:hover { border-color: rgba(142, 155, 255, 0.45); }
   &:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
   .name { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
   .beta {

@@ -46,9 +46,9 @@ export const InspectorButton = styled.button<{ $on: boolean }>`
   height: 36px;
   padding: 0 12px;
   border-radius: 10px;
-  border: 1px solid ${(p) => (p.$on ? 'rgba(56, 189, 248, 0.45)' : 'var(--f-border, #334155)')};
-  background: ${(p) => (p.$on ? 'rgba(56, 189, 248, 0.12)' : 'transparent')};
-  color: ${(p) => (p.$on ? '#7dd3fc' : 'inherit')};
+  border: 1px solid ${(p) => (p.$on ? 'rgba(142, 155, 255, 0.45)' : 'var(--f-border, rgba(255, 255, 255, 0.08))')};
+  background: ${(p) => (p.$on ? 'rgba(142, 155, 255, 0.12)' : 'transparent')};
+  color: ${(p) => (p.$on ? '#c3caff' : 'inherit')};
   font: inherit;
   font-size: 12px;
   cursor: pointer;
@@ -79,10 +79,10 @@ const RailBox = styled.nav`
     display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 10px; border: 1px solid transparent;
     background: transparent; color: inherit; font-size: 13px; text-align: left; cursor: pointer; opacity: 0.75; width: 100%;
   }
-  button:hover { opacity: 1; background: var(--f-bg-3, #1e293b); }
-  button.on { opacity: 1; background: rgba(56, 189, 248, 0.12); border-color: rgba(56, 189, 248, 0.3); color: #e0f2fe; }
+  button:hover { opacity: 1; background: var(--f-bg-3, rgba(255, 255, 255, 0.05)); }
+  button.on { opacity: 1; background: rgba(142, 155, 255, 0.12); border-color: rgba(142, 155, 255, 0.3); color: #f0f1ff; }
   button i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 0.5; flex: none; }
-  button.on i { background: #38bdf8; opacity: 1; box-shadow: 0 0 8px #38bdf8; }
+  button.on i { background: #8e9bff; opacity: 1; box-shadow: 0 0 8px #8e9bff; }
   button b { margin-left: auto; font-size: 11px; font-weight: 600; opacity: 0.7; font-family: "Cascadia Mono", Consolas, monospace; }
 `
 
@@ -94,7 +94,7 @@ export function Rail({ view, counts, onView }: { view: View; counts: Record<stri
   )
   return (
     <RailBox className="rail">
-      <div className="brand"><svg viewBox="0 0 24 24" fill="#38bdf8"><path d={FALCON_PATH} /></svg>Downloads</div>
+      <div className="brand"><svg viewBox="0 0 24 24" fill="#8e9bff"><path d={FALCON_PATH} /></svg>Downloads</div>
       {item('all', 'All', counts.all)}
       {item('active', 'Active', counts.active)}
       {item('done', 'Completed', counts.done)}
@@ -126,8 +126,9 @@ const SideBox = styled.aside`
 
 const Panel = styled.div`
   border-radius: 12px;
-  border: 1px solid var(--f-border, #334155);
-  background: var(--leo-color-container-background, var(--f-bg-3, #1e293b));
+  border: 1px solid var(--f-border, rgba(255, 255, 255, 0.08));
+  background: var(--leo-color-container-background, var(--f-bg-3, rgba(255, 255, 255, 0.05)));
+  backdrop-filter: blur(20px) saturate(160%);
   padding: 12px 14px;
   h4 { margin: 0 0 8px; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.55; font-weight: 600; }
   .kv { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 12px; padding: 5px 0; border-top: 1px solid rgba(255,255,255,0.06); }
@@ -135,7 +136,7 @@ const Panel = styled.div`
   .kv span:last-child { font-family: "Cascadia Mono", Consolas, "JetBrains Mono", monospace; font-size: 11px; opacity: 0.9; }
   .ok { color: #22c55e; } .warn { color: #f59e0b; } .off { opacity: 0.5; }
   .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
-  a { color: #38bdf8; text-decoration: none; font-size: 12px; }
+  a { color: #8e9bff; text-decoration: none; font-size: 12px; }
 `
 
 interface Settings {
@@ -168,7 +169,7 @@ export function Side({ connected, down, up, active, queued, sessionBytes, totalF
       <Panel>
         <h4>Engine</h4>
         <div className="kv"><span><i className={'dot ' + (connected ? 'ok' : 'warn')} style={{ background: connected ? '#22c55e' : '#f59e0b' }} />aria2</span><span>{connected ? 'running' : 'starting'}</span></div>
-        <div className="kv"><span><i className="dot" style={{ background: media ? '#22c55e' : '#64748b' }} />yt-dlp + ffmpeg</span><span>{media ? 'ready' : 'missing'}</span></div>
+        <div className="kv"><span><i className="dot" style={{ background: media ? '#22c55e' : '#716d7f' }} />yt-dlp + ffmpeg</span><span>{media ? 'ready' : 'missing'}</span></div>
         <div className="kv"><span>Transfer</span><span>↓ {fmtSpeed(down)} · ↑ {fmtSpeed(up)}</span></div>
         <div className="kv"><span>Queue</span><span>{active} active · {queued} waiting</span></div>
         <div className="kv"><span>Connections</span><span>{st.maxConnections ?? '—'} per file · {st.maxConcurrent ?? '—'} at once</span></div>
@@ -205,8 +206,9 @@ const TelemetryBox = styled.div`
   gap: 12px;
   @media (max-width: 860px) { grid-template-columns: 1fr; }
   > div {
-    border-radius: 12px; border: 1px solid var(--f-border, #334155);
-    background: var(--leo-color-container-background, var(--f-bg-3, #1e293b));
+    border-radius: 12px; border: 1px solid var(--f-border, rgba(255, 255, 255, 0.08));
+    background: var(--leo-color-container-background, var(--f-bg-3, rgba(255, 255, 255, 0.05)));
+    backdrop-filter: blur(20px) saturate(160%);
     padding: 10px 14px; min-height: 64px; display: flex; flex-direction: column; gap: 6px;
   }
   .lbl { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.5; }
@@ -225,9 +227,9 @@ export function Telemetry({ speeds, listed, dir, categories }: { speeds: number[
         <div className="lbl">Network</div>
         <div className="val">{fmtSpeed(now)}</div>
         <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
-          <defs><linearGradient id="tg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#38bdf8" stopOpacity="0.45" /><stop offset="1" stopColor="#38bdf8" stopOpacity="0" /></linearGradient></defs>
+          <defs><linearGradient id="tg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#8e9bff" stopOpacity="0.45" /><stop offset="1" stopColor="#8e9bff" stopOpacity="0" /></linearGradient></defs>
           {speeds.length > 1 && <polygon points={`0,${h} ${pts} ${w},${h}`} fill="url(#tg)" />}
-          {speeds.length > 1 && <polyline points={pts} fill="none" stroke="#38bdf8" strokeWidth="1.5" />}
+          {speeds.length > 1 && <polyline points={pts} fill="none" stroke="#8e9bff" strokeWidth="1.5" />}
         </svg>
       </div>
       <div>

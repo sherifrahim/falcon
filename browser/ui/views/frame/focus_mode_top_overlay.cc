@@ -33,6 +33,7 @@ constexpr int kCapsuleSideInset = 24;
 constexpr int kCapsuleTopInset = 8;
 constexpr int kCapsuleControlsReserve = 150;  // caption buttons on the right
 constexpr float kCapsuleRadius = 20.0f;  // pill for the 40 px toolbar
+constexpr float kCapsuleBlur = 24.0f;
 
 constexpr ViewShadow::ShadowParameters kShadow{
     .offset_x = 0,
@@ -89,6 +90,8 @@ FocusModeTopOverlay::FocusModeTopOverlay(base::PassKey<BraveBrowserView>,
   layer()->SetFillsBoundsOpaquely(false);
   layer()->SetRoundedCornerRadius(gfx::RoundedCornersF(kCapsuleRadius));
   layer()->SetIsFastRoundedCorner(true);
+  // Frosted glass under the translucent toolbar (see BraveToolbarView).
+  layer()->SetBackgroundBlur(kCapsuleBlur);
 
   animation_.SetSlideDuration(kRevealAnimationDuration);
   animation_.Reset(1.0);

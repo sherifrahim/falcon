@@ -9,18 +9,18 @@
     <color name="dialog_bg_color_dark_baseline">@color/default_bg_color_baseline</color>
 
     <!-- Theme colors -->
-    <color name="brave_link">#38BDF8</color>
+    <color name="brave_link">#8e9bff</color>
     <color name="brave_button_pressed">#0E3A52</color>
     <color name="menu_icon_color">#F0F2FF</color>
     <color name="url_text_primary">#e3e3e8</color>
 
     <color name="onboarding_text_color">#F0F2FF</color>
-    <color name="onboarding_bg_color">#05070C</color>
+    <color name="onboarding_bg_color">#141223</color>
 
-    <color name="onboarding_card_bg_color">#0D1322</color>
+    <color name="onboarding_card_bg_color">#1f1c2e</color>
 
     <color name="scan_qr_code_text_color">#F0F2FF</color>
-    <color name="scan_qr_code_bg_color">#0D1322</color>
+    <color name="scan_qr_code_bg_color">#1f1c2e</color>
 
     <!-- Day/Night brave wallet colors -->
     <color name="brave_wallet_onboarding_item_background_color">#A1ABBA</color>
@@ -35,7 +35,7 @@
     <!-- Brave wallet 2.0 colors -->
     <color name="brave_wallet_dn_panel_bg">@color/wallet_bg</color>
 
-    <color name="text_on_primary">#04111C</color>
+    <color name="text_on_primary">#12142b</color>
     <color name="icon_interactive">#bcc6f3</color>
     <color name="system_feedback_error">#FFB1B0</color>
 
@@ -47,14 +47,14 @@
     <!-- Text colors -->
     <color name="brave_theme_subtitle_text">#C2C4CF</color>
     <color name="brave_theme_hint_text">#7A87A0</color>
-    <color name="brave_text_button_color">#38BDF8</color>
+    <color name="brave_text_button_color">#8e9bff</color>
 
     <!-- Onboarding colors -->
     <color name="onboarding_background_gradient_start">#FF1A1F38</color>
     <color name="onboarding_background_gradient_end">#FF101322</color>
 
     <!-- Set Default Browser colors -->
-    <color name="set_default_bottom_sheet_bg_color">#0D1322</color>
+    <color name="set_default_bottom_sheet_bg_color">#1f1c2e</color>
     <color name="set_default_text_color">#F0F2FF</color>
 
     <color name="ad_free_card_cancel_color">#F0F2FF</color>
@@ -63,7 +63,7 @@
     <!-- Brave news colors -->
     <color name="card_background">#F23B3E4F</color>
     <color name="card_background_solid">#121B2C</color>
-    <!-- <color name="turn_on_button">#38BDF8</color> -->
+    <!-- <color name="turn_on_button">#8e9bff</color> -->
     <color name="news_text_color">@android:color/white</color>
     <color name="news_time_color">#9CD2D5CF</color>
     <color name="news_settings_title_color">#F0F2FF</color>
@@ -76,10 +76,10 @@
     <!-- Sync colors -->
     <color name="brave_sync_bg_color">@android:color/transparent</color>
     <color name="brave_sync_border_color">@color/primitive_neutral_20</color>
-    <color name="brave_sync_bg_secondary_color">#0D1322</color>
+    <color name="brave_sync_bg_secondary_color">#1f1c2e</color>
 
     <color name="container_background">#0B1120</color>
-    <color name="divider_interactive">#38BDF8</color>
+    <color name="divider_interactive">#8e9bff</color>
     <color name="systemfeedback_error_icon">#ff7f72</color>
     <color name="systemfeedback_info_text">#78abff</color>
     <color name="systemfeedback_info_icon">#78abff</color>
@@ -112,7 +112,7 @@
     <color name="brave_stats_radio_button_active">#3B3E4F</color>
     <color name="brave_stats_empty_border_color">#072542</color>
     <color name="brave_stats_empty_text_color">#F6F7F8</color>
-    <color name="brave_blue_tint_color">#38BDF8</color>
+    <color name="brave_blue_tint_color">#8e9bff</color>
     <color name="brave_stats_ic_clock_color">#1075C9</color>
 
     <color name="wallet_text_color">#F6F7F8</color>
@@ -150,7 +150,7 @@
     <color name="notification_graph_icon_color">#FF7654</color>
     <color name="notification_badge_icon_color">#737ADE</color>
     <color name="notification_download_icon_color">#F0F2FF</color>
-    <color name="notification_rationale_dialog_card_bg_color">#0D1322</color>
+    <color name="notification_rationale_dialog_card_bg_color">#1f1c2e</color>
 
 
     <color name="leo_reset_text_color">#FF4B6A</color>
@@ -162,22 +162,22 @@
     <color name="text_primary">#e4e4e5</color>
     <color name="text_secondary">#c9c9ca</color>
     <color name="text_tertiary">#7A87A0</color>
-    <color name="primary_20">#04111C</color>
+    <color name="primary_20">#12142b</color>
     <color name="button_background">#bcc6f3</color>
     <color name="button_background_10">#19BCC6F3</color>
     <color name="systemfeedback_error_text">#ff7f72</color>
 
     <color name="location_bar_background_color_for_ntp">#172033</color>
-    <color name="toolbar_background_color_for_ntp">#05070C</color>
+    <color name="toolbar_background_color_for_ntp">#141223</color>
 
     <color name="schemes_on_surface">#e4e4e5</color>
     <color name="schemes_on_surface_variant">#c9c9ca</color>
     <color name="schemes_outline_variant">#2A3446</color>
     <color name="schemes_primary">#bcc6f3</color>
-    <color name="schemes_on_primary">#04111C</color>
+    <color name="schemes_on_primary">#12142b</color>
     <color name="schemes_surface_container_highest">#172033</color>
-    <color name="schemes_surface_container_lowest">#05070C</color>
-    <color name="schemes_surface_container">#0D1322</color>
+    <color name="schemes_surface_container_lowest">#141223</color>
+    <color name="schemes_surface_container">#1f1c2e</color>
 
     <color name="text_interactive">#bcc6f3</color>
 

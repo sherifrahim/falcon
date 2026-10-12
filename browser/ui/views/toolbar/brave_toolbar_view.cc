@@ -48,6 +48,7 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/custom_corners_background.h"
 #include "chrome/browser/ui/views/profiles/avatar_toolbar_button.h"
 #include "chrome/browser/ui/views/tabs/shared/tab_strip_combo_button.h"
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
@@ -935,6 +936,15 @@ void BraveToolbarView::UpdateCockpitTrim() {
   UpdateComboButtonState();
   if (side_panel_) {
     side_panel_->SetVisible(!IsCockpitCapsule());
+  }
+  // Frosted glass: in the capsule the toolbar paints translucently and
+  // FocusModeTopOverlay blurs the page behind it.
+  if (display_mode_ == DisplayMode::kNormal && background()) {
+    if (auto* bg = background()->AsA<CustomCornersBackground>()) {
+      bg->SetPrimaryColor(CustomCornersBackground::ColorChoiceWithAlpha(
+          CustomCornersBackground::ToolbarTheme(),
+          IsCockpitCapsule() ? 0.72f : 1.0f));
+    }
   }
 }
 

@@ -47,9 +47,9 @@ const Chip = styled.div`
   gap: 10px;
   padding: 6px 12px 6px 9px;
   border-radius: 999px;
-  background: rgba(8, 12, 24, 0.45);
+  background: rgba(23, 21, 36, 0.45);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(14px);
+  backdrop-filter: blur(28px) saturate(180%);
   font-size: 12px;
   cursor: default;
   .big { font-size: 18px; line-height: 1; }
@@ -135,17 +135,17 @@ const Focus = styled.div`
   gap: 10px;
   padding: 6px 8px 6px 14px;
   border-radius: 999px;
-  background: rgba(8, 12, 24, 0.45);
+  background: rgba(23, 21, 36, 0.45);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(14px);
+  backdrop-filter: blur(28px) saturate(180%);
   font-size: 12px;
   font-variant-numeric: tabular-nums;
   .time { font-size: 16px; font-weight: 500; min-width: 54px; text-align: center; font-family: "Cascadia Mono", Consolas, "JetBrains Mono", monospace; }
   button {
     border: none; border-radius: 999px; padding: 6px 12px; cursor: pointer; font-size: 12px; font-weight: 600;
-    background: rgba(56, 189, 248, 0.2); color: #e0f2fe;
+    background: rgba(142, 155, 255, 0.2); color: #f0f1ff;
   }
-  button:hover { background: rgba(56, 189, 248, 0.35); }
+  button:hover { background: rgba(142, 155, 255, 0.35); }
   button.ghost { background: transparent; color: inherit; opacity: 0.8; }
   select { background: transparent; color: inherit; border: none; font-size: 12px; cursor: pointer; }
   select option { color: #000; }
@@ -267,18 +267,18 @@ const Sounds = styled.div`
   gap: 8px;
   padding: 5px 10px 5px 6px;
   border-radius: 999px;
-  background: rgba(8, 12, 24, 0.45);
+  background: rgba(23, 21, 36, 0.45);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(14px);
+  backdrop-filter: blur(28px) saturate(180%);
   font-size: 12px;
   button {
     border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 12px;
-    background: rgba(56, 189, 248, 0.2); color: #e0f2fe;
+    background: rgba(142, 155, 255, 0.2); color: #f0f1ff;
   }
-  button:hover { background: rgba(56, 189, 248, 0.35); }
+  button:hover { background: rgba(142, 155, 255, 0.35); }
   select { background: transparent; color: inherit; border: none; font-size: 13px; cursor: pointer; max-width: 150px; }
   select option { color: #000; }
-  input[type='range'] { width: 70px; accent-color: #0ea5e9; }
+  input[type='range'] { width: 70px; accent-color: #6f7df5; }
   .s { font-size: 11px; opacity: 0.6; }
 `
 

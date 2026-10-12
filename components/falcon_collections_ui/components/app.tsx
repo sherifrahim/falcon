@@ -61,7 +61,7 @@ const Shell = styled.div<{ $panel: boolean }>`
   grid-template-rows: ${(p) => (p.$panel ? 'auto minmax(0, 1fr)' : 'minmax(0, 1fr)')};
   height: 100%;
   min-height: 0;
-  color: var(--leo-color-text-primary, #e2e8f0);
+  color: var(--leo-color-text-primary, #f1effa);
 `
 
 const Rail = styled.nav<{ $panel: boolean }>`
@@ -70,8 +70,8 @@ const Rail = styled.nav<{ $panel: boolean }>`
   gap: 4px;
   padding: ${(p) => (p.$panel ? '10px 12px 6px' : '18px 12px')};
   overflow: ${(p) => (p.$panel ? 'auto hidden' : 'hidden auto')};
-  border-right: ${(p) => (p.$panel ? 'none' : '1px solid var(--f-border, #334155)')};
-  border-bottom: ${(p) => (p.$panel ? '1px solid var(--f-border, #334155)' : 'none')};
+  border-right: ${(p) => (p.$panel ? 'none' : '1px solid var(--f-border, rgba(255, 255, 255, 0.08))')};
+  border-bottom: ${(p) => (p.$panel ? '1px solid var(--f-border, rgba(255, 255, 255, 0.08))' : 'none')};
   min-width: 0;
   scrollbar-width: thin;
 `
@@ -85,12 +85,12 @@ const RailItem = styled.button<{ $active: boolean; $panel: boolean }>`
   display: flex; align-items: center; gap: 8px;
   padding: ${(p) => (p.$panel ? '6px 10px' : '8px 10px')};
   border-radius: 10px; border: 1px solid transparent;
-  background: ${(p) => (p.$active ? 'rgba(56, 189, 248, 0.14)' : 'transparent')};
-  border-color: ${(p) => (p.$active ? 'rgba(56, 189, 248, 0.35)' : 'transparent')};
+  background: ${(p) => (p.$active ? 'rgba(142, 155, 255, 0.14)' : 'transparent')};
+  border-color: ${(p) => (p.$active ? 'rgba(142, 155, 255, 0.35)' : 'transparent')};
   color: inherit; font: inherit; font-size: 13px; text-align: left; cursor: pointer;
   white-space: nowrap; flex: ${(p) => (p.$panel ? '0 0 auto' : '0 0 auto')};
   min-width: 0;
-  &:hover { background: ${(p) => (p.$active ? 'rgba(56, 189, 248, 0.18)' : 'var(--f-bg-3, #1e293b)')}; }
+  &:hover { background: ${(p) => (p.$active ? 'rgba(142, 155, 255, 0.18)' : 'var(--f-bg-3, rgba(255, 255, 255, 0.05))')}; }
   span.n { opacity: 0.5; font-variant-numeric: tabular-nums; font-size: 12px; }
   span.name { overflow: hidden; text-overflow: ellipsis; }
 `
@@ -107,14 +107,14 @@ const Head = styled.header<{ $panel: boolean }>`
     flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
   h1 input {
-    font: inherit; color: inherit; background: var(--f-bg-1, #0f172a);
-    border: 1px solid var(--f-border, #334155); border-radius: 8px; padding: 2px 8px; width: 100%;
+    font: inherit; color: inherit; background: var(--f-bg-1, #1f1c2e);
+    border: 1px solid var(--f-border, rgba(255, 255, 255, 0.08)); border-radius: 8px; padding: 2px 8px; width: 100%;
   }
 `
 
 const Btn = styled.button<{ $primary?: boolean; $danger?: boolean }>`
-  height: 30px; padding: 0 12px; border-radius: 9px; border: 1px solid var(--f-border, #334155);
-  background: ${(p) => (p.$primary ? '#0ea5e9' : 'var(--f-bg-1, #0f172a)')};
+  height: 30px; padding: 0 12px; border-radius: 9px; border: 1px solid var(--f-border, rgba(255, 255, 255, 0.08));
+  background: ${(p) => (p.$primary ? '#6f7df5' : 'var(--f-bg-1, #1f1c2e)')};
   color: ${(p) => (p.$primary ? '#03151f' : p.$danger ? '#fca5a5' : 'inherit')};
   font: inherit; font-size: 12.5px; cursor: pointer; white-space: nowrap;
   &:hover { filter: brightness(1.12); }
@@ -132,16 +132,17 @@ const Grid = styled.div<{ $panel: boolean }>`
 
 const Card = styled.article<{ $over: boolean; $drag: boolean }>`
   position: relative;
-  border-radius: 12px; border: 1px solid var(--f-border, #334155);
-  background: var(--leo-color-container-background, var(--f-bg-3, #1e293b));
+  border-radius: 12px; border: 1px solid var(--f-border, rgba(255, 255, 255, 0.08));
+  background: var(--leo-color-container-background, var(--f-bg-3, rgba(255, 255, 255, 0.05)));
+  backdrop-filter: blur(20px) saturate(160%);
   overflow: hidden; cursor: pointer;
   opacity: ${(p) => (p.$drag ? 0.4 : 1)};
-  outline: ${(p) => (p.$over ? '2px solid rgba(56, 189, 248, 0.7)' : 'none')};
+  outline: ${(p) => (p.$over ? '2px solid rgba(142, 155, 255, 0.7)' : 'none')};
   outline-offset: -2px;
   transition: transform ${dur.fast} ${ease.move}, border-color ${dur.fast} ${ease.move};
-  &:hover { border-color: rgba(56, 189, 248, 0.45); transform: translateY(-1px); }
+  &:hover { border-color: rgba(142, 155, 255, 0.45); transform: translateY(-1px); }
   &:hover .x { opacity: 1; }
-  img.hero { display: block; width: 100%; height: 140px; object-fit: cover; background: var(--f-bg-1, #0f172a); }
+  img.hero { display: block; width: 100%; height: 140px; object-fit: cover; background: var(--f-bg-1, #1f1c2e); }
   .body { padding: 10px 12px 11px; display: flex; flex-direction: column; gap: 5px; min-width: 0; }
   .row { display: flex; align-items: center; gap: 8px; min-width: 0; }
   .row img { width: 16px; height: 16px; border-radius: 4px; flex: none; }
@@ -150,11 +151,11 @@ const Card = styled.article<{ $over: boolean; $drag: boolean }>`
   .quote {
     font-size: 13px; line-height: 1.45; opacity: 0.9; white-space: pre-wrap; overflow: hidden;
     display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical;
-    border-left: 3px solid rgba(56, 189, 248, 0.6); padding-left: 9px; margin: 2px 0;
+    border-left: 3px solid rgba(142, 155, 255, 0.6); padding-left: 9px; margin: 2px 0;
   }
   .x {
     position: absolute; top: 6px; right: 6px; width: 24px; height: 24px; border-radius: 8px;
-    border: none; background: rgba(2, 6, 23, 0.7); color: #e2e8f0; cursor: pointer; opacity: 0;
+    border: none; background: rgba(14, 12, 22, 0.7); color: #f1effa; cursor: pointer; opacity: 0;
     font-size: 14px; line-height: 24px; text-align: center;
   }
   .x:hover { background: #ef4444; }
@@ -169,7 +170,7 @@ const Note = styled.form`
   display: flex; gap: 8px; padding: 0 24px 10px; align-items: flex-start;
   textarea {
     flex: 1; min-height: 34px; max-height: 120px; resize: vertical; padding: 8px 10px; border-radius: 9px;
-    border: 1px solid var(--f-border, #334155); background: var(--f-bg-1, #0f172a); color: inherit; font: inherit; font-size: 13px;
+    border: 1px solid var(--f-border, rgba(255, 255, 255, 0.08)); background: var(--f-bg-1, #1f1c2e); color: inherit; font: inherit; font-size: 13px;
   }
 `
 

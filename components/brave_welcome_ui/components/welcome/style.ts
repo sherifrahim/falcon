@@ -11,10 +11,10 @@ const rise = keyframes`
 `
 
 export const Box = styled.div`
-  --ink: #e2e8f0;
-  --dim: rgba(226, 232, 240, 0.62);
+  --ink: #f1effa;
+  --dim: rgba(241, 239, 250, 0.62);
   --hair: rgba(255, 255, 255, 0.12);
-  --accent: #38bdf8;
+  --accent: #8e9bff;
   width: min(1040px, calc(100vw - 64px));
   padding: 40px 0 32px;
   color: var(--ink);
@@ -27,7 +27,7 @@ export const Box = styled.div`
       width: 52px;
       height: 52px;
       fill: var(--accent);
-      filter: drop-shadow(0 0 22px rgba(56, 189, 248, 0.45));
+      filter: drop-shadow(0 0 22px rgba(142, 155, 255, 0.45));
     }
     h1 {
       margin: 14px 0 6px;
@@ -62,8 +62,8 @@ export const Box = styled.div`
     animation: ${rise} 360ms ease-out both;
     transition: border-color 150ms ease, background 150ms ease, transform 200ms ease;
     &:hover {
-      border-color: rgba(56, 189, 248, 0.45);
-      background: rgba(56, 189, 248, 0.06);
+      border-color: rgba(142, 155, 255, 0.45);
+      background: rgba(142, 155, 255, 0.06);
       transform: translateY(-2px);
     }
     .kicker {
@@ -131,8 +131,8 @@ export const Box = styled.div`
     .primary {
       background: var(--accent);
       color: #06131f;
-      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.3), 0 10px 30px rgba(56, 189, 248, 0.28);
-      &:hover:not(:disabled) { background: #7dd3fc; }
+      box-shadow: 0 0 0 1px rgba(142, 155, 255, 0.3), 0 10px 30px rgba(142, 155, 255, 0.28);
+      &:hover:not(:disabled) { background: #c3caff; }
     }
     .secondary {
       background: rgba(255, 255, 255, 0.06);
@@ -153,11 +153,11 @@ export const Box = styled.div`
     margin: 22px 0 0;
     text-align: center;
     font-size: 12px;
-    color: rgba(226, 232, 240, 0.42);
+    color: rgba(241, 239, 250, 0.42);
     animation: ${rise} 360ms 520ms ease-out both;
     .mono {
       font-family: "Cascadia Mono", Consolas, "JetBrains Mono", monospace;
-      color: rgba(125, 211, 252, 0.8);
+      color: rgba(195, 202, 255, 0.8);
     }
   }
 `

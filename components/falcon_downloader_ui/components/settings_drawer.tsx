@@ -45,8 +45,9 @@ const Drawer = styled.div`
   right: 0;
   height: 100%;
   width: min(440px, 100%);
-  background: var(--leo-color-page-background, var(--f-bg-1, #0f172a));
-  border-left: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
+  background: var(--leo-color-page-background, var(--f-bg-1, rgba(31, 28, 46, 0.68)));
+  backdrop-filter: blur(28px) saturate(180%);
+  border-left: 1px solid var(--leo-color-divider-subtle, var(--f-border, rgba(255, 255, 255, 0.08)));
   box-shadow: -12px 0 40px rgba(0, 0, 0, 0.45);
   padding: 22px 22px 40px;
   overflow-y: auto;
@@ -56,7 +57,8 @@ const Drawer = styled.div`
 const Backdrop = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(6px);
   z-index: 19;
 `
 
@@ -71,8 +73,9 @@ const Rules = styled.textarea`
   margin: 6px 0 2px;
   padding: 8px 10px;
   border-radius: 10px;
-  border: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
-  background: var(--leo-color-container-background, var(--f-bg-3, #1e293b));
+  border: 1px solid var(--leo-color-divider-subtle, var(--f-border, rgba(255, 255, 255, 0.08)));
+  background: var(--leo-color-container-background, var(--f-bg-3, rgba(255, 255, 255, 0.05)));
+  backdrop-filter: blur(20px) saturate(160%);
   color: inherit;
   font-family: ui-monospace, Consolas, monospace;
   font-size: 12px;

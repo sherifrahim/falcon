@@ -74,7 +74,7 @@ const Head = styled.div`
   display: flex;
   gap: 14px;
   align-items: center;
-  img { width: 128px; height: 72px; object-fit: cover; border-radius: 8px; background: var(--f-bg-1, #0f172a); }
+  img { width: 128px; height: 72px; object-fit: cover; border-radius: 8px; background: var(--f-bg-1, #1f1c2e); }
   .t { font-weight: 600; font-size: 14px; }
 `
 
@@ -88,13 +88,13 @@ const Presets = styled.div`
 const Table = styled.div`
   max-height: 260px;
   overflow: auto;
-  border: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
+  border: 1px solid var(--leo-color-divider-subtle, var(--f-border, rgba(255, 255, 255, 0.08)));
   border-radius: 10px;
   font-size: 12px;
   table { width: 100%; border-collapse: collapse; }
   th, td { text-align: left; padding: 5px 10px; white-space: nowrap; }
-  th { position: sticky; top: 0; background: var(--leo-color-container-background, var(--f-bg-3, #1e293b)); opacity: 0.8; font-weight: 600; }
-  tr:hover td { background: rgba(56,189,248,0.08); }
+  th { position: sticky; top: 0; background: var(--leo-color-container-background, var(--f-bg-3, rgba(255, 255, 255, 0.05))); opacity: 0.8; font-weight: 600; }
+  tr:hover td { background: rgba(142, 155, 255,0.08); }
 `
 
 export function fmtDuration(s?: number): string {
@@ -184,7 +184,7 @@ export function MediaPicker(props: {
         </label>
         <label style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
           Audio-only format
-          <select value={audioFormat} onChange={(e) => setAudioFormat(e.target.value)} style={{ background: 'transparent', color: 'inherit', border: '1px solid var(--f-border, #334155)', borderRadius: 8, padding: '2px 6px' }}>
+          <select value={audioFormat} onChange={(e) => setAudioFormat(e.target.value)} style={{ background: 'transparent', color: 'inherit', border: '1px solid var(--f-border, rgba(255, 255, 255, 0.08))', borderRadius: 8, padding: '2px 6px' }}>
             <option value="m4a">m4a</option><option value="mp3">mp3</option><option value="opus">opus</option>
           </select>
         </label>
@@ -246,14 +246,14 @@ const Bar = styled.div<{ $pct: number; $status: MediaJob['status'] }>`
   grid-column: 1 / -1;
   height: 6px;
   border-radius: 999px;
-  background: rgba(148, 163, 184, 0.2);
+  background: rgba(154, 150, 174, 0.2);
   overflow: hidden;
   &::after {
     content: '';
     display: block;
     height: 100%;
     width: ${(p) => Math.max(0, Math.min(100, p.$pct))}%;
-    background: ${(p) => (p.$status === 'error' || p.$status === 'cancelled' ? '#ef4444' : p.$status === 'done' ? '#22c55e' : p.$status === 'merging' ? '#a78bfa' : '#38bdf8')};
+    background: ${(p) => (p.$status === 'error' || p.$status === 'cancelled' ? '#ef4444' : p.$status === 'done' ? '#22c55e' : p.$status === 'merging' ? '#a78bfa' : '#8e9bff')};
     transition: width 0.4s;
   }
 `

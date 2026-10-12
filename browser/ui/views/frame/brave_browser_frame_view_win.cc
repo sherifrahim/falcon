@@ -16,6 +16,7 @@
 #include "brave/browser/ui/views/toolbar/brave_toolbar_view.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/frame/browser_caption_button_container_win.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -27,6 +28,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/scoped_canvas.h"
+#include "ui/views/background.h"
 
 BraveBrowserFrameViewWin::BraveBrowserFrameViewWin(
     BrowserWidget* browser_widget,
@@ -179,11 +181,38 @@ void BraveBrowserFrameViewWin::OnTopOverlayRevealFractionChanged(
   // Mac-style: the traffic lights in the title bar are the window controls;
   // keep the Windows buttons parked above the window.
   if (IsMacShell()) {
-    reveal_fraction = 0.0;
+    caption_button_container_->layer()->SetTransform(
+        gfx::Transform::MakeTranslation(0, -caption_button_container_->height()));
+    return;
   }
-  const int height = caption_button_container_->height();
+  // Cockpit: slide in with the capsule, level with it and off the edges
+  // (FocusModeTopOverlay's kCapsuleTopInset).
+  constexpr int kPillInset = 8;
+  const int hidden = caption_button_container_->height() + kPillInset;
   caption_button_container_->layer()->SetTransform(
-      gfx::Transform::MakeTranslation(0, -height * (1.0 - reveal_fraction)));
+      gfx::Transform::MakeTranslation(
+          CaptionButtonsOnLeadingEdge() ? kPillInset : -kPillInset,
+          kPillInset - hidden * (1.0 - reveal_fraction)));
+}
+
+void BraveBrowserFrameViewWin::UpdateCaptionPill() {
+  if (!caption_button_container_) {
+    return;
+  }
+  // Without a backdrop the buttons are drawn straight over the page and
+  // vanish on light sites.
+  if (caption_button_container_->layer() && !IsMacShell()) {
+    caption_button_container_->SetBackground(
+        views::CreateSolidBackground(kColorToolbar));
+    caption_button_container_->layer()->SetRoundedCornerRadius(
+        gfx::RoundedCornersF(12.0f));
+    caption_button_container_->layer()->SetIsFastRoundedCorner(true);
+  } else {
+    caption_button_container_->SetBackground(nullptr);
+    if (caption_button_container_->layer()) {
+      caption_button_container_->layer()->SetRoundedCornerRadius({});
+    }
+  }
 }
 
 bool BraveBrowserFrameViewWin::IsMacShell() const {
@@ -192,6 +221,7 @@ bool BraveBrowserFrameViewWin::IsMacShell() const {
 }
 
 void BraveBrowserFrameViewWin::OnShellModeChanged() {
+  UpdateCaptionPill();
   OnTopOverlayRevealFractionChanged(last_reveal_fraction_);
 }
 
@@ -281,6 +311,7 @@ void BraveBrowserFrameViewWin::OnFocusModeToggled(bool enabled) {
   } else if (caption_button_container_->layer()) {
     caption_button_container_->DestroyLayer();
   }
+  UpdateCaptionPill();
 }
 
 BEGIN_METADATA(BraveBrowserFrameViewWin)
