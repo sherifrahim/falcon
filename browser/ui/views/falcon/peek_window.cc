@@ -53,7 +53,7 @@ namespace prefs {
 
 void RegisterPeekPrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(kPeekEnabled, true);
-  registry->RegisterIntegerPref(kShellMode, kShellCockpit);
+  registry->RegisterIntegerPref(kShellMode, kShellMac);
   registry->RegisterBooleanPref(kDockCards, true);
 }
 

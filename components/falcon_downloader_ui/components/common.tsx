@@ -45,6 +45,12 @@ export function nameOf(d: Aria2Download): string {
   if (p) {
     const base = basename(p)
     if (base && !base.startsWith('[METADATA]')) return base
+    // Magnet still fetching its metadata: aria2 names it after the dn= param.
+    if (base.startsWith('[METADATA]')) {
+      let dn = base.slice('[METADATA]'.length).replace(/\+/g, ' ')
+      try { dn = decodeURIComponent(dn) } catch {}
+      return dn && dn.toLowerCase() !== d.infoHash ? `${dn} (fetching metadata…)` : 'Magnet (fetching metadata…)'
+    }
   }
   const uri = d.files?.[0]?.uris?.[0]?.uri
   if (uri) {

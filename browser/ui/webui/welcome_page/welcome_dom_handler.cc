@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "brave/browser/brave_browser_features.h"
+#include "brave/browser/ui/views/falcon/peek_window.h"
 #include "brave/common/importer/importer_constants.h"
 #include "brave/components/brave_education/buildflags.h"
 #include "brave/components/constants/pref_names.h"
@@ -136,6 +137,10 @@ void WelcomeDOMHandler::RegisterMessages() {
       base::BindRepeating(&WelcomeDOMHandler::HandleEnableWebDiscovery,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      "setFalconWindowStyle",
+      base::BindRepeating(&WelcomeDOMHandler::HandleSetFalconWindowStyle,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "getWelcomeCompleteURL",
       base::BindRepeating(&WelcomeDOMHandler::HandleGetWelcomeCompleteURL,
                           base::Unretained(this)));
@@ -201,6 +206,18 @@ void WelcomeDOMHandler::HandleSetMetricsReportingEnabled(
   bool enabled = args[0].GetBool();
   ChangeMetricsReportingState(
       enabled, metrics::ChangeMetricsReportingStateCalledFrom::kUiSettings);
+}
+
+void WelcomeDOMHandler::HandleSetFalconWindowStyle(
+    const base::ListValue& args) {
+  CHECK(profile_);
+  if (args.size() != 1 || !args[0].is_int()) {
+    return;
+  }
+  profile_->GetPrefs()->SetInteger(
+      falcon::prefs::kShellMode,
+      std::clamp(args[0].GetInt(), static_cast<int>(falcon::prefs::kShellClassic),
+                 static_cast<int>(falcon::prefs::kShellCockpit)));
 }
 
 void WelcomeDOMHandler::HandleEnableWebDiscovery(const base::ListValue& args) {

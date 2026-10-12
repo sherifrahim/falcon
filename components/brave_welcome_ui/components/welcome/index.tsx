@@ -17,6 +17,7 @@ import {
 } from '../../api/welcome_browser_proxy'
 import DataContext from '../../state/context'
 import { ViewType } from '../../state/component_types'
+import { WindowStylePicker } from './window_style'
 
 const BIRD =
   'M19.04 15.17 L18.36 15.80 L17.80 15.47 L17.46 14.39 Q17.13 12.66 15.27 12.29 Q12.20 11.57 8.03 11.28 L7.42 12.25 Q11.38 14.45 14.75 15.26 Q16.57 15.78 17.69 15.28 Z M14.47 12.23 Q12.73 8.61 12.41 2.29 L10.87 3.66 L9.96 2.25 L9.25 4.17 L7.75 3.09 Q10.09 7.53 12.55 11.51 Z M10.86 13.98 Q6.60 15.70 1.68 16.26 L2.42 14.83 L3.24 15.40 Q6.68 14.25 9.82 13.02 Z M8.03 11.28 L3.51 8.75 L3.88 10.33 L2.47 11.24 L3.83 11.63 L7.42 12.25 Z'
@@ -59,8 +60,8 @@ const MOVES = [
   {
     key: 'yours',
     kicker: 'Make it yours',
-    title: 'Shape the cockpit',
-    body: 'Pick a window style — cockpit, Mac‑style or classic — switch to pitch black, and boost sites with your own CSS. Downloads run through Falcon’s own engine.',
+    title: 'Shape it your way',
+    body: 'Pick a window style below, switch to pitch black, and boost sites with your own CSS. Downloads run through Falcon’s own engine.',
     keys: ['Ctrl', 'J'],
     hint: 'downloads · falcon://falcon',
     glyph: (
@@ -112,7 +113,7 @@ function Welcome () {
       <header className="hero">
         <svg className="bird" viewBox="0 0 24 24" aria-hidden="true"><path d={BIRD} /></svg>
         <h1>Welcome to Falcon</h1>
-        <p className="lede">The cockpit, in three moves.</p>
+        <p className="lede">Falcon, in three moves.</p>
       </header>
 
       <section className="moves">
@@ -133,6 +134,8 @@ function Welcome () {
           </article>
         ))}
       </section>
+
+      <WindowStylePicker />
 
       <footer className="actions">
         <button className="primary" onClick={finish} disabled={busy} autoFocus>Get started</button>

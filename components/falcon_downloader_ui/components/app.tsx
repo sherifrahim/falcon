@@ -141,6 +141,75 @@ function toAria2Options(o: AddOptions, single: boolean): Record<string, string> 
   return r
 }
 
+// Quiet secondary ways to add (options, a pasted list, a .torrent file).
+const AddLinks = styled.div`
+  display: flex;
+  gap: 4px 14px;
+  flex-wrap: wrap;
+  margin: -2px 0 10px 2px;
+  button {
+    padding: 2px 0; border: none; background: none; color: inherit; font: inherit;
+    font-size: 12px; opacity: 0.6; cursor: pointer;
+  }
+  button:hover:not(:disabled), button[aria-expanded='true'] { opacity: 1; color: #38bdf8; }
+  button:disabled { opacity: 0.3; cursor: default; }
+`
+
+const Scrim = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(2, 6, 23, 0.55);
+`
+
+const DialogBox = styled.div`
+  width: min(440px, 100%);
+  border-radius: 14px;
+  padding: 18px 20px;
+  border: 1px solid var(--leo-color-divider-subtle, var(--f-border, #334155));
+  background: var(--leo-color-page-background, var(--f-bg-2, #0f172a));
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+  h2 { margin: 0 0 6px; font-size: 16px; }
+  p { margin: 0 0 14px; font-size: 13px; opacity: 0.75; word-break: break-word; }
+  label { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; cursor: pointer; }
+  label small { display: block; opacity: 0.6; font-size: 12px; margin-top: 2px; }
+  input { width: 16px; height: 16px; margin: 1px 0 0; accent-color: #ef4444; }
+  .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+`
+
+const isLive = (d: Aria2Download) => d.status === 'active' || d.status === 'waiting' || d.status === 'paused'
+
+// Remove one or more downloads; deleting the files from disk is opt-in.
+function RemoveDialog({ items, onCancel, onConfirm }: {
+  items: Aria2Download[]; onCancel: () => void; onConfirm: (withFiles: boolean) => void
+}) {
+  const [withFiles, setWithFiles] = React.useState(false)
+  const live = items.some(isLive)
+  const one = items.length === 1
+  return (
+    <Scrim onClick={onCancel} onKeyDown={(e) => e.key === 'Escape' && onCancel()}>
+      <DialogBox role="dialog" aria-modal="true" aria-labelledby="rm-title" onClick={(e) => e.stopPropagation()}>
+        <h2 id="rm-title">{live ? 'Stop and remove' : 'Remove'} {one ? 'this download' : `${items.length} downloads`}?</h2>
+        <p>{one ? `“${nameOf(items[0])}” leaves` : `${items.length} downloads leave`} the list.{withFiles ? '' : ' Files already on disk stay where they are.'}</p>
+        <label>
+          <input id="rm-files" type="checkbox" checked={withFiles} onChange={(e) => setWithFiles(e.target.checked)} />
+          <span>Also delete {one ? 'the file' : 'their files'} from disk
+            <small>Permanent: {one ? 'it does' : 'they do'} not go to the Recycle Bin.</small></span>
+        </label>
+        <div className="row">
+          <Button onClick={onCancel}>Keep</Button>
+          <Button autoFocus $danger={withFiles} $primary={!withFiles} onClick={() => onConfirm(withFiles)}>
+            {withFiles ? 'Remove and delete' : 'Remove from list'}
+          </Button>
+        </div>
+      </DialogBox>
+    </Scrim>
+  )
+}
+
 const Toolbar = styled.div`
   display: flex;
   gap: 6px;
@@ -177,7 +246,7 @@ const Footer = styled.div`
 
 export function App() {
   const client = React.useMemo(
-    () => new Aria2Client(loadTimeData.getString('rpcUrl'), loadTimeData.getString('rpcSecret')),
+    () => new Aria2Client(loadTimeData.getString('rpcUrl'), loadTimeData.getString('rpcSecret'), loadTimeData.getString('downloadDir')),
     [],
   )
   const [connected, setConnected] = React.useState(false)
@@ -208,6 +277,8 @@ export function App() {
   const [sniffed, setSniffed] = React.useState<SniffedTab[]>([])
   const [picker, setPicker] = React.useState<{ url: string; referer: string } | null>(() => pickerFromHash())
   const [grabber, setGrabber] = React.useState<string | null>(null)
+  const [selected, setSelected] = React.useState<Set<string>>(() => new Set())
+  const [removing, setRemoving] = React.useState<Aria2Download[] | null>(null)
   const fileInput = React.useRef<HTMLInputElement>(null)
   const listInput = React.useRef<HTMLInputElement>(null)
   const order = React.useRef(new Map<string, number>())
@@ -369,10 +440,43 @@ export function App() {
     }
   }
 
+  const toggleSelected = (gid: string) => setSelected((s) => {
+    const n = new Set(s)
+    if (!n.delete(gid)) n.add(gid)
+    return n
+  })
+
+  // Remove from the list; with withFiles, also delete the files (permanent).
+  const removeItems = async (items: Aria2Download[], withFiles: boolean) => {
+    setRemoving(null)
+    for (const d of items) {
+      const files = withFiles ? (d.files ?? []).map((f) => f.path).filter((p) => p && !p.startsWith('[METADATA]')) : []
+      if (d.fromBrowser) {
+        if (isLive(d)) chrome.send('falcon_downloader.browserDownloadAction', [d.browserId, 'cancel'])
+        chrome.send('falcon_downloader.browserDownloadAction', [d.browserId, 'remove'])
+      } else {
+        if (!d.fromHistory && isLive(d)) {
+          // Stop first so the engine lets go of the file.
+          await client.remove(d.gid).catch(() => {})
+          await new Promise((r) => window.setTimeout(r, 400))
+        }
+        if (!d.fromHistory) await client.removeResult(d.gid).catch(() => {})
+        // A finished download is also in Falcon's history; drop it there too
+        // or it comes back as a history row.
+        chrome.send('falcon_downloader.removeHistory', [d.gid])
+      }
+      for (const f of files) chrome.send('falcon_downloader.deleteFile', [f])
+    }
+    setSelected(new Set())
+    refresh(); loadHistory(); loadBrowser(); poke()
+  }
+
   const q = query.trim().toLowerCase()
   const known = new Set(downloads.map((d) => d.gid))
   const merged: Aria2Download[] = [
-    ...downloads,
+    // A .torrent file or magnet metadata stage once the real torrent took
+    // over, and re-adding a torrent that is already running, are noise.
+    ...downloads.filter((d) => !d.followedBy?.length && !(d.status === 'error' && d.errorCode === '12')),
     ...history.filter((h) => !known.has(h.gid)).map(historyToDownload),
     ...browserDl.map(browserToDownload),
   ]
@@ -411,6 +515,10 @@ export function App() {
     if (v === 'history') { setFilter('done'); return }
     setPicker(null); setGrabber(null); setFilter(v as Filter)
   }
+  const picked = visible.filter((d) => selected.has(d.gid))
+  const allPicked = visible.length > 0 && picked.length === visible.length
+  const pausable = picked.filter((d) => !d.fromBrowser && (d.status === 'active' || d.status === 'waiting'))
+  const resumable = picked.filter((d) => !d.fromBrowser && d.status === 'paused')
   const anyActive = downloads.some((d) => d.status === 'active' || d.status === 'waiting')
   const anyPaused = downloads.some((d) => d.status === 'paused')
 
@@ -421,6 +529,7 @@ export function App() {
       onDragLeave={() => setDrag(false)}
       onDrop={onDrop}
     >
+      {removing && <RemoveDialog items={removing} onCancel={() => setRemoving(null)} onConfirm={(w) => removeItems(removing, w)} />}
       {settingsOpen && (
         <SettingsDrawer onClose={() => { setSettingsOpen(false); if (location.hash) window.history.replaceState(null, '', ' ') }} />
       )}
@@ -429,18 +538,15 @@ export function App() {
       <div style={{ minWidth: 0 }}>
       <Header>
         {!PANEL && <Title>Downloads</Title>}
-        <Stat>
-          <Dot $on={connected} />
-          {connected ? 'Engine connected' : 'Connecting to engine…'}
-        </Stat>
-        {stat && (
+        {!connected && <Stat><Dot $on={false} />Starting the download engine…</Stat>}
+        {stat && +stat.numActive + +stat.numWaiting > 0 && (
           <Stat>
             ↓ <b>{fmtSpeed(+stat.downloadSpeed)}</b> &nbsp; ↑ <b>{fmtSpeed(+stat.uploadSpeed)}</b>
             &nbsp; · {stat.numActive} active{+stat.numWaiting > 0 ? ` · ${stat.numWaiting} queued` : ''}
           </Stat>
         )}
         {!PANEL && <Inspector on={inspector} onToggle={toggleInspector} />}
-        <Button $small={PANEL} onClick={() => setSettingsOpen(true)} title="Engine settings">⚙ Settings</Button>
+        {PANEL && <Button $small onClick={() => setSettingsOpen(true)} title="Engine settings">⚙</Button>}
         {PANEL && <Button $small onClick={() => window.open('chrome://downloader', '_blank')} title="Open as a full page">⤢</Button>}
       </Header>
 
@@ -454,16 +560,6 @@ export function App() {
           spellCheck={false}
         />
         <Button $primary type="submit" disabled={!connected || !url.trim()}>Download</Button>
-        {MEDIA_AVAILABLE && (
-          <Button type="button" onClick={() => setPicker({ url: url.trim(), referer: '' })}
-            title="Grab video/audio from a page or stream (YouTube, Vimeo, HLS, DASH…) at a chosen quality">Video</Button>
-        )}
-        <Button type="button" onClick={() => setGrabber(url.trim())} disabled={!connected}
-          title="Scan a page for files (site grabber)">Grab</Button>
-        <Button type="button" onClick={() => setOptionsOpen((v) => !v)} disabled={!connected}
-          title="Filename, folder, checksum, login, proxy, connections">{optionsOpen ? 'Options ▴' : 'Options ▾'}</Button>
-        <Button type="button" onClick={() => setBatchOpen((v) => !v)} disabled={!connected}>Batch</Button>
-        <Button type="button" onClick={() => fileInput.current?.click()} disabled={!connected}>.torrent</Button>
         <input
           ref={fileInput} type="file" accept=".torrent,.metalink,.meta4" multiple style={{ display: 'none' }}
           onChange={(e) => {
@@ -472,6 +568,17 @@ export function App() {
           }}
         />
       </AddRow>
+      <AddLinks>
+        <button type="button" aria-expanded={optionsOpen} onClick={() => setOptionsOpen((v) => !v)} disabled={!connected}
+          title="Filename, folder, checksum, login, proxy, connections">Download options</button>
+        <button type="button" aria-expanded={batchOpen} onClick={() => setBatchOpen((v) => !v)} disabled={!connected}>Paste a list of links</button>
+        <button type="button" onClick={() => fileInput.current?.click()} disabled={!connected}>Open a .torrent file</button>
+        {/* The full page has these in the rail; the side panel has no rail. */}
+        {PANEL && MEDIA_AVAILABLE && (
+          <button type="button" onClick={() => setPicker({ url: url.trim(), referer: '' })}>Grab a video</button>
+        )}
+        {PANEL && <button type="button" onClick={() => setGrabber(url.trim())} disabled={!connected}>Scan a page for files</button>}
+      </AddLinks>
       {grabber !== null && (
         <Grabber
           initialUrl={grabber}
@@ -560,6 +667,25 @@ export function App() {
       {error && <Meta style={{ marginBottom: 8 }}><ErrorText>{error}</ErrorText></Meta>}
 
       <Toolbar>
+        <input type="checkbox" id="select-all" aria-label="Select all shown"
+          style={{ width: 16, height: 16, margin: '0 6px 0 15px', accentColor: '#0ea5e9' }}
+          checked={allPicked} disabled={visible.length === 0}
+          ref={(el) => { if (el) el.indeterminate = picked.length > 0 && !allPicked }}
+          onChange={() => setSelected(allPicked ? new Set() : new Set(visible.map((d) => d.gid)))} />
+        {picked.length > 0 ? (
+          <>
+            <span style={{ fontSize: 13, fontWeight: 600 }}>{picked.length} selected</span>
+            <Spacer />
+            {pausable.length > 0 && (
+              <Button $small onClick={() => Promise.all(pausable.map((d) => client.pause(d.gid).catch(() => {}))).then(refresh)}>Pause</Button>
+            )}
+            {resumable.length > 0 && (
+              <Button $small onClick={() => Promise.all(resumable.map((d) => client.unpause(d.gid).catch(() => {}))).then(refresh)}>Resume</Button>
+            )}
+            <Button $small $danger onClick={() => setRemoving(picked)}>Remove…</Button>
+            <Button $small onClick={() => setSelected(new Set())}>Clear selection</Button>
+          </>
+        ) : (<>
         {PANEL && ([['all', 'All'], ['active', `Active${counts.active ? ` ${counts.active}` : ''}`],
            ['done', `Completed${counts.done ? ` ${counts.done}` : ''}`],
            ['failed', `Failed${counts.failed ? ` ${counts.failed}` : ''}`],
@@ -583,13 +709,14 @@ export function App() {
         {filter === 'done' && history.length > 0 && (
           <Button $small onClick={() => { chrome.send('falcon_downloader.clearHistory'); setHistory([]) }}>Clear history</Button>
         )}
+        </>)}
       </Toolbar>
 
       {visible.length === 0 && visibleMedia.length === 0 ? (
         <Empty>
           {!connected
             ? 'Starting the download engine…'
-            : downloads.length === 0
+            : merged.length === 0
               ? 'No downloads yet. Paste a link above, or just download something — Falcon takes over automatically.'
               : 'Nothing matches this filter.'}
         </Empty>
@@ -599,7 +726,8 @@ export function App() {
             <MediaRow key={`m${j.id}`} job={j} onChange={() => window.setTimeout(loadMedia, 200)} />
           ))}
           {visible.map((d) => d.fromBrowser ? (
-            <BrowserDownloadRow key={d.gid} d={d} refresh={loadBrowser} />
+            <BrowserDownloadRow key={d.gid} d={d} refresh={loadBrowser}
+              selected={selected.has(d.gid)} onSelect={() => toggleSelected(d.gid)} onRemove={() => setRemoving([d])} />
           ) : (
             <DownloadRow
               key={d.gid} d={d} client={client}
@@ -610,6 +738,7 @@ export function App() {
               queueIndex={d.status === 'waiting' ? queue.indexOf(d.gid) : undefined}
               queueSize={queue.length}
               speedHistory={speeds.current.get(d.gid)}
+              selected={selected.has(d.gid)} onSelect={() => toggleSelected(d.gid)} onRemove={() => setRemoving([d])}
             />
           ))}
         </List>
@@ -623,7 +752,7 @@ export function App() {
             <span>{fmtBytes(stats.totalBytes)} · {stats.totalFiles} files all-time</span>
           )}
         </Footer>
-      ) : (
+      ) : inspector && (
         <Telemetry speeds={netHistory} listed={visible.length + visibleMedia.length} dir={loadTimeData.getString('downloadDir')} categories={loadTimeData.getBoolean('categoriesEnabled')} />
       )}
       </div>

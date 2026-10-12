@@ -423,6 +423,13 @@ bool ArmUrlRefresh(Profile* profile,
   return true;
 }
 
+// Keep in sync with FALLBACK_TRACKERS in falcon_downloader_ui/aria2_client.ts.
+constexpr char kFallbackTrackers[] =
+    "udp://tracker.opentrackr.org:1337/announce,"
+    "udp://open.demonii.com:1337/announce,"
+    "udp://tracker.torrent.eu.org:451/announce,"
+    "udp://open.stealth.si:80/announce";
+
 bool MaybeHandleMagnet(Profile* profile, const GURL& url) {
   if (!profile || !url.SchemeIs(kMagnetScheme) ||
       !profile->GetPrefs()->GetBoolean(prefs::kDownloadEngineEnabled) ||
@@ -434,6 +441,12 @@ bool MaybeHandleMagnet(Profile* profile, const GURL& url) {
   const base::FilePath dir = TargetDirectory(profile, "x.torrent");
   if (!dir.empty()) {
     options.Set("dir", dir.AsUTF8Unsafe());
+  }
+  // aria2 can't bootstrap its DHT from the public routers (their replies lack
+  // a token and are dropped), so a magnet without trackers would never find a
+  // peer. Give those a few open trackers; the DHT fills from the peers found.
+  if (url.spec().find("tr=") == std::string::npos) {
+    options.Set("bt-tracker", kFallbackTrackers);
   }
   VLOG(1) << "Falcon: magnet link to engine";
   Aria2Service::Get()->AddUri(url, std::move(options));

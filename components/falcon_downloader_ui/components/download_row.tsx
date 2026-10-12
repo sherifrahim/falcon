@@ -19,12 +19,25 @@ const Row = styled.div<{ $open: boolean }>`
   border-radius: 14px;
   padding: 12px 14px;
   display: grid;
-  grid-template-columns: 34px 1fr auto;
+  grid-template-columns: 16px 34px 1fr auto;
   gap: 8px 14px;
   align-items: center;
 `
 
 // Ring gauge (mock v2): progress for live rows, tick for done, cross for error.
+// Row selection checkbox (bulk pause / resume / remove).
+const Check = styled.input`
+  grid-row: 1; align-self: center; margin: 0; width: 16px; height: 16px;
+  accent-color: #0ea5e9; cursor: pointer;
+`
+
+// Selection + remove wiring shared by both row kinds.
+interface Selectable {
+  selected: boolean
+  onSelect: () => void
+  onRemove: () => void
+}
+
 const RingBox = styled.svg`
   width: 34px; height: 34px; grid-row: 1; align-self: start;
   .track { stroke: rgba(255, 255, 255, 0.1); }
@@ -51,7 +64,7 @@ function Ring({ pct, status }: { pct: number; status: Aria2Status }) {
 
 // A download Chromium handled itself (small file, private window, blob: link):
 // the same card, driven through browserDownloadAction instead of aria2.
-export function BrowserDownloadRow({ d, refresh }: { d: Aria2Download; refresh: () => void }) {
+export function BrowserDownloadRow({ d, refresh, selected, onSelect, onRemove }: { d: Aria2Download; refresh: () => void } & Selectable) {
   const total = +d.totalLength
   const done = +d.completedLength
   const speed = +d.downloadSpeed
@@ -67,6 +80,7 @@ export function BrowserDownloadRow({ d, refresh }: { d: Aria2Download; refresh: 
   const path = d.files?.[0]?.path ?? ''
   return (
     <Row $open={false}>
+      <Check type="checkbox" checked={selected} onChange={onSelect} aria-label={`Select ${nameOf(d)}`} />
       <Ring pct={pct} status={status} />
       <div style={{ minWidth: 0 }}>
         <Name title={path || nameOf(d)}>{nameOf(d)}</Name>
@@ -94,11 +108,11 @@ export function BrowserDownloadRow({ d, refresh }: { d: Aria2Download; refresh: 
             <Button $small onClick={() => act('folder')}>Folder</Button>
           </>
         )}
-        {(status === 'active' || status === 'paused') ? (
-          <Button $small $danger onClick={() => act('cancel')}>Cancel</Button>
+        {d.dangerous && status !== 'complete' ? (
+          <Button $small onClick={() => act('remove')} title="Discard the file">Discard</Button>
         ) : (
-          <Button $small onClick={() => act('remove')} title={d.dangerous ? 'Discard the file' : 'Remove from the list (the file stays)'}>
-            {d.dangerous && status !== 'complete' ? 'Discard' : 'Remove'}
+          <Button $small $danger={status === 'active' || status === 'paused'} onClick={onRemove}>
+            {status === 'active' || status === 'paused' ? 'Cancel' : 'Remove'}
           </Button>
         )}
       </Actions>
@@ -219,7 +233,7 @@ const Badge = styled.span<{ $color: string }>`
   background: ${(p) => p.$color}14;
 `
 
-interface Props {
+interface Props extends Selectable {
   d: Aria2Download
   scan?: ScanResult
   client: Aria2Client
@@ -248,7 +262,7 @@ function Sparkline({ data }: { data: number[] }) {
   )
 }
 
-export function DownloadRow({ d, scan, client, open, onToggle, refresh, setError, queueIndex, queueSize, speedHistory }: Props) {
+export function DownloadRow({ d, scan, client, open, onToggle, refresh, setError, queueIndex, queueSize, speedHistory, selected, onSelect, onRemove }: Props) {
   const total = +d.totalLength
   const done = +d.completedLength
   const speed = +d.downloadSpeed
@@ -289,13 +303,6 @@ export function DownloadRow({ d, scan, client, open, onToggle, refresh, setError
       client.call('aria2.tellStatus', d.gid, ['bitfield']).then((s: any) => setBitfield(s?.bitfield ?? '')).catch(() => {})
     }
   }, [open, d.gid, d.status, torrent, client, fromHistory])
-
-  // History rows are not known to aria2 any more; drop them from Falcon's
-  // own list instead.
-  const removeEntry = () =>
-    fromHistory
-      ? act(Promise.resolve(chrome.send('falcon_downloader.removeHistory', [d.gid])))
-      : act(client.removeResult(d.gid))
 
   const rename = () => {
     const name = newName.trim()
@@ -345,16 +352,6 @@ export function DownloadRow({ d, scan, client, open, onToggle, refresh, setError
     chrome.send('falcon_downloader.setOpenWhenDone', [d.gid, next])
   }
 
-  const deleteWithFile = () => {
-    const files = d.files?.map((f) => f.path).filter(Boolean) ?? []
-    const drop = fromHistory
-      ? Promise.resolve(chrome.send('falcon_downloader.removeHistory', [d.gid]))
-      : live ? client.remove(d.gid) : client.removeResult(d.gid)
-    act(drop.then(() => {
-      for (const f of files) chrome.send('falcon_downloader.deleteFile', [f])
-    }))
-  }
-
   const applyLimit = () => {
     const kb = parseInt(limit, 10)
     act(client.changeOption(d.gid, { 'max-download-limit': String(isFinite(kb) && kb > 0 ? kb * 1024 : 0) }))
@@ -398,6 +395,7 @@ export function DownloadRow({ d, scan, client, open, onToggle, refresh, setError
 
   return (
     <Row $open={open}>
+      <Check type="checkbox" checked={selected} onChange={onSelect} aria-label={`Select ${nameOf(d)}`} />
       <Ring pct={pct} status={d.status} />
       <div style={{ minWidth: 0 }}>
         {renaming ? (
@@ -459,12 +457,8 @@ export function DownloadRow({ d, scan, client, open, onToggle, refresh, setError
             <Button $small disabled={queueIndex === (queueSize ?? 1) - 1} onClick={() => move('down')} title="Move down in queue">↓</Button>
           </>
         )}
-        {live ? (
-          <Button $small $danger onClick={() => act(client.remove(d.gid))}>Cancel</Button>
-        ) : (
-          <Button $small onClick={removeEntry}>Remove</Button>
-        )}
-        <Button $small onClick={onToggle}>{open ? 'Less' : 'More'}</Button>
+        <Button $small $danger={live} onClick={onRemove}>{live ? 'Cancel' : 'Remove'}</Button>
+        <Button $small onClick={onToggle} title="Link, folder, queue, speed limit, checksum">{open ? 'Less' : 'More'}</Button>
       </Actions>
       <Bar $pct={pct} $status={d.status} />
       {open && d.status === 'active' && speedHistory && speedHistory.length > 1 && (
@@ -540,10 +534,6 @@ export function DownloadRow({ d, scan, client, open, onToggle, refresh, setError
               onKeyDown={(e) => e.key === 'Enter' && applyLimit()} />
             <span style={{ opacity: 0.6 }}>0 = unlimited (this download only)</span>
           </span>}
-          <span className="k">Danger zone</span>
-          <span className="v">
-            <Button $small $danger onClick={deleteWithFile}>Delete with file{files && files.length > 1 ? 's' : ''}</Button>
-          </span>
         </Details>
       )}
       {open && torrent && files && files.length > 1 && (

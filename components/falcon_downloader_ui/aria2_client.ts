@@ -38,6 +38,7 @@ export interface Aria2Download {
   files: Aria2File[]
   bittorrent?: { info?: { name?: string }; announceList?: string[][] }
   infoHash?: string
+  followedBy?: string[]
   verifiedLength?: string
   verifyIntegrityPending?: string
   // Set on entries synthesised from Falcon's persistent history (aria2 no
@@ -155,11 +156,18 @@ type Pending = {
   reject: (e: Error) => void
 }
 
+const FALLBACK_TRACKERS = [
+  'udp://tracker.opentrackr.org:1337/announce',
+  'udp://open.demonii.com:1337/announce',
+  'udp://tracker.torrent.eu.org:451/announce',
+  'udp://open.stealth.si:80/announce',
+].join(',')
+
 export const STATUS_KEYS = [
   'gid', 'status', 'totalLength', 'completedLength', 'uploadLength',
   'downloadSpeed', 'uploadSpeed', 'connections', 'numSeeders', 'errorCode',
   'errorMessage', 'dir', 'files', 'bittorrent', 'infoHash', 'verifiedLength',
-  'verifyIntegrityPending',
+  'verifyIntegrityPending', 'followedBy',
 ]
 
 export class Aria2Client {
@@ -175,7 +183,14 @@ export class Aria2Client {
   constructor(
     private readonly url: string,
     private readonly secret: string,
+    // Downloads added from the page carry no folder; without one aria2 saves
+    // into its working directory (Falcon's program folder).
+    private readonly defaultDir: string = '',
   ) {}
+
+  private withDir(options: Record<string, string>): Record<string, string> {
+    return options.dir || !this.defaultDir ? options : { ...options, dir: this.defaultDir }
+  }
 
   connect() {
     this.closed = false
@@ -271,11 +286,15 @@ export class Aria2Client {
   // Convenience wrappers ---------------------------------------------------
 
   addUri(uris: string[], options: Record<string, string> = {}) {
-    return this.call<string>('aria2.addUri', uris, options)
+    // Trackerless magnets: see kFallbackTrackers in download_interceptor.cc.
+    if (uris.length === 1 && /^magnet:/i.test(uris[0]) && !/[?&]tr=/.test(uris[0])) {
+      options = { ...options, 'bt-tracker': FALLBACK_TRACKERS }
+    }
+    return this.call<string>('aria2.addUri', uris, this.withDir(options))
   }
 
   addTorrent(base64: string, options: Record<string, string> = {}) {
-    return this.call<string>('aria2.addTorrent', base64, [], options)
+    return this.call<string>('aria2.addTorrent', base64, [], this.withDir(options))
   }
 
   pause(gid: string) {

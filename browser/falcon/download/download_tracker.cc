@@ -26,12 +26,14 @@ constexpr int kIdlePollMs = 10000;
 
 // aria2 error codes (see `aria2c --help` "EXIT STATUS").
 constexpr int kAria2ErrorInvalidRange = 8;
+constexpr int kAria2ErrorDuplicateInfoHash = 12;
 
 base::ListValue StatusKeys() {
   base::ListValue keys;
   for (const char* k :
        {"gid", "status", "totalLength", "completedLength", "downloadSpeed",
-        "files", "bittorrent", "errorCode", "errorMessage", "dir"}) {
+        "files", "bittorrent", "errorCode", "errorMessage", "dir",
+        "followedBy"}) {
     keys.Append(k);
   }
   return keys;
@@ -100,6 +102,9 @@ DownloadTracker::Status DownloadTracker::ParseStatus(
         if (s.name.empty()) s.name = Basename(*u);
       }
     }
+  }
+  if (const base::ListValue* f = d.FindList("followedBy")) {
+    s.followed = !f->empty();
   }
   if (s.name.empty()) s.name = s.gid;
   return s;
@@ -291,6 +296,12 @@ void DownloadTracker::HandleStopped(const Status& s) {
   }
   if (!reported_.insert(gid).second) {
     return;  // already announced
+  }
+  // A .torrent file or magnet metadata stage hands over to the real download,
+  // which reports itself; re-adding a running torrent is a no-op, not a failure.
+  if (s.followed || (s.status == "error" &&
+                     s.error_code == kAria2ErrorDuplicateInfoHash)) {
+    return;
   }
   if (s.status == "error" && s.error_code == kAria2ErrorInvalidRange &&
       !retried_.contains(gid)) {

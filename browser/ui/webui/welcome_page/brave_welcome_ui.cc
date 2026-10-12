@@ -17,6 +17,7 @@
 #include "brave/browser/ui/webui/brave_webui_source.h"
 #include "brave/browser/ui/webui/brave_welcome_page/brave_welcome_page_prefs.h"
 #include "brave/browser/ui/webui/settings/brave_import_bulk_data_handler.h"
+#include "brave/browser/ui/views/falcon/peek_window.h"
 #include "brave/browser/ui/webui/settings/brave_search_engines_handler.h"
 #include "brave/browser/ui/webui/welcome_page/welcome_dom_handler.h"
 #include "brave/components/brave_welcome/common/features.h"
@@ -160,6 +161,9 @@ BraveWelcomeUI::BraveWelcomeUI(content::WebUI* web_ui, std::string_view name)
     std::u16string l10n_str = l10n_util::GetStringUTF16(str.id);
     source->AddString(str.name, l10n_str);
   }
+
+  source->AddInteger("falconShellMode",
+                     profile->GetPrefs()->GetInteger(falcon::prefs::kShellMode));
 
   // Variables considered when determining which onboarding cards to show
   source->AddString("countryString", country_id.CountryCode());

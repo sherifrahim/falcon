@@ -49,6 +49,7 @@ class WelcomeDOMHandler : public content::WebUIMessageHandler {
   void HandleOpenSettingsPage(const base::ListValue& args);
   void HandleSetMetricsReportingEnabled(const base::ListValue& args);
   void HandleEnableWebDiscovery(const base::ListValue& args);
+  void HandleSetFalconWindowStyle(const base::ListValue& args);
   void HandleGetWelcomeCompleteURL(const base::ListValue& args);
 
   void OnGettingStartedServerCheck(const std::string& callback_id,

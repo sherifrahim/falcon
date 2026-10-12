@@ -97,6 +97,7 @@ class DownloadTracker
     std::string first_uri;
     std::vector<std::string> paths;
     bool is_torrent = false;
+    bool followed = false;  // handed over to another download (followedBy)
   };
   static Status ParseStatus(const base::DictValue& dict);
 

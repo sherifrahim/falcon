@@ -570,9 +570,9 @@ export function App() {
           </Seg>
         </Row>
         <Row as="div">
-          <span>Window style<span className="sub">Cockpit: no chrome, capsule on hover · Mac-style: slim title bar, toolbar on hover · Classic: Windows default</span></span>
+          <span>Window style<span className="sub">Mac-style: slim title bar, toolbar on hover · Classic: Windows default · Cockpit (beta): no chrome, capsule on hover</span></span>
           <Seg>
-            {([[2, 'Cockpit'], [1, 'Mac-style'], [0, 'Classic']] as Array<[0 | 1 | 2, string]>).map(([v, l]) => (
+            {([[1, 'Mac-style'], [0, 'Classic'], [2, 'Cockpit · beta']] as Array<[0 | 1 | 2, string]>).map(([v, l]) => (
               <button key={v} className={s.shellMode === v ? 'on' : ''} onClick={() => update({ shellMode: v })}>{l}</button>
             ))}
           </Seg>

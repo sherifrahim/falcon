@@ -858,14 +858,14 @@ void BraveBrowserView::OnAcceleratorsChanged(
 
 void BraveBrowserView::OnFocusModeToggled(bool enabled) {
   UpdateFocusModeState();
-  // Persist (Ctrl+Shift+F / app menu toggles): off -> classic, on -> cockpit
+  // Persist (Ctrl+Shift+F / app menu toggles): off -> classic, on -> Mac-style
   // unless the profile already prefers a non-classic style.
   PrefService* prefs = GetProfile()->GetPrefs();
   const int mode = prefs->GetInteger(falcon::prefs::kShellMode);
   if (!enabled && mode != falcon::prefs::kShellClassic) {
     prefs->SetInteger(falcon::prefs::kShellMode, falcon::prefs::kShellClassic);
   } else if (enabled && mode == falcon::prefs::kShellClassic) {
-    prefs->SetInteger(falcon::prefs::kShellMode, falcon::prefs::kShellCockpit);
+    prefs->SetInteger(falcon::prefs::kShellMode, falcon::prefs::kShellMac);
   }
 }
 
