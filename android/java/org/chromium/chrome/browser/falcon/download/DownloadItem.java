@@ -310,9 +310,10 @@ public final class DownloadItem {
         if (bytes < 0) return "?";
         if (bytes < 1024) return bytes + " B";
         double kb = bytes / 1024.0;
-        if (kb < 1024) return String.format(Locale.US, "%.0f KB", kb);
+        if (kb < 1000) return String.format(Locale.US, "%.0f KB", kb);
         double mb = kb / 1024.0;
-        if (mb < 1024) return String.format(Locale.US, "%.1f MB", mb);
+        // Switch units before the rounded value would read "1024.0 MB".
+        if (mb < 1000) return String.format(Locale.US, "%.1f MB", mb);
         return String.format(Locale.US, "%.2f GB", mb / 1024.0);
     }
 }
