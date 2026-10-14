@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -183,7 +184,12 @@ public final class DownloadPromptSheet {
         later.setOnClickListener(start);
         cancel.setOnClickListener(v -> mDialog.dismiss());
 
-        mDialog.setContentView(root);
+        // Scrolls so the actions stay reachable in landscape.
+        ScrollView scroll = new ScrollView(ctx);
+        scroll.setBackgroundResource(R.drawable.falcon_bg_sheet);
+        root.setBackground(null);
+        scroll.addView(root);
+        mDialog.setContentView(scroll);
         mDialog.getBehavior().setState(BottomSheetBehavior.STATE_EXPANDED);
         mDialog.getBehavior().setSkipCollapsed(true);
     }

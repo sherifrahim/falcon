@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/task/sequenced_task_runner.h"
+#include "chrome/browser/download/android/download_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/download/public/common/download_item.h"
 #include "components/embedder_support/user_agent_utils.h"
@@ -255,6 +256,19 @@ bool MaybeInterceptDownloadAndroid(Profile* profile,
   }
   StartWithCookies(profile, url, referer, ua, filename, mime_type,
                    content_length);
+  // A tab opened only for this download stays blank and asks to download
+  // again whenever the session is restored; close it as Chrome does.
+  if (web_contents) {
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, base::BindOnce(
+                       [](base::WeakPtr<content::WebContents> contents) {
+                         if (contents) {
+                           DownloadController::CloseTabIfEmpty(contents.get(),
+                                                               nullptr);
+                         }
+                       },
+                       web_contents->GetWeakPtr()));
+  }
   VLOG(1) << "Falcon: intercepting download " << url.spec();
   return true;
 }
