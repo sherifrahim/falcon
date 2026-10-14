@@ -46,6 +46,7 @@ public final class FalconPrefs {
     public static final String DOWNLOADER_CONNECTIONS = "falcon_downloader_connections";
     public static final String DOWNLOADER_VERIFY = "falcon_downloader_verify";
     public static final String DOWNLOADER_WIFI_ONLY = "falcon_downloader_wifi_only";
+    public static final String DOWNLOADER_ASK = "falcon_downloader_ask";
     public static final String PITCH_BLACK = "falcon_pitch_black";
 
     public static final @BottomBarMode int DEFAULT_BOTTOM_BAR_MODE = BottomBarMode.ARC;
@@ -174,6 +175,15 @@ public final class FalconPrefs {
 
     public static void setDownloaderWifiOnly(boolean wifiOnly) {
         prefs().writeBoolean(DOWNLOADER_WIFI_ONLY, wifiOnly);
+    }
+
+    /** Show the download prompt (name, connections, Wi-Fi, later) before each download. */
+    public static boolean isDownloaderAskFirst() {
+        return prefs().readBoolean(DOWNLOADER_ASK, true);
+    }
+
+    public static void setDownloaderAskFirst(boolean ask) {
+        prefs().writeBoolean(DOWNLOADER_ASK, ask);
     }
 
     public static boolean isPitchBlack() {

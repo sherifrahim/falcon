@@ -52,6 +52,7 @@ brave_java_sources = [
   "../../brave/android/java/org/chromium/chrome/browser/falcon/media/MediaCaptureStore.java",
   "../../brave/android/java/org/chromium/chrome/browser/falcon/download/ui/AddDownloadSheet.java",
   "../../brave/android/java/org/chromium/chrome/browser/falcon/download/ui/DownloadDetailSheet.java",
+  "../../brave/android/java/org/chromium/chrome/browser/falcon/download/ui/DownloadPromptSheet.java",
   "../../brave/android/java/org/chromium/chrome/browser/falcon/download/ui/DownloadRowAdapter.java",
   "../../brave/android/java/org/chromium/chrome/browser/falcon/download/ui/FalconDownloadsActivity.java",
   "../../brave/android/java/org/chromium/chrome/browser/falcon/download/ui/SegmentBarView.java",

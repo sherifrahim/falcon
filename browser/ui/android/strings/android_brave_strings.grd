@@ -1860,6 +1860,12 @@ Are you sure you want to do this?
       <message name="IDS_FALCON_DOWNLOADER_VERIFY_SUMMARY" desc="Verify toggle summary">
         Checks the file against the published hash after the download finishes.
       </message>
+      <message name="IDS_FALCON_DOWNLOADER_ASK" desc="Toggle: show the download prompt before each download">
+        Ask before each download
+      </message>
+      <message name="IDS_FALCON_DOWNLOADER_ASK_SUMMARY" desc="Summary for the download prompt toggle">
+        Pick the name, connections and when to start. Off: downloads start straight away.
+      </message>
       <message name="IDS_FALCON_DOWNLOADER_WIFI_ONLY" desc="Wi-Fi only toggle">
         Large downloads on Wi-Fi only
       </message>

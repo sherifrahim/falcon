@@ -16,6 +16,10 @@ namespace content {
 class WebContents;
 }
 
+namespace download {
+class DownloadItem;
+}
+
 namespace falcon {
 
 // Android counterpart of //brave/browser/falcon/download/download_interceptor:
@@ -31,6 +35,14 @@ bool MaybeInterceptDownloadAndroid(Profile* profile,
                                    bool is_transient,
                                    bool is_content_initiated,
                                    content::WebContents* web_contents);
+
+// For downloads that never went through a navigation (long-press "Download
+// link", <a download>, "Download image"): returns true when Falcon took an
+// http(s) download over, so Chromium should cancel its own. blob:/data:
+// downloads stay with Chromium (only the page can read them) and are listed in
+// Falcon's downloads once they finish; that returns false.
+bool MaybeTakeOverDownloadItemAndroid(Profile* profile,
+                                      download::DownloadItem* item);
 
 }  // namespace falcon
 

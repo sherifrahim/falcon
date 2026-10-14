@@ -13,6 +13,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/location.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
@@ -25,6 +26,7 @@
 #include "brave/components/image_metadata_stripper/image_metadata_stripper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_target_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
 
@@ -69,6 +71,39 @@ bool BraveDownloadManagerDelegate::InterceptDownloadIfApplicable(
       url, user_agent, content_disposition, mime_type, request_origin,
       content_length, is_transient, is_content_initiated, web_contents);
 }
+
+#if BUILDFLAG(IS_ANDROID)
+bool BraveDownloadManagerDelegate::DetermineDownloadTarget(
+    download::DownloadItem* item,
+    download::DownloadTargetCallback* callback) {
+  // A new download only (not one restored from history or resumed).
+  if (item->GetTargetFilePath().empty() &&
+      falcon::MaybeTakeOverDownloadItemAndroid(profile_, item)) {
+    // Falcon fetches it; cancel Chromium's copy before any of its prompts and
+    // drop the entry from its list.
+    download::DownloadTargetInfo target_info;
+    target_info.interrupt_reason =
+        download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED;
+    std::move(*callback).Run(std::move(target_info));
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](base::WeakPtr<BraveDownloadManagerDelegate> self,
+               std::string guid) {
+              if (!self || !self->download_manager_) {
+                return;
+              }
+              if (download::DownloadItem* cancelled =
+                      self->download_manager_->GetDownloadByGuid(guid)) {
+                cancelled->Remove();
+              }
+            },
+            weak_ptr_factory_.GetWeakPtr(), item->GetGuid()));
+    return true;
+  }
+  return ChromeDownloadManagerDelegate::DetermineDownloadTarget(item, callback);
+}
+#endif
 
 bool BraveDownloadManagerDelegate::IsDownloadReadyForCompletion(
     download::DownloadItem* item,

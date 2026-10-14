@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.falcon.download;
 
 import androidx.annotation.IntDef;
 
+import org.chromium.chrome.browser.falcon.FalconPrefs;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -85,6 +86,10 @@ public final class DownloadItem {
      * cookies stay in memory), so it disappears from the list when the app restarts.
      */
     public volatile boolean ephemeral;
+    /** Parallel connections for this download; 0 = the downloader default. */
+    public volatile int connections;
+    /** Hold this download until Wi-Fi if it is large (set from the prompt or the default). */
+    public volatile boolean wifiOnly;
 
     /**
      * HLS/DASH download ({@link StreamDownloadTask}): JSON naming the playlists or manifest and
@@ -238,6 +243,8 @@ public final class DownloadItem {
         o.put("sha256Actual", sha256Actual);
         o.put("savedUri", savedUri);
         o.put("finishedAt", finishedAt);
+        o.put("connections", connections);
+        o.put("wifiOnly", wifiOnly);
         if (isStream()) {
             o.put("streamSpec", streamSpec);
             o.put("streamParts", streamParts);
@@ -278,6 +285,8 @@ public final class DownloadItem {
         item.sha256Actual = o.optString("sha256Actual", "");
         item.savedUri = o.optString("savedUri", "");
         item.finishedAt = o.optLong("finishedAt", 0);
+        item.connections = o.optInt("connections", 0);
+        item.wifiOnly = o.optBoolean("wifiOnly", FalconPrefs.isDownloaderWifiOnly());
         item.streamSpec = o.optString("streamSpec", "");
         item.streamParts = o.optInt("streamParts", 0);
         item.streamPartsDone = o.optInt("streamPartsDone", 0);

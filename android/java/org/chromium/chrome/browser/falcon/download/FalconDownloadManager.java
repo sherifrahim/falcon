@@ -12,6 +12,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.media.MediaScannerConnection;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -23,6 +24,7 @@ import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.base.ApplicationStatus;
@@ -170,7 +172,7 @@ public final class FalconDownloadManager {
         return enqueue(url, referer, userAgent, cookies, fileName, mimeType, totalBytes, false);
     }
 
-    /** As above; |ephemeral| (private tabs) keeps the item out of the downloads store. */
+    /** As above; |ephemeral| keeps the item out of the downloads store. */
     public DownloadItem enqueue(
             String url,
             String referer,
@@ -180,6 +182,29 @@ public final class FalconDownloadManager {
             String mimeType,
             long totalBytes,
             boolean ephemeral) {
+        return enqueue(
+                url, referer, userAgent, cookies, fileName, mimeType, totalBytes, ephemeral,
+                null);
+    }
+
+    /** Choices made in the download prompt. */
+    public static final class Options {
+        public int connections; // 0 = default
+        public boolean wifiOnly;
+        public boolean startPaused; // "Later": listed, starts when resumed
+    }
+
+    /** As above, with the prompt's choices (null = defaults). */
+    public DownloadItem enqueue(
+            String url,
+            String referer,
+            String userAgent,
+            String cookies,
+            String fileName,
+            String mimeType,
+            long totalBytes,
+            boolean ephemeral,
+            @Nullable Options options) {
         ThreadUtils.assertOnUiThread();
         String name = HttpDownloadTask.sanitize(TextUtils.isEmpty(fileName) ? "download" : fileName);
         DownloadItem item =
@@ -194,6 +219,12 @@ public final class FalconDownloadManager {
                         totalBytes,
                         System.currentTimeMillis());
         item.ephemeral = ephemeral;
+        item.wifiOnly = FalconPrefs.isDownloaderWifiOnly();
+        if (options != null) {
+            item.connections = options.connections;
+            item.wifiOnly = options.wifiOnly;
+            if (options.startPaused) item.state = State.PAUSED;
+        }
         mItems.put(item.id, item);
         Log.i(TAG, "enqueue %s (%s)", name, DownloadItem.formatBytes(totalBytes));
         schedule();
@@ -231,6 +262,7 @@ public final class FalconDownloadManager {
                         System.currentTimeMillis());
         item.streamSpec = spec;
         item.ephemeral = ephemeral;
+        item.wifiOnly = FalconPrefs.isDownloaderWifiOnly();
         mItems.put(item.id, item);
         Log.i(TAG, "enqueue stream %s", name);
         schedule();
@@ -377,12 +409,11 @@ public final class FalconDownloadManager {
     private void schedule() {
         ThreadUtils.assertOnUiThread();
         int running = mTasks.size();
-        boolean wifiOnly = FalconPrefs.isDownloaderWifiOnly();
         boolean onWifi = isOnWifi();
         for (DownloadItem item : mItems.values()) {
             if (running >= MAX_CONCURRENT) break;
             if (item.state != State.QUEUED && item.state != State.WAITING_WIFI) continue;
-            if (wifiOnly && !onWifi && item.totalBytes > WIFI_ONLY_THRESHOLD) {
+            if (item.wifiOnly && !onWifi && item.totalBytes > WIFI_ONLY_THRESHOLD) {
                 item.state = State.WAITING_WIFI;
                 ensureNetworkCallback();
                 continue;
@@ -400,7 +431,8 @@ public final class FalconDownloadManager {
     private void start(DownloadItem item) {
         item.state = State.ACTIVE;
         item.error = "";
-        int connections = FalconPrefs.getDownloaderConnections();
+        int connections =
+                item.connections > 0 ? item.connections : FalconPrefs.getDownloaderConnections();
         DownloadTask task =
                 item.isStream()
                         ? new StreamDownloadTask(item, streamDir(item), connections, mTaskListener)
@@ -796,9 +828,49 @@ public final class FalconDownloadManager {
 
     /** Whether a file of this size/type should be taken over from Chromium. */
     static boolean wantsDownload(String url, String fileName, String mimeType, long contentLength) {
-        if (!FalconPrefs.isDownloaderEnabled()) return false;
-        // Tiny files: Chromium's own path is fine and keeps its download UI.
-        if (contentLength >= 0 && contentLength < 512 * 1024) return false;
-        return true;
+        // Every download, whatever its size: one downloader, one list.
+        return FalconPrefs.isDownloaderEnabled();
+    }
+
+    /**
+     * A file Chromium wrote itself (a blob: or data: link only the page can read): list it as
+     * finished so every download lives in Falcon's list. |location| is a content URI or a path.
+     */
+    public void adoptFinished(
+            String location, String url, String fileName, String mimeType, long size) {
+        ThreadUtils.assertOnUiThread();
+        DownloadItem item =
+                new DownloadItem(
+                        UUID.randomUUID().toString(),
+                        url,
+                        "",
+                        "",
+                        "",
+                        HttpDownloadTask.sanitize(
+                                TextUtils.isEmpty(fileName) ? "download" : fileName),
+                        mimeType,
+                        size,
+                        System.currentTimeMillis());
+        item.state = State.DONE;
+        item.finishedAt = System.currentTimeMillis();
+        mItems.put(item.id, item);
+        if (location.startsWith("content://")) {
+            item.savedUri = location;
+        } else {
+            // A plain path: the media scanner hands back a content URI apps can open.
+            MediaScannerConnection.scanFile(
+                    mContext,
+                    new String[] {location},
+                    new String[] {TextUtils.isEmpty(mimeType) ? null : mimeType},
+                    (path, uri) ->
+                            post(() -> {
+                                if (uri != null) item.savedUri = uri.toString();
+                                save();
+                                notifyChanged();
+                            }));
+        }
+        save();
+        notifyChanged();
+        announce(item);
     }
 }

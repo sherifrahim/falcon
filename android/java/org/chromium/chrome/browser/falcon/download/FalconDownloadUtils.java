@@ -43,9 +43,7 @@ public final class FalconDownloadUtils {
         if (otrProfileId == null && tab != null) {
             otrProfileId = tab.getProfile().getOtrProfileId();
         }
-        if (activity != null
-                && FalconPrefs.isDownloaderEnabled()
-                && !OtrProfileId.isOffTheRecord(otrProfileId)) {
+        if (activity != null && FalconPrefs.isDownloaderEnabled()) {
             FalconDownloadsActivity.launch(activity);
             return true;
         }

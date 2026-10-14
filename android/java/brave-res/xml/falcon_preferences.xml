@@ -64,6 +64,12 @@
 
     <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
         android:persistent="false"
+        android:key="falcon_downloader_ask"
+        android:title="@string/falcon_downloader_ask"
+        android:summary="@string/falcon_downloader_ask_summary" />
+
+    <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
+        android:persistent="false"
         android:key="falcon_downloader_wifi_only"
         android:title="@string/falcon_downloader_wifi_only"
         android:summary="@string/falcon_downloader_wifi_only_summary" />

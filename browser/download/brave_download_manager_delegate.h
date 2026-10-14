@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
+#include "build/build_config.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 
 class Profile;
@@ -56,6 +57,13 @@ class BraveDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
                                      bool is_transient,
                                      bool is_content_initiated,
                                      content::WebContents* web_contents) override;
+
+#if BUILDFLAG(IS_ANDROID)
+  // Falcon: downloads that skipped InterceptDownloadIfApplicable.
+  bool DetermineDownloadTarget(
+      download::DownloadItem* item,
+      download::DownloadTargetCallback* callback) override;
+#endif
 
   // ChromeDownloadManagerDelegate override.
   bool IsDownloadReadyForCompletion(
