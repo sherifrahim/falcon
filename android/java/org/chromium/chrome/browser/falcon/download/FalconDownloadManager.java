@@ -28,6 +28,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
@@ -374,8 +375,27 @@ public final class FalconDownloadManager {
 
     /** Removes the entry (and the part file); the exported file in Downloads is kept. */
     public void remove(String id) {
+        remove(id, false, null);
+    }
+
+    /**
+     * Removes the entry and, with |deleteFile|, the saved file too (permanently). |onDone|
+     * (may be null) gets whether the file is gone; Android refuses for files Falcon did not
+     * save itself, which are then kept.
+     */
+    public void remove(String id, boolean deleteFile, @Nullable Callback<Boolean> onDone) {
         DownloadItem item = mItems.get(id);
         if (item == null) return;
+        if (deleteFile && !TextUtils.isEmpty(item.savedUri)) {
+            String saved = item.savedUri;
+            mIo.execute(
+                    () -> {
+                        boolean gone = deleteSaved(Uri.parse(saved));
+                        if (onDone != null) post(() -> onDone.onResult(gone));
+                    });
+        } else if (onDone != null) {
+            onDone.onResult(!deleteFile);
+        }
         if (mTasks.containsKey(id)) {
             cancel(id);
         }
@@ -383,6 +403,21 @@ public final class FalconDownloadManager {
         deletePart(item);
         save();
         notifyChanged();
+    }
+
+    /** Deletes an exported file: a Save-to folder document or a MediaStore download. */
+    private boolean deleteSaved(Uri uri) {
+        ContentResolver resolver = mContext.getContentResolver();
+        try {
+            if (DocumentsContract.isDocumentUri(mContext, uri)) {
+                return DocumentsContract.deleteDocument(resolver, uri);
+            }
+            return resolver.delete(uri, null, null) > 0;
+        } catch (Exception e) {
+            // Not ours to delete (e.g. a file Chromium wrote) or already gone.
+            Log.w(TAG, "could not delete %s", uri, e);
+            return false;
+        }
     }
 
     public void clearFinished() {

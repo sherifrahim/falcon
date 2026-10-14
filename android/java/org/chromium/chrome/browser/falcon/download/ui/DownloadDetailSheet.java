@@ -17,9 +17,13 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
@@ -261,11 +265,55 @@ public class DownloadDetailSheet extends BottomSheetDialogFragment
         if (item == null) return;
         FalconDownloadManager m = FalconDownloadManager.getInstance();
         if (item.isTerminal()) {
-            m.remove(item.id);
-            dismissAllowingStateLoss();
+            confirmRemove(item);
         } else {
             m.cancel(item.id);
         }
+    }
+
+    /** Remove from the list, optionally deleting the file too (unticked by default). */
+    private void confirmRemove(DownloadItem item) {
+        Context ctx = requireContext();
+        boolean hasFile = !TextUtils.isEmpty(item.savedUri);
+        CheckBox alsoDelete = new CheckBox(ctx);
+        alsoDelete.setText("Also delete the file (permanent)");
+        int pad = Math.round(20 * ctx.getResources().getDisplayMetrics().density);
+        FrameLayout box = new FrameLayout(ctx);
+        box.setPadding(pad, pad / 2, pad, 0);
+        box.addView(alsoDelete);
+        AlertDialog.Builder b =
+                new AlertDialog.Builder(ctx)
+                        .setTitle("Remove " + item.fileName + "?")
+                        .setMessage(
+                                hasFile
+                                        ? "It leaves Falcon's list. The file stays in your"
+                                                + " downloads unless you tick the box."
+                                        : "It leaves Falcon's list.")
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .setPositiveButton(
+                                "Remove",
+                                (d, w) -> {
+                                    boolean delete = hasFile && alsoDelete.isChecked();
+                                    Context app = ctx.getApplicationContext();
+                                    FalconDownloadManager.getInstance()
+                                            .remove(
+                                                    item.id,
+                                                    delete,
+                                                    gone -> {
+                                                        if (delete && !gone) {
+                                                            Toast.makeText(
+                                                                            app,
+                                                                            "Couldn't delete the"
+                                                                                    + " file; it"
+                                                                                    + " was kept.",
+                                                                            Toast.LENGTH_SHORT)
+                                                                    .show();
+                                                        }
+                                                    });
+                                    dismissAllowingStateLoss();
+                                });
+        if (hasFile) b.setView(box);
+        b.show();
     }
 
     private void copyUrl() {
