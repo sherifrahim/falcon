@@ -303,9 +303,9 @@ public class DownloadDetailSheet extends BottomSheetDialogFragment
                                                         if (delete && !gone) {
                                                             Toast.makeText(
                                                                             app,
-                                                                            "Couldn't delete the"
-                                                                                    + " file; it"
-                                                                                    + " was kept.",
+                                                                            "The file was"
+                                                                                    + " already gone"
+                                                                                    + " or moved.",
                                                                             Toast.LENGTH_SHORT)
                                                                     .show();
                                                         }

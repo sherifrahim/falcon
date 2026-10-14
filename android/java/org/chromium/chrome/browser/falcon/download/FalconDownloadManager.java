@@ -380,8 +380,8 @@ public final class FalconDownloadManager {
 
     /**
      * Removes the entry and, with |deleteFile|, the saved file too (permanently). |onDone|
-     * (may be null) gets whether the file is gone; Android refuses for files Falcon did not
-     * save itself, which are then kept.
+     * (may be null) gets whether the file is gone (false if it was already moved or deleted
+     * elsewhere). Chromium-written files are Falcon's too (same app), so those delete as well.
      */
     public void remove(String id, boolean deleteFile, @Nullable Callback<Boolean> onDone) {
         DownloadItem item = mItems.get(id);
@@ -391,7 +391,7 @@ public final class FalconDownloadManager {
             mIo.execute(
                     () -> {
                         boolean gone = deleteSaved(Uri.parse(saved));
-                        if (onDone != null) post(() -> onDone.onResult(gone));
+                        if (onDone != null) post(onDone.bind(gone));
                     });
         } else if (onDone != null) {
             onDone.onResult(!deleteFile);
@@ -414,7 +414,7 @@ public final class FalconDownloadManager {
             }
             return resolver.delete(uri, null, null) > 0;
         } catch (Exception e) {
-            // Not ours to delete (e.g. a file Chromium wrote) or already gone.
+            // Already gone, or moved by another app.
             Log.w(TAG, "could not delete %s", uri, e);
             return false;
         }
